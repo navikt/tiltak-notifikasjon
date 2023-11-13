@@ -1,0 +1,6 @@
+management:
+  endpoints:
+    web:
+      base-path: /internal/
+      exposure:
+        include: info, health, metrics, prometheus
