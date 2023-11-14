@@ -17,7 +17,23 @@
 		<java.version>17</java.version>
 		<kotlin.version>1.8.22</kotlin.version>
 	</properties>
+	<repositories>
+		<!-- Legger til central eksplisitt for prioritet over github package registry -->
+		<repository>
+			<id>central</id>
+			<url>https://repo.maven.apache.org/maven2</url>
+		</repository>
+		<repository>
+			<id>github</id>
+			<url>https://github-package-registry-mirror.gc.nav.no/cached/maven-release</url>
+		</repository>
+	</repositories>
 	<dependencies>
+		<dependency>
+			<groupId>de.huxhorn.sulky</groupId>
+			<artifactId>de.huxhorn.sulky.ulid</artifactId>
+			<version>8.2.0</version>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
@@ -49,6 +65,12 @@
 		<dependency>
 			<groupId>org.springframework.kafka</groupId>
 			<artifactId>spring-kafka</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>no.nav.tms.varsel</groupId>
+			<artifactId>kotlin-builder</artifactId>
+			<version>1.0.0-beta</version>
 		</dependency>
 
 		<dependency>
