@@ -15,7 +15,7 @@
 	<description>Håndtering av notifikasjoner for tiltak håndtert av team tiltak</description>
 	<properties>
 		<java.version>17</java.version>
-		<kotlin.version>1.8.22</kotlin.version>
+		<kotlin.version>1.9.20</kotlin.version>
 	</properties>
 	<repositories>
 		<!-- Legger til central eksplisitt for prioritet over github package registry -->
