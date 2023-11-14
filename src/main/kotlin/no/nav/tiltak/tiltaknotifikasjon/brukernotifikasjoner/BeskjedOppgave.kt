@@ -11,7 +11,7 @@ class BeskjedOppgave {
     val NAMESPACE = "team-tiltak"
     val APP_NAVN= "tiltak-notifikasjon"
 
-    public fun lagOppgave(fnr: String, avtaleId: String): String {
+    fun lagOppgave(fnr: String, avtaleId: String): String {
         val kafkaValueJson = VarselActionBuilder.opprett {
             type = Varseltype.Oppgave
             varselId = ulid()
@@ -29,7 +29,7 @@ class BeskjedOppgave {
         }
         return kafkaValueJson
     }
-    public fun lagBeskjed(fnr: String, avtaleId: String): String {
+    fun lagBeskjed(fnr: String, avtaleId: String): String {
         val kafkaValueJson = VarselActionBuilder.opprett {
             type = Varseltype.Beskjed
             varselId = ulid()
