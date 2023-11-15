@@ -20,10 +20,10 @@ fun lagOppgave(fnr: String, avtaleId: String): Brukernotifikasjon {
         ident = fnr
         tekster += Tekst(
             spraakkode = "nb",
-            tekst = "Det er noe du må gjøre i en avtale tiltak",
+            tekst = "Det er noe du må gjøre i en avtale om tiltak",
             default = true
         )
-        link = "https://www.arbeidsgiver.nav.no/tiltaksgjennomforing/avtale/${avtaleId}"
+        link = lagLink(avtaleId)
         aktivFremTil = ZonedDateTime.now(ZoneId.of("Z")).plusDays(14)
         eksternVarsling = EksternVarslingBestilling(prefererteKanaler = listOf(EksternKanal.SMS))
         produsent = Produsent(Cluster.current.verdi, NAMESPACE, APP_NAVN)
@@ -43,11 +43,20 @@ fun lagBeskjed(fnr: String, avtaleId: String): Brukernotifikasjon {
             tekst = "Det er skjedd noe nytt i en avtale om tiltak",
             default = true
         )
-        link = "https://www.arbeidsgiver.nav.no/tiltaksgjennomforing/avtale/${avtaleId}"
+        link = lagLink(avtaleId)
         aktivFremTil = ZonedDateTime.now(ZoneId.of("Z")).plusDays(14)
         eksternVarsling = EksternVarslingBestilling(prefererteKanaler = listOf(EksternKanal.SMS))
         produsent = Produsent(Cluster.current.verdi, NAMESPACE, APP_NAVN)
     }
     return Brukernotifikasjon(kafkaValueJson, id, Varseltype.Beskjed)
 }
+
+private fun lagLink(avtaleId: String): String {
+    return when(Cluster.current) {
+        Cluster.PROD_GCP -> "https://arbeidsgiver.nav.no/tiltaksgjennomforing/avtale/${avtaleId}"
+        Cluster.DEV_GCP -> "https://tiltaksgjennomforing.dev.nav.no/tiltaksgjennomforing/avtale/${avtaleId}"
+        else -> "http://localhost:8080/tiltaksgjennomforing/avtale/${avtaleId}"
+    }
+}
+
 

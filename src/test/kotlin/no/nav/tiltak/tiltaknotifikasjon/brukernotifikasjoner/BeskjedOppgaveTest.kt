@@ -24,11 +24,11 @@ class BeskjedOppgaveTest {
         val melding: AvtaleHendelseMelding = mapper.readValue(jsonGodkjentAvVeileder)
 
         // Burde kanskje vært litt static
-        val oppgaveTilBrukerNotifikasjon = lagBeskjed(melding.deltakerFnr, melding.avtaleId.toString())
+        val beskjedTilBrukerNotifikasjon = lagBeskjed(melding.deltakerFnr, melding.avtaleId.toString())
 
-        assertThat(oppgaveTilBrukerNotifikasjon).isNotNull()
-        assertThat(oppgaveTilBrukerNotifikasjon.type).isEqualTo(Varseltype.Oppgave)
-        println(oppgaveTilBrukerNotifikasjon.json)
-        assertThat(oppgaveTilBrukerNotifikasjon.json).isNotEmpty()
+        assertThat(beskjedTilBrukerNotifikasjon).isNotNull()
+        assertThat(beskjedTilBrukerNotifikasjon.type).isEqualTo(Varseltype.Beskjed)
+        println(beskjedTilBrukerNotifikasjon.json)
+        assertThat(beskjedTilBrukerNotifikasjon.json).isNotEmpty()
     }
 }

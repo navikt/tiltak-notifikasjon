@@ -8,7 +8,7 @@ import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Component
 
 @Component
-@Profile("dev-gcp, dockercompose")
+@Profile("dev-gcp", "dockercompose")
 class MinSideProdusent(
     val minSideOppgaveKafkaTemplate: KafkaTemplate<String, String>
 ) {
@@ -16,6 +16,21 @@ class MinSideProdusent(
 
     fun sendOppgaveTilMinSide(brukernotifikasjon: Brukernotifikasjon) {
         minSideOppgaveKafkaTemplate.send(Topics.BRUKERNOTIFIKASJON_OPPGAVE, brukernotifikasjon.id, brukernotifikasjon.json)
+            .whenComplete {it, ex ->
+                if (ex != null) {
+                    log.error(
+                        "Melding med id {} kunne ikke sendes til Kafka topic {}",
+                        brukernotifikasjon.id,
+                        Topics.BRUKERNOTIFIKASJON_OPPGAVE,
+                        ex
+                    )
+                } else {
+                    log.info("Melding med id {} sendt til Kafka topic {}", it.producerRecord.key(), Topics.BRUKERNOTIFIKASJON_OPPGAVE)
+                }
+            }
+    }
+    fun sendBeskjedTilMinSide(brukernotifikasjon: Brukernotifikasjon) {
+        minSideOppgaveKafkaTemplate.send(Topics.BRUKERNOTIFIKASJON_BESKJED, brukernotifikasjon.id, brukernotifikasjon.json)
             .whenComplete {it, ex ->
                 if (ex != null) {
                     log.error(
