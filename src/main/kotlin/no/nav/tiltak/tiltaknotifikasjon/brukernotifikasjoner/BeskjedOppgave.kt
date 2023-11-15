@@ -28,14 +28,14 @@ fun lagOppgave(fnr: String, avtaleId: String): Brukernotifikasjon {
         eksternVarsling = EksternVarslingBestilling(prefererteKanaler = listOf(EksternKanal.SMS))
         produsent = Produsent(Cluster.current.verdi, NAMESPACE, APP_NAVN)
     }
-
     return Brukernotifikasjon(kafkaValueJson, id, Varseltype.Oppgave)
 }
 
-fun lagBeskjed(fnr: String, avtaleId: String): String {
+fun lagBeskjed(fnr: String, avtaleId: String): Brukernotifikasjon {
+    val id = ulid()
     val kafkaValueJson = VarselActionBuilder.opprett {
         type = Varseltype.Beskjed
-        varselId = ulid()
+        varselId = id
         sensitivitet = Sensitivitet.High
         ident = fnr
         tekster += Tekst(
@@ -48,6 +48,6 @@ fun lagBeskjed(fnr: String, avtaleId: String): String {
         eksternVarsling = EksternVarslingBestilling(prefererteKanaler = listOf(EksternKanal.SMS))
         produsent = Produsent(Cluster.current.verdi, NAMESPACE, APP_NAVN)
     }
-    return kafkaValueJson
+    return Brukernotifikasjon(kafkaValueJson, id, Varseltype.Beskjed)
 }
 
