@@ -7,6 +7,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
+import no.nav.tms.varsel.action.Varseltype
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -26,5 +27,8 @@ class BeskjedOppgaveTest {
         val oppgaveTilBrukerNotifikasjon = lagOppgave(melding.deltakerFnr, melding.avtaleId.toString())
 
         assertThat(oppgaveTilBrukerNotifikasjon).isNotNull()
+        assertThat(oppgaveTilBrukerNotifikasjon.type).isEqualTo(Varseltype.Oppgave)
+        println(oppgaveTilBrukerNotifikasjon.json)
+        assertThat(oppgaveTilBrukerNotifikasjon.json).isNotEmpty()
     }
 }

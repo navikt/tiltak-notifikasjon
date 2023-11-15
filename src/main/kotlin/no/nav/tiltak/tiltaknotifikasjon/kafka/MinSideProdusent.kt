@@ -1,5 +1,6 @@
 package no.nav.tiltak.tiltaknotifikasjon.kafka
 
+import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.Brukernotifikasjon
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -13,13 +14,13 @@ class MinSideProdusent(
 ) {
     var log: Logger = LoggerFactory.getLogger(javaClass)
 
-    fun sendOppgaveTilMinSide(oppgave: String, id: String) {
-        minSideOppgaveKafkaTemplate.send(Topics.BRUKERNOTIFIKASJON_OPPGAVE, id, oppgave)
+    fun sendOppgaveTilMinSide(brukernotifikasjon: Brukernotifikasjon) {
+        minSideOppgaveKafkaTemplate.send(Topics.BRUKERNOTIFIKASJON_OPPGAVE, brukernotifikasjon.id, brukernotifikasjon.json)
             .whenComplete {it, ex ->
                 if (ex != null) {
                     log.error(
                         "Melding med id {} kunne ikke sendes til Kafka topic {}",
-                        id,
+                        brukernotifikasjon.id,
                         Topics.BRUKERNOTIFIKASJON_OPPGAVE,
                         ex
                     )

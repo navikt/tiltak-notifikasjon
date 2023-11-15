@@ -11,11 +11,11 @@ import java.time.ZonedDateTime
 val NAMESPACE = "team-tiltak"
 val APP_NAVN = "tiltak-notifikasjon"
 
-fun lagOppgave(fnr: String, avtaleId: String): String {
-
+fun lagOppgave(fnr: String, avtaleId: String): Brukernotifikasjon {
+    val id = ulid()
     val kafkaValueJson = VarselActionBuilder.opprett {
         type = Varseltype.Oppgave
-        varselId = ulid()
+        varselId = id
         sensitivitet = Sensitivitet.High
         ident = fnr
         tekster += Tekst(
@@ -28,7 +28,8 @@ fun lagOppgave(fnr: String, avtaleId: String): String {
         eksternVarsling = EksternVarslingBestilling(prefererteKanaler = listOf(EksternKanal.SMS))
         produsent = Produsent(Cluster.current.verdi, NAMESPACE, APP_NAVN)
     }
-    return kafkaValueJson
+
+    return Brukernotifikasjon(kafkaValueJson, id, Varseltype.Oppgave)
 }
 
 fun lagBeskjed(fnr: String, avtaleId: String): String {
