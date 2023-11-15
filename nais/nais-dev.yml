@@ -33,4 +33,5 @@ spec:
       cpu: "200m"
       memory: "512Mi"
   env:
-    MILJO: dev-gcp
+    - name: MILJO
+      value: dev-fss
