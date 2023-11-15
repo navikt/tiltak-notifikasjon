@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test
 class BeskjedOppgaveTest {
     private val mapper: ObjectMapper = jacksonObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         .registerModule(JavaTimeModule())
-        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 
     @Test
