@@ -12,6 +12,7 @@ val NAMESPACE = "team-tiltak"
 val APP_NAVN = "tiltak-notifikasjon"
 
 fun lagOppgave(fnr: String, avtaleId: String): String {
+
     val kafkaValueJson = VarselActionBuilder.opprett {
         type = Varseltype.Oppgave
         varselId = ulid()
