@@ -7,7 +7,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 class BeskjedOppgaveTest {
@@ -24,8 +24,8 @@ class BeskjedOppgaveTest {
         val melding: AvtaleHendelseMelding = mapper.readValue(jsonGodkjentAvVeileder)
 
         // Burde kanskje vært litt static
-        val oppgaveTilBrukerNotifikasjon = BeskjedOppgave().lagOppgave(melding.deltakerFnr, melding.avtaleId.toString())
+        val oppgaveTilBrukerNotifikasjon = lagOppgave(melding.deltakerFnr, melding.avtaleId.toString())
 
-        Assertions.assertThat(oppgaveTilBrukerNotifikasjon).isNotNull()
+        assertThat(oppgaveTilBrukerNotifikasjon).isNotNull()
     }
 }

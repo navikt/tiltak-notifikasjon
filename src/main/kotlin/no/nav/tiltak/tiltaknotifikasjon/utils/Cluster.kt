@@ -1,7 +1,7 @@
 package no.nav.tiltak.tiltaknotifikasjon.utils
 
-enum class Cluster {
-    DEV_GCP, PROD_GCP, LOKAL;
+enum class Cluster(val verdi: String) {
+    DEV_GCP("dev-gcp"), PROD_GCP("prod-gcp"), LOKAL("lokal");
 
     companion object {
         val current: Cluster by lazy {
