@@ -30,6 +30,11 @@
 	</repositories>
 	<dependencies>
 		<dependency>
+			<groupId>net.logstash.logback</groupId>
+			<artifactId>logstash-logback-encoder</artifactId>
+			<version>7.4</version>
+		</dependency>
+		<dependency>
 			<groupId>de.huxhorn.sulky</groupId>
 			<artifactId>de.huxhorn.sulky.ulid</artifactId>
 			<version>8.2.0</version>
