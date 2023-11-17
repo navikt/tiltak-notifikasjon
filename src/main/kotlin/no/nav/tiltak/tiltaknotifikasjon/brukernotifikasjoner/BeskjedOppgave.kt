@@ -54,7 +54,7 @@ fun lagBeskjed(fnr: String, avtaleId: String): Brukernotifikasjon {
 private fun lagLink(avtaleId: String): String {
     return when(Cluster.current) {
         Cluster.PROD_GCP -> "https://arbeidsgiver.nav.no/tiltaksgjennomforing/avtale/${avtaleId}"
-        Cluster.DEV_GCP -> "https://tiltaksgjennomforing.dev.nav.no/tiltaksgjennomforing/avtale/${avtaleId}"
+        Cluster.DEV_GCP -> "https://tiltaksgjennomforing.ekstern.dev.nav.no/tiltaksgjennomforing/avtale/${avtaleId}"
         else -> "http://localhost:8080/tiltaksgjennomforing/avtale/${avtaleId}"
     }
 }
