@@ -13,10 +13,10 @@ class BrukernotifikasjonService(val minSideProdusent: MinSideProdusent) {
     private val log = LoggerFactory.getLogger(javaClass)
     fun behandleAvtaleHendelseMelding(avtaleHendelse: AvtaleHendelseMelding) {
         when (avtaleHendelse.hendelseType) {
-            HendelseType.GODKJENT_AV_VEILEDER -> {
-                log.info("Behandler avtalehendelsemelding - godkjent av veileder. Skal lage og sende beskjed for avtaleId: ${avtaleHendelse.avtaleId}")
+            HendelseType.AVTALE_INNGÅTT -> {
+                log.info("Behandler avtalehendelsemelding - Avtale inngått. Skal lage og sende beskjed for avtaleId: ${avtaleHendelse.avtaleId}")
                 val beskjed = lagBeskjed(fnr = avtaleHendelse.deltakerFnr, avtaleId = avtaleHendelse.avtaleId.toString())
-                minSideProdusent.sendBeskjedTilMinSide(beskjed)
+                minSideProdusent.sendMeldingTilMinSide(beskjed)
             }
             else -> {}
 
