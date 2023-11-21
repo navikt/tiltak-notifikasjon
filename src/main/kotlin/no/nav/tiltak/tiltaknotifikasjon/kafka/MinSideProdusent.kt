@@ -14,7 +14,7 @@ class MinSideProdusent(val minSideOppgaveKafkaTemplate: KafkaTemplate<String, St
 
     val topic = Topics.BRUKERNOTIFIKASJON_BRUKERVARSEL
     fun sendMeldingTilMinSide(brukernotifikasjon: Brukernotifikasjon) {
-        minSideOppgaveKafkaTemplate.send(topic, brukernotifikasjon.id, brukernotifikasjon.json)
+        minSideOppgaveKafkaTemplate.send(topic, brukernotifikasjon.id, brukernotifikasjon.minSideJson)
             .whenComplete { it, ex ->
                 if (ex != null) {
                     log.error("Melding med id ${brukernotifikasjon.id} kunne ikke sendes til Kafka topic $topic", ex)

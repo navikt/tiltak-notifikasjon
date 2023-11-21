@@ -24,5 +24,6 @@ data class AvtaleHendelseMelding(
     val sistEndret: Instant,
     val veilederNavIdent: String?,
     val annullertGrunn: String?,
-    val antallDagerPerUke: Int?
+    val antallDagerPerUke: Int?,
+    val godkjentAvDeltaker: Boolean,
 )

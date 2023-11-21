@@ -28,7 +28,7 @@ class BeskjedOppgaveTest {
 
         assertThat(beskjedTilBrukerNotifikasjon).isNotNull()
         assertThat(beskjedTilBrukerNotifikasjon.type).isEqualTo(Varseltype.Beskjed)
-        println(beskjedTilBrukerNotifikasjon.json)
-        assertThat(beskjedTilBrukerNotifikasjon.json).isNotEmpty()
+        println(beskjedTilBrukerNotifikasjon.minSideJson)
+        assertThat(beskjedTilBrukerNotifikasjon.minSideJson).isNotEmpty()
     }
 }
