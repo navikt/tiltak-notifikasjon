@@ -13,5 +13,7 @@ spring:
       group-id: "tiltak-notifikasjon-1"
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+  datasource:
+    url: "jdbc:postgresql://localhost:9432/sample?user=sample&password=sample"
 server:
   port: 8183
