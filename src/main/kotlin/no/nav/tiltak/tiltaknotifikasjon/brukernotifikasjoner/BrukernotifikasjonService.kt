@@ -21,6 +21,7 @@ class BrukernotifikasjonService(val minSideProdusent: MinSideProdusent) {
                 val beskjed = lagBeskjed(fnr = avtaleHendelse.deltakerFnr, avtaleId = avtaleHendelse.avtaleId.toString())
                 minSideProdusent.sendMeldingTilMinSide(beskjed)
                 // oppdater entitet med status sendt_min_side
+
             }
             HendelseType.ENDRET -> {
                 if (avtaleHendelse.avtaleStatus == AvtaleStatus.MANGLER_GODKJENNING && !avtaleHendelse.godkjentAvDeltaker) {
