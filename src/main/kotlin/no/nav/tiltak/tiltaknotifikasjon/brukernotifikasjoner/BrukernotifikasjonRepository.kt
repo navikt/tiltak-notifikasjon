@@ -18,6 +18,13 @@ class BrukernotifikasjonRepository(val dsl: DSLContext) {
 
     }
 
+    fun findAll(): List<BrukernotifikasjonEntitet> {
+        return dsl.select()
+            .from(BRUKERNOTIFIKASJON)
+            .fetchInto(BrukernotifikasjonRecord::class.java)
+            .map { mapToBrukernotifikasjonEntitet(it as BrukernotifikasjonRecord) }
+    }
+
     fun save(brukernotifikasjonEntitet: BrukernotifikasjonEntitet) {
         val brukernotifikasjonRecord = mapToRecord(brukernotifikasjonEntitet)
         dsl

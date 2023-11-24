@@ -3,7 +3,7 @@ package no.nav.tiltak.tiltaknotifikasjon.kafka
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.BrukernotifikasjonService
-import no.nav.tiltak.tiltaknotifikasjon.jacksonMapper
+import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.kafka.annotation.KafkaListener

@@ -1,6 +1,6 @@
 package no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner
 
-import no.nav.tiltak.tiltaknotifikasjon.ulid
+import no.nav.tiltak.tiltaknotifikasjon.utils.ulid
 import no.nav.tiltak.tiltaknotifikasjon.utils.Cluster
 import no.nav.tms.varsel.action.*
 import no.nav.tms.varsel.builder.VarselActionBuilder
