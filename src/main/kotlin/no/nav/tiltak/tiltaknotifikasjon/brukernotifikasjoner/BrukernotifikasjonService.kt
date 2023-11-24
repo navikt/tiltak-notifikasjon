@@ -24,6 +24,7 @@ class BrukernotifikasjonService(val minSideProdusent: MinSideProdusent) {
 
             }
             HendelseType.ENDRET -> {
+                log.info("Endret melding, skal muligens til min side")
                 if (avtaleHendelse.avtaleStatus == AvtaleStatus.MANGLER_GODKJENNING && !avtaleHendelse.godkjentAvDeltaker) {
                     val harSendtMeldingOmGodkjenning = false // Slå opp i DB
                     if (!harSendtMeldingOmGodkjenning) {
