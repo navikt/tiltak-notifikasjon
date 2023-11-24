@@ -5,20 +5,30 @@ import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.tables.Brukernotifi
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.tables.records.BrukernotifikasjonRecord
 import no.nav.tms.varsel.action.Varseltype
 import org.jooq.impl.DSL
-import java.util.UUID
 
 class BrukernotifikasjonRepository {
 
-    fun findById(id: UUID): BrukernotifikasjonEntitet? {
+    fun findById(id: ULID): BrukernotifikasjonEntitet? {
         return DSL.select()
             .from(BRUKERNOTIFIKASJON)
             .where(BRUKERNOTIFIKASJON.ID.equal(id.toString()))
             .fetchOneInto(BrukernotifikasjonRecord::class.java)
-            ?.map { mapToBrukernotifikasjonEntitet(it as BrukernotifikasjonRecord)}
+            ?.map { mapToBrukernotifikasjonEntitet(it as BrukernotifikasjonRecord) }
 
     }
 
-    fun mapToBrukernotifikasjonEntitet(record: BrukernotifikasjonRecord) :BrukernotifikasjonEntitet {
+    fun save(brukernotifikasjonEntitet: BrukernotifikasjonEntitet) {
+        val brukernotifikasjonRecord = mapToRecord(brukernotifikasjonEntitet)
+        DSL
+            .insertInto(BRUKERNOTIFIKASJON)
+            .set(brukernotifikasjonRecord)
+            .onDuplicateKeyUpdate()
+            .set(brukernotifikasjonRecord)
+            .execute()
+    }
+
+
+    fun mapToBrukernotifikasjonEntitet(record: BrukernotifikasjonRecord): BrukernotifikasjonEntitet {
         return BrukernotifikasjonEntitet(
             id = record.id,
             avtaleMeldingJson = record.avtaleMeldingJson,
@@ -28,4 +38,15 @@ class BrukernotifikasjonRepository {
             feilmelding = record.feilmelding
         )
     }
+    private fun mapToRecord(brukernotifikasjonEntitet: BrukernotifikasjonEntitet): BrukernotifikasjonRecord {
+        return BrukernotifikasjonRecord(
+            id = brukernotifikasjonEntitet.id,
+            avtaleMeldingJson = brukernotifikasjonEntitet.avtaleMeldingJson,
+            minSideJson = brukernotifikasjonEntitet.minSideJson,
+            type = brukernotifikasjonEntitet.type.name,
+            status = brukernotifikasjonEntitet.status.name,
+            feilmelding = brukernotifikasjonEntitet.feilmelding
+        )
+    }
+
 }
