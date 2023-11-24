@@ -28,10 +28,5 @@ class BrukernotifikasjonRepositoryTest {
             brukernotifikasjonRepository.save(brukernotifikasjonEntitet)
             val brukernotifikasjon = brukernotifikasjonRepository.findById(id)
             assertNotNull(brukernotifikasjon)
-
-            //val brukernotifikasjonEntitet = brukernotifikasjonRepository.hentBrukernotifikasjon("id")
-//            assertEquals(brukernotifikasjonEntitet.id, brukernotifikasjon.id)
-//            assertEquals(brukernotifikasjonEntitet.minSideJson, brukernotifikasjon.minSideJson)
-//            assertEquals(brukernotifikasjonEntitet.type, brukernotifikasjon.type)
         }
 }

@@ -34,8 +34,8 @@ class BrukernotifikasjonRepository(val dsl: DSLContext) {
             id = record.id,
             avtaleMeldingJson = record.avtaleMeldingJson,
             minSideJson = record.minSideJson,
-            type = enumValueOf<Varseltype>(record.type!!),//record.type as Varseltype,
-            status = enumValueOf<BrukernotifikasjonStatus>(record.status!!), //record.status as BrukernotifikasjonStatus,
+            type = enumValueOf<Varseltype>(record.type!!),
+            status = enumValueOf<BrukernotifikasjonStatus>(record.status!!),
             feilmelding = record.feilmelding
         )
     }
