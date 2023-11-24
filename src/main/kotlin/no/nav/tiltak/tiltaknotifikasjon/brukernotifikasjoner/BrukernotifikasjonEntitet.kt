@@ -9,6 +9,9 @@ data class BrukernotifikasjonEntitet(
     val minSideJson: String?,
     val type: Varseltype,
     val status: BrukernotifikasjonStatus,
+    val deltakerFnr: String,
+    val avtaleId: String,
+    val avtaleNr: Int,
     val feilmelding: String? = null
 )
 

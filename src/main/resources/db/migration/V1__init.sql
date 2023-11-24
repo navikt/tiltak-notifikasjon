@@ -5,5 +5,8 @@ create table brukernotifikasjon
     min_side_json       varchar,
     type                varchar,
     status              varchar,
-    feilmelding         varchar
+    feilmelding         varchar,
+    deltaker_fnr        varchar,
+    avtale_nr           varchar,
+    avtale_id           varchar
 );
