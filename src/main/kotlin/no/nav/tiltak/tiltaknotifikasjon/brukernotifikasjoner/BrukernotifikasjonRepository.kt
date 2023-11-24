@@ -1,17 +1,18 @@
 package no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner
 
-import de.huxhorn.sulky.ulid.ULID
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.tables.Brukernotifikasjon.Companion.BRUKERNOTIFIKASJON
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.tables.records.BrukernotifikasjonRecord
 import no.nav.tms.varsel.action.Varseltype
-import org.jooq.impl.DSL
+import org.jooq.DSLContext
+import org.springframework.stereotype.Component
 
-class BrukernotifikasjonRepository {
+@Component
+class BrukernotifikasjonRepository(val dsl: DSLContext) {
 
-    fun findById(id: ULID): BrukernotifikasjonEntitet? {
-        return DSL.select()
+    fun findById(id: String): BrukernotifikasjonEntitet? {
+        return dsl.select()
             .from(BRUKERNOTIFIKASJON)
-            .where(BRUKERNOTIFIKASJON.ID.equal(id.toString()))
+            .where(BRUKERNOTIFIKASJON.ID.equal(id))
             .fetchOneInto(BrukernotifikasjonRecord::class.java)
             ?.map { mapToBrukernotifikasjonEntitet(it as BrukernotifikasjonRecord) }
 
@@ -19,7 +20,7 @@ class BrukernotifikasjonRepository {
 
     fun save(brukernotifikasjonEntitet: BrukernotifikasjonEntitet) {
         val brukernotifikasjonRecord = mapToRecord(brukernotifikasjonEntitet)
-        DSL
+        dsl
             .insertInto(BRUKERNOTIFIKASJON)
             .set(brukernotifikasjonRecord)
             .onDuplicateKeyUpdate()
@@ -33,11 +34,12 @@ class BrukernotifikasjonRepository {
             id = record.id,
             avtaleMeldingJson = record.avtaleMeldingJson,
             minSideJson = record.minSideJson,
-            type = record.type as Varseltype,
-            status = record.status as BrukernotifikasjonStatus,
+            type = enumValueOf<Varseltype>(record.type!!),//record.type as Varseltype,
+            status = enumValueOf<BrukernotifikasjonStatus>(record.status!!), //record.status as BrukernotifikasjonStatus,
             feilmelding = record.feilmelding
         )
     }
+
     private fun mapToRecord(brukernotifikasjonEntitet: BrukernotifikasjonEntitet): BrukernotifikasjonRecord {
         return BrukernotifikasjonRecord(
             id = brukernotifikasjonEntitet.id,
