@@ -5,6 +5,7 @@ import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.jsonManglerGodkjenningEndretAvtaleMelding
 import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -17,9 +18,14 @@ class BrukernotifikasjonServiceTest {
 
     @Autowired
     lateinit var brukernotifikasjonService: BrukernotifikasjonService
-
     @Autowired
     lateinit var brukernotifikasjonRepository: BrukernotifikasjonRepository
+
+    @BeforeEach
+    fun setup() {
+        brukernotifikasjonRepository.deleteAll()
+    }
+
 
     @Test
     fun `skal_lage_1_beskjed_ved_mangler_godkjenning_status`() {

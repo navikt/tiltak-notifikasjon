@@ -44,6 +44,10 @@ class BrukernotifikasjonRepository(val dsl: DSLContext) {
             .execute()
     }
 
+    fun deleteAll() {
+        dsl.deleteFrom(BRUKERNOTIFIKASJON).execute()
+    }
+
 
     fun mapToBrukernotifikasjon(record: BrukernotifikasjonRecord): Brukernotifikasjon {
         return Brukernotifikasjon(

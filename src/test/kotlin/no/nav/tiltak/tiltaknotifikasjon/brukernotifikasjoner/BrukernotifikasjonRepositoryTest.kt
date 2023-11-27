@@ -4,6 +4,7 @@ import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
 import no.nav.tiltak.tiltaknotifikasjon.utils.ulid
 import no.nav.tms.varsel.action.Varseltype
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -15,6 +16,11 @@ class BrukernotifikasjonRepositoryTest {
 
     @Autowired
     lateinit var brukernotifikasjonRepository: BrukernotifikasjonRepository
+
+    @BeforeEach
+    fun setup() {
+        brukernotifikasjonRepository.deleteAll()
+    }
 
         @Test
         fun `skal_kunne_lagre_og_finne_entitet_i_db`() {

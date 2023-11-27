@@ -10,6 +10,7 @@ import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.jsonGodkjentAvVeileder
 import no.nav.tiltak.tiltaknotifikasjon.jsonManglerGodkjenningEndretAvtaleMelding
 import no.nav.tms.varsel.action.Varseltype
+import no.nav.tms.varsel.builder.VarselActionBuilder
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
