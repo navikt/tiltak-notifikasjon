@@ -21,7 +21,7 @@ class AvtaleHendelseConsumer(
     fun nyAvtaleHendelse(avtaleHendelse: String) {
         log.info("Mottok avtalehendelse: $avtaleHendelse")
         val melding: AvtaleHendelseMelding = mapper.readValue(avtaleHendelse)
-        brukernotifikasjonService.behandleAvtaleHendelseMelding(melding)
+        brukernotifikasjonService.behandleAvtaleHendelseMelding(melding, avtaleHendelse)
     }
 
 }

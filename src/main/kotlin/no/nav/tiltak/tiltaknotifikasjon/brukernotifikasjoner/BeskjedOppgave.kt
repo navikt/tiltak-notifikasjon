@@ -11,7 +11,7 @@ import java.time.ZonedDateTime
 val NAMESPACE = "team-tiltak"
 val APP_NAVN = "tiltak-notifikasjon"
 
-fun lagOppgave(fnr: String, avtaleId: String): Brukernotifikasjon {
+fun lagOppgave(fnr: String, avtaleId: String): Pair<String, String> {
     val id = ulid()
     val kafkaValueJson = VarselActionBuilder.opprett {
         type = Varseltype.Oppgave
@@ -20,7 +20,7 @@ fun lagOppgave(fnr: String, avtaleId: String): Brukernotifikasjon {
         ident = fnr
         tekster += Tekst(
             spraakkode = "nb",
-            tekst = "Det er noe du må gjøre i en avtale om tiltak",
+            tekst = "Du har en avtale om tiltak som venter på din godkjenning",
             default = true
         )
         link = lagLink(avtaleId)
@@ -28,10 +28,10 @@ fun lagOppgave(fnr: String, avtaleId: String): Brukernotifikasjon {
         eksternVarsling = EksternVarslingBestilling(prefererteKanaler = listOf(EksternKanal.SMS))
         produsent = Produsent(Cluster.current.verdi, NAMESPACE, APP_NAVN)
     }
-    return Brukernotifikasjon(kafkaValueJson, id, Varseltype.Oppgave)
+    return Pair(id, kafkaValueJson)
 }
 
-fun lagBeskjed(fnr: String, avtaleId: String): Brukernotifikasjon {
+fun lagBeskjed(fnr: String, avtaleId: String): Pair<String, String> {
     val id = ulid()
     val kafkaValueJson = VarselActionBuilder.opprett {
         type = Varseltype.Beskjed
@@ -40,7 +40,7 @@ fun lagBeskjed(fnr: String, avtaleId: String): Brukernotifikasjon {
         ident = fnr
         tekster += Tekst(
             spraakkode = "nb",
-            tekst = "Det er skjedd noe nytt i en avtale om tiltak",
+            tekst = "Det har skjedd noe nytt i en avtale om tiltak",
             default = true
         )
         link = lagLink(avtaleId)
@@ -48,7 +48,7 @@ fun lagBeskjed(fnr: String, avtaleId: String): Brukernotifikasjon {
         eksternVarsling = EksternVarslingBestilling(prefererteKanaler = listOf(EksternKanal.SMS))
         produsent = Produsent(Cluster.current.verdi, NAMESPACE, APP_NAVN)
     }
-    return Brukernotifikasjon(kafkaValueJson, id, Varseltype.Beskjed)
+    return Pair(id, kafkaValueJson)
 }
 
 private fun lagLink(avtaleId: String): String {

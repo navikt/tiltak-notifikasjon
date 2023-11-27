@@ -22,14 +22,13 @@ class BrukernotifikasjonServiceTest {
     lateinit var brukernotifikasjonRepository: BrukernotifikasjonRepository
 
     @Test
-    fun `skal_lage_1_beskjed_ved_avtale_inngått`() {
+    fun `skal_lage_1_beskjed_ved_mangler_godkjenning_status`() {
         val avtaleHendelseMelding: AvtaleHendelseMelding =
             jacksonMapper().readValue(jsonManglerGodkjenningEndretAvtaleMelding)
-        brukernotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding)
-        brukernotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding)
+        brukernotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding, jsonManglerGodkjenningEndretAvtaleMelding)
+        brukernotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding, jsonManglerGodkjenningEndretAvtaleMelding)
 
         val brukernotifikasjoner = brukernotifikasjonRepository.findAll()
-        println(brukernotifikasjoner)
         assertThat(brukernotifikasjoner).hasSize(1)
     }
 
