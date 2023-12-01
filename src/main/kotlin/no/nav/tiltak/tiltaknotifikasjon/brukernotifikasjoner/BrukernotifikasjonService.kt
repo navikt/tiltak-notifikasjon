@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component
 import kotlin.math.log
 
 @Component
-@Profile("dev-gcp", "dockercompose")
 class BrukernotifikasjonService(val minSideProdusent: MinSideProdusent, val brukernotifikasjonRepository: BrukernotifikasjonRepository) {
     private val log = LoggerFactory.getLogger(javaClass)
     fun behandleAvtaleHendelseMelding(avtaleHendelse: AvtaleHendelseMelding, avtaleHendelseJson: String) {

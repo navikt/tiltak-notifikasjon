@@ -1,6 +1,8 @@
 package no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner
 
+import com.ninjasquad.springmockk.MockkBean
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
+import no.nav.tiltak.tiltaknotifikasjon.kafka.MinSideProdusent
 import no.nav.tiltak.tiltaknotifikasjon.utils.ulid
 import no.nav.tms.varsel.action.Varseltype
 import org.junit.jupiter.api.Assertions.*
@@ -9,11 +11,15 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
+import org.testcontainers.junit.jupiter.Testcontainers
 
 @SpringBootTest
-@ActiveProfiles("dockercompose")
+@ActiveProfiles("test-containers")
+@Testcontainers
 class BrukernotifikasjonRepositoryTest {
 
+    @MockkBean(relaxed = true)
+    lateinit var minSideProdusent: MinSideProdusent
     @Autowired
     lateinit var brukernotifikasjonRepository: BrukernotifikasjonRepository
 

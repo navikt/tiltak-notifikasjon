@@ -14,7 +14,7 @@
 	<name>tiltak-notifikasjon</name>
 	<description>Håndtering av notifikasjoner for tiltak håndtert av team tiltak</description>
 	<properties>
-		<java.version>17</java.version>
+		<java.version>21</java.version>
 		<kotlin.version>1.9.20</kotlin.version>
 		<jooq.version>3.18.6</jooq.version>
 		<postgresql.version>42.6.0</postgresql.version>
@@ -120,9 +120,20 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-			<scope>runtime</scope>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>postgresql</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.ninja-squad</groupId>
+			<artifactId>springmockk</artifactId>
+			<version>4.0.2</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
