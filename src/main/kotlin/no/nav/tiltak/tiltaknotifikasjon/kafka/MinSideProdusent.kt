@@ -10,7 +10,6 @@ import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Component
 
 @Component
-@Profile("dev-gcp", "dockercompose")
 class MinSideProdusent(val minSideOppgaveKafkaTemplate: KafkaTemplate<String, String>, val brukernotifikasjonRepository: BrukernotifikasjonRepository) {
     var log: Logger = LoggerFactory.getLogger(javaClass)
 
