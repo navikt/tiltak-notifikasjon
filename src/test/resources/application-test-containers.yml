@@ -1,18 +1,4 @@
 spring:
-  kafka:
-    properties:
-      security.protocol: PLAINTEXT
-      ssl:
-        keystore: null
-        truststore: null
-    bootstrap-servers: localhost:9092
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-    consumer:
-      group-id: "tiltak-notifikasjon-1"
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
   datasource:
     url: jdbc:tc:postgresql:15:///test_database
     username: user
