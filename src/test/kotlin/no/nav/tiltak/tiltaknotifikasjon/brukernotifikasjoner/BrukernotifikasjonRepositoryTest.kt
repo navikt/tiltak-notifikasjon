@@ -36,7 +36,7 @@ class BrukernotifikasjonRepositoryTest {
                 avtaleMeldingJson = "avtaleMeldingJson",
                 minSideJson = "minSideJson",
                 id = id,
-                type = Varseltype.Beskjed,
+                type = BrukernotifikasjonType.Beskjed,
                 status = BrukernotifikasjonStatus.MOTTATT,
                 deltakerFnr = "12345678910",
                 avtaleId = "12345678910",

@@ -3,7 +3,6 @@ package no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.tables.Brukernotifikasjon.Companion.BRUKERNOTIFIKASJON
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.tables.records.BrukernotifikasjonRecord
-import no.nav.tms.varsel.action.Varseltype
 import org.jooq.DSLContext
 import org.springframework.stereotype.Component
 
@@ -23,6 +22,15 @@ class BrukernotifikasjonRepository(val dsl: DSLContext) {
         return dsl.select()
             .from(BRUKERNOTIFIKASJON)
             .where(BRUKERNOTIFIKASJON.AVTALE_ID.equal(avtaleId))
+            .fetchInto(BrukernotifikasjonRecord::class.java)
+            .map { mapToBrukernotifikasjon(it as BrukernotifikasjonRecord) }
+    }
+
+    fun findAllByAvtaleIdAndType(avtaleId: String, type: BrukernotifikasjonType): List<Brukernotifikasjon> {
+        return dsl.select()
+            .from(BRUKERNOTIFIKASJON)
+            .where(BRUKERNOTIFIKASJON.AVTALE_ID.equal(avtaleId))
+            .and(BRUKERNOTIFIKASJON.TYPE.equal(type.name))
             .fetchInto(BrukernotifikasjonRecord::class.java)
             .map { mapToBrukernotifikasjon(it as BrukernotifikasjonRecord) }
     }
@@ -54,7 +62,7 @@ class BrukernotifikasjonRepository(val dsl: DSLContext) {
             id = record.id,
             avtaleMeldingJson = record.avtaleMeldingJson,
             minSideJson = record.minSideJson,
-            type = enumValueOf<Varseltype>(record.type!!),
+            type = enumValueOf<BrukernotifikasjonType>(record.type!!),
             status = enumValueOf<BrukernotifikasjonStatus>(record.status!!),
             feilmelding = record.feilmelding,
             avtaleId = record.avtaleId!!,

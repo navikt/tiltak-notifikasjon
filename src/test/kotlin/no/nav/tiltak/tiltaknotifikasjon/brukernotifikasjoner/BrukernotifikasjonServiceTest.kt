@@ -3,6 +3,7 @@ package no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.ninjasquad.springmockk.MockkBean
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
+import no.nav.tiltak.tiltaknotifikasjon.jsonGodkjentAvDeltaker
 import no.nav.tiltak.tiltaknotifikasjon.jsonManglerGodkjenningEndretAvtaleMelding
 import no.nav.tiltak.tiltaknotifikasjon.kafka.MinSideProdusent
 import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
@@ -32,8 +33,7 @@ class BrukernotifikasjonServiceTest {
     }
 
     @Test
-    fun `skal_lage_1_beskjed_ved_mangler_godkjenning_status`() {
-
+    fun `skal lage kun 1 oppgave ved flere mangler godkjenning status meldinger`() {
         val avtaleHendelseMelding: AvtaleHendelseMelding =
             jacksonMapper().readValue(jsonManglerGodkjenningEndretAvtaleMelding)
         brukernotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding, jsonManglerGodkjenningEndretAvtaleMelding)
@@ -41,6 +41,21 @@ class BrukernotifikasjonServiceTest {
 
         val brukernotifikasjoner = brukernotifikasjonRepository.findAll()
         assertThat(brukernotifikasjoner).hasSize(1)
+    }
+
+    @Test
+    fun `skal inaktivere oppgave om godkjenning når deltaker har godkjent`() {
+        // Endret melding med status mangler godkjenning
+        val avtaleHendelseMelding1: AvtaleHendelseMelding =
+            jacksonMapper().readValue(jsonManglerGodkjenningEndretAvtaleMelding)
+        brukernotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding1, jsonManglerGodkjenningEndretAvtaleMelding)
+        // Melding med godkjent av deltaker
+        val avtaleHendelseMelding2: AvtaleHendelseMelding =
+            jacksonMapper().readValue(jsonGodkjentAvDeltaker)
+        brukernotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding2, jsonGodkjentAvDeltaker)
+
+        val brukernotifikasjoner = brukernotifikasjonRepository.findAll()
+        assertThat(brukernotifikasjoner).hasSize(2)
     }
 
 }
