@@ -51,12 +51,12 @@ fun lagBeskjed(fnr: String, avtaleId: String): Pair<String, String> {
     return Pair(id, kafkaValueJson)
 }
 
-fun lagInaktiveringAvOppgave(id: String): String {
+fun lagInaktiveringAvOppgave(id: String): Pair<String, String> {
     val inaktivering = VarselActionBuilder.inaktiver {
         varselId = id
         produsent = Produsent(Cluster.current.verdi, NAMESPACE, APP_NAVN)
     }
-    return inaktivering
+    return Pair(id, inaktivering)
 }
 
 private fun lagLink(avtaleId: String): String {
