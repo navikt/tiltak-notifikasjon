@@ -45,14 +45,20 @@ class BrukernotifikasjonService(val minSideProdusent: MinSideProdusent, val bruk
             HendelseType.GODKJENT_PAA_VEGNE_AV_DELTAKER_OG_ARBEIDSGIVER-> {
                 // Skal inaktivere oppgave om behov for godkjenning
                 //Finn ID på beskjed om godkjenning
-                val oppgaverPåAvtaleId = brukernotifikasjonRepository.findAllByAvtaleIdAndType(avtaleHendelse.avtaleId.toString(), BrukernotifikasjonType.Oppgave)
-                oppgaverPåAvtaleId.forEach {
+                val oppgaverPåAvtaleId = brukernotifikasjonRepository.findAllByAvtaleIdAndType(
+                    avtaleHendelse.avtaleId.toString(),
+                    BrukernotifikasjonType.Oppgave
+                )
+                oppgaverPåAvtaleId.filter { it.status !== BrukernotifikasjonStatus.INAKTIVERT }.forEach {
+                    it.status = BrukernotifikasjonStatus.INAKTIVERT
+                    brukernotifikasjonRepository.save(it)
                     val inaktiveringMeldingJson = lagInaktiveringAvOppgave(it.varselId)
                     val brukernotifikasjon = lagBrukernotifikasjon(inaktiveringMeldingJson, avtaleHendelseJson, avtaleHendelse, BrukernotifikasjonType.Inaktivering)
                     brukernotifikasjonRepository.save(brukernotifikasjon)
                     minSideProdusent.sendMeldingTilMinSide(brukernotifikasjon)
                 }
             }
+
             else -> {}
         }
     }
@@ -61,7 +67,7 @@ class BrukernotifikasjonService(val minSideProdusent: MinSideProdusent, val bruk
 
     fun sjekkOmSendtTilMinSidePåAvtaleHendlese(avtaleHendelse: AvtaleHendelseMelding, hendelseType: HendelseType): Boolean {
         brukernotifikasjonRepository.findAllbyAvtaleId(avtaleHendelse.avtaleId.toString()).filter { it.avtaleHendelseType === hendelseType }.forEach {
-            if (it.status === BrukernotifikasjonStatus.SENDT_TIL_MIN_SIDE || it.status == BrukernotifikasjonStatus.MOTTATT) {
+            if (it.sendt || it.status == BrukernotifikasjonStatus.MOTTATT) {
                 log.info("Fant allerede en brukernotifikasjon på hendelse $hendelseType for avtaleId: ${avtaleHendelse.avtaleId}")
                 return true
             }

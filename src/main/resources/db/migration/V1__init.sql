@@ -10,5 +10,6 @@ create table brukernotifikasjon
     deltaker_fnr         varchar,
     avtale_nr            integer,
     avtale_id            varchar,
-    avtale_hendelse_type varchar
+    avtale_hendelse_type varchar,
+    sendt                boolean not null default false
 );

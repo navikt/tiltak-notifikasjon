@@ -69,7 +69,8 @@ class BrukernotifikasjonRepository(val dsl: DSLContext) {
             avtaleNr = record.avtaleNr!!,
             deltakerFnr = record.deltakerFnr!!,
             avtaleHendelseType = enumValueOf<HendelseType>(record.avtaleHendelseType!!),
-            varselId = record.varselId!!
+            varselId = record.varselId!!,
+            sendt = record.sendt!!
         )
     }
 
@@ -86,6 +87,7 @@ class BrukernotifikasjonRepository(val dsl: DSLContext) {
             deltakerFnr = brukernotifikasjon.deltakerFnr,
             avtaleHendelseType = brukernotifikasjon.avtaleHendelseType.name,
             varselId = brukernotifikasjon.varselId,
+            sendt = brukernotifikasjon.sendt
         )
     }
 

@@ -23,7 +23,7 @@ class MinSideProdusent(val minSideOppgaveKafkaTemplate: KafkaTemplate<String, St
                     brukernotifikasjonRepository.save(brukernotifikasjon)
                     log.error("Melding med id ${brukernotifikasjon.id} kunne ikke sendes til Kafka topic $topic", ex)
                 } else {
-                    brukernotifikasjon.status = BrukernotifikasjonStatus.SENDT_TIL_MIN_SIDE
+                    brukernotifikasjon.sendt = true
                     brukernotifikasjonRepository.save(brukernotifikasjon)
                     log.info("Melding med id ${it.producerRecord.key()} sendt til Kafka topic $topic")
                 }

@@ -13,11 +13,12 @@ data class Brukernotifikasjon(
     val avtaleId: String,
     val avtaleNr: Int,
     val avtaleHendelseType: HendelseType,
-    var feilmelding: String? = null
+    var feilmelding: String? = null,
+    var sendt: Boolean = false
 )
 
 enum class BrukernotifikasjonStatus {
-    MOTTATT, BEHANDLET, SENDT_TIL_MIN_SIDE, FEILET, SENDER_TIL_MIN_SIDE
+    MOTTATT, BEHANDLET, FEILET, INAKTIVERT
 }
 
 enum class BrukernotifikasjonType {
