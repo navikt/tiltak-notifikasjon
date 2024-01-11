@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Component
+import java.time.Instant
+import java.time.LocalDateTime
 
 @Component
 class MinSideProdusent(val minSideOppgaveKafkaTemplate: KafkaTemplate<String, String>, val brukernotifikasjonRepository: BrukernotifikasjonRepository) {
@@ -23,7 +25,7 @@ class MinSideProdusent(val minSideOppgaveKafkaTemplate: KafkaTemplate<String, St
                     brukernotifikasjonRepository.save(brukernotifikasjon)
                     log.error("Melding med id ${brukernotifikasjon.id} kunne ikke sendes til Kafka topic $topic", ex)
                 } else {
-                    brukernotifikasjon.sendt = true
+                    brukernotifikasjon.sendt = Instant.now()
                     brukernotifikasjonRepository.save(brukernotifikasjon)
                     log.info("Melding med id ${it.producerRecord.key()} sendt til Kafka topic $topic")
                 }

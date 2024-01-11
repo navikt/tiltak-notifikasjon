@@ -17,6 +17,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
 
 @SpringBootTest
 @ActiveProfiles("test-containers")
+
 @Testcontainers
 class BrukernotifikasjonServiceTest {
 

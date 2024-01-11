@@ -5,6 +5,7 @@ import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.tables.Brukernotifi
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.tables.records.BrukernotifikasjonRecord
 import org.jooq.DSLContext
 import org.springframework.stereotype.Component
+import java.time.OffsetDateTime
 
 @Component
 class BrukernotifikasjonRepository(val dsl: DSLContext) {
@@ -70,7 +71,8 @@ class BrukernotifikasjonRepository(val dsl: DSLContext) {
             deltakerFnr = record.deltakerFnr!!,
             avtaleHendelseType = enumValueOf<HendelseType>(record.avtaleHendelseType!!),
             varselId = record.varselId!!,
-            sendt = record.sendt!!
+            sendt = record.sendt?.toInstant(),
+            opprettet = record.opprettet?.toInstant()
         )
     }
 
@@ -87,7 +89,8 @@ class BrukernotifikasjonRepository(val dsl: DSLContext) {
             deltakerFnr = brukernotifikasjon.deltakerFnr,
             avtaleHendelseType = brukernotifikasjon.avtaleHendelseType.name,
             varselId = brukernotifikasjon.varselId,
-            sendt = brukernotifikasjon.sendt
+            sendt = OffsetDateTime.from(brukernotifikasjon.sendt),
+            opprettet = OffsetDateTime.from(brukernotifikasjon.opprettet)
         )
     }
 

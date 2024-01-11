@@ -11,5 +11,6 @@ create table brukernotifikasjon
     avtale_nr            integer,
     avtale_id            varchar,
     avtale_hendelse_type varchar,
-    sendt                boolean not null default false
+    sendt                timestamp with time zone,
+    opprettet            timestamp with time zone
 );

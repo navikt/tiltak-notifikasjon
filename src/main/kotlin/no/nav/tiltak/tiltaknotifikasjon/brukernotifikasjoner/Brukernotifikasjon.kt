@@ -1,6 +1,8 @@
 package no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner
 
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
+import java.time.Instant
+import java.time.LocalDateTime
 
 data class Brukernotifikasjon(
     val id: String,
@@ -14,7 +16,8 @@ data class Brukernotifikasjon(
     val avtaleNr: Int,
     val avtaleHendelseType: HendelseType,
     var feilmelding: String? = null,
-    var sendt: Boolean = false
+    var sendt: Instant? = null,
+    var opprettet: Instant? = null
 )
 
 enum class BrukernotifikasjonStatus {
