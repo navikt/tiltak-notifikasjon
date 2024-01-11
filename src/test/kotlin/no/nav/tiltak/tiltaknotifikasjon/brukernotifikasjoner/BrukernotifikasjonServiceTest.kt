@@ -7,6 +7,7 @@ import no.nav.tiltak.tiltaknotifikasjon.jsonGodkjentAvDeltaker
 import no.nav.tiltak.tiltaknotifikasjon.jsonManglerGodkjenningEndretAvtaleMelding
 import no.nav.tiltak.tiltaknotifikasjon.kafka.MinSideProdusent
 import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
+import no.nav.tiltak.tiltaknotifikasjon.utils.ulid
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -37,8 +38,11 @@ class BrukernotifikasjonServiceTest {
     fun `skal lage kun 1 oppgave ved flere mangler godkjenning status meldinger`() {
         val avtaleHendelseMelding: AvtaleHendelseMelding =
             jacksonMapper().readValue(jsonManglerGodkjenningEndretAvtaleMelding)
-        brukernotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding, jsonManglerGodkjenningEndretAvtaleMelding)
-        brukernotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding, jsonManglerGodkjenningEndretAvtaleMelding)
+        val brukernotifikasjonFraAvtaleHendelse =
+            opprettBrukernotifikasjonFraAvtaleHendelse(jsonManglerGodkjenningEndretAvtaleMelding)
+
+        brukernotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding, brukernotifikasjonFraAvtaleHendelse)
+        brukernotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding, brukernotifikasjonFraAvtaleHendelse)
 
         val brukernotifikasjoner = brukernotifikasjonRepository.findAll()
         assertThat(brukernotifikasjoner).hasSize(1)
@@ -49,14 +53,26 @@ class BrukernotifikasjonServiceTest {
         // Endret melding med status mangler godkjenning
         val avtaleHendelseMelding1: AvtaleHendelseMelding =
             jacksonMapper().readValue(jsonManglerGodkjenningEndretAvtaleMelding)
-        brukernotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding1, jsonManglerGodkjenningEndretAvtaleMelding)
+        val brukernotifikasjonFraAvtaleHendelse =
+            opprettBrukernotifikasjonFraAvtaleHendelse(jsonManglerGodkjenningEndretAvtaleMelding)
+
+        brukernotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding1, brukernotifikasjonFraAvtaleHendelse)
         // Melding med godkjent av deltaker
         val avtaleHendelseMelding2: AvtaleHendelseMelding =
             jacksonMapper().readValue(jsonGodkjentAvDeltaker)
-        brukernotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding2, jsonGodkjentAvDeltaker)
+
+        val brukernotifikasjonFraAvtaleHendelse2 =
+            opprettBrukernotifikasjonFraAvtaleHendelse(jsonGodkjentAvDeltaker)
+        brukernotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding2, brukernotifikasjonFraAvtaleHendelse2)
 
         val brukernotifikasjoner = brukernotifikasjonRepository.findAll()
         assertThat(brukernotifikasjoner).hasSize(2)
     }
 
+    fun opprettBrukernotifikasjonFraAvtaleHendelse(avtaleHendelseMelding: String) =
+        Brukernotifikasjon(
+            id = ulid(),
+            avtaleMeldingJson = avtaleHendelseMelding,
+            status = BrukernotifikasjonStatus.MOTTATT,
+        )
 }
