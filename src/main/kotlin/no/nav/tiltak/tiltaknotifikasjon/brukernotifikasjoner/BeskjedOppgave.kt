@@ -4,12 +4,15 @@ import no.nav.tiltak.tiltaknotifikasjon.utils.ulid
 import no.nav.tiltak.tiltaknotifikasjon.utils.Cluster
 import no.nav.tms.varsel.action.*
 import no.nav.tms.varsel.builder.VarselActionBuilder
+import org.slf4j.LoggerFactory
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
 
 val NAMESPACE = "team-tiltak"
 val APP_NAVN = "tiltak-notifikasjon"
+
+val log =  LoggerFactory.getLogger("BeskjedOppgave")
 
 fun lagOppgave(fnr: String, avtaleId: String): Pair<String, String> {
     val id = ulid()
@@ -60,11 +63,13 @@ fun lagInaktiveringAvOppgave(id: String): Pair<String, String> {
 }
 
 private fun lagLink(avtaleId: String): String {
-    return when(Cluster.current) {
+    return when (Cluster.current) {
         Cluster.PROD_GCP -> "https://arbeidsgiver.nav.no/tiltaksgjennomforing/avtale/${avtaleId}"
         Cluster.DEV_GCP -> "https://tiltaksgjennomforing.ekstern.dev.nav.no/tiltaksgjennomforing/avtale/${avtaleId}"
-        else -> "http://localhost:8080/tiltaksgjennomforing/avtale/${avtaleId}"
-        // TODO: Kunn kasta exception her hvis vi ikke er i prod eller dev
+        else -> {
+            log.warn("Bruker localhost link for avtale: ${avtaleId}")
+            "http://localhost:8080/tiltaksgjennomforing/avtale/${avtaleId}"
+        }
     }
 }
 
