@@ -37,7 +37,7 @@ spec:
       value: dev-gcp
   gcp:
     sqlInstances:
-      - type: POSTGRES_16
+      - type: POSTGRES_15
         databases:
           - name: tiltak-notifkasjon
             envVarPrefix: DB
