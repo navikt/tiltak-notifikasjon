@@ -57,15 +57,17 @@ class BrukernotifikasjonServiceTest {
             opprettBrukernotifikasjonFraAvtaleHendelse(jsonManglerGodkjenningEndretAvtaleMelding)
 
         brukernotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding1, brukernotifikasjonFraAvtaleHendelse)
+
         // Melding med godkjent av deltaker
         val avtaleHendelseMelding2: AvtaleHendelseMelding =
             jacksonMapper().readValue(jsonGodkjentAvDeltaker)
-
         val brukernotifikasjonFraAvtaleHendelse2 =
             opprettBrukernotifikasjonFraAvtaleHendelse(jsonGodkjentAvDeltaker)
         brukernotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding2, brukernotifikasjonFraAvtaleHendelse2)
 
         val brukernotifikasjoner = brukernotifikasjonRepository.findAll()
+        val inaktiverteNotifikasjoner = brukernotifikasjoner.filter { it.type == BrukernotifikasjonType.Inaktivering }
+        assertThat(inaktiverteNotifikasjoner).hasSize(1)
         assertThat(brukernotifikasjoner).hasSize(2)
     }
 
