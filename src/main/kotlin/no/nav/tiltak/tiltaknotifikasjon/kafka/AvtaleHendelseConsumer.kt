@@ -31,6 +31,7 @@ class AvtaleHendelseConsumer(
             status = BrukernotifikasjonStatus.MOTTATT,
         )
         brukernotifikasjonRepository.save(brukernotifikasjon)
+
         try {
             val melding: AvtaleHendelseMelding = mapper.readValue(avtaleHendelse)
             brukernotifikasjonService.behandleAvtaleHendelseMelding(melding, brukernotifikasjon)
