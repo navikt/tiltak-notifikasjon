@@ -5,6 +5,9 @@ import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.tables.Brukernotifi
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.tables.records.BrukernotifikasjonRecord
 import org.jooq.DSLContext
 import org.springframework.stereotype.Component
+import java.time.Instant
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 @Component
 class BrukernotifikasjonRepository(val dsl: DSLContext) {
@@ -62,15 +65,16 @@ class BrukernotifikasjonRepository(val dsl: DSLContext) {
             id = record.id,
             avtaleMeldingJson = record.avtaleMeldingJson,
             minSideJson = record.minSideJson,
-            type = enumValueOf<BrukernotifikasjonType>(record.type!!),
-            status = enumValueOf<BrukernotifikasjonStatus>(record.status!!),
+            type = if (record.type != null) enumValueOf<BrukernotifikasjonType>(record.type!!) else null,
+            status = enumValueOf<BrukernotifikasjonStatus>(record.status),
             feilmelding = record.feilmelding,
-            avtaleId = record.avtaleId!!,
-            avtaleNr = record.avtaleNr!!,
-            deltakerFnr = record.deltakerFnr!!,
-            avtaleHendelseType = enumValueOf<HendelseType>(record.avtaleHendelseType!!),
-            varselId = record.varselId!!,
-            sendt = record.sendt!!
+            avtaleId = record.avtaleId,
+            avtaleNr = record.avtaleNr,
+            deltakerFnr = record.deltakerFnr,
+            avtaleHendelseType = if (record.avtaleHendelseType != null) enumValueOf<HendelseType>(record.avtaleHendelseType!!) else null,
+            varselId = record.varselId,
+            sendt = record.sendt?.toInstant(),
+            opprettet = record.opprettet.toInstant()
         )
     }
 
@@ -79,15 +83,16 @@ class BrukernotifikasjonRepository(val dsl: DSLContext) {
             id = brukernotifikasjon.id,
             avtaleMeldingJson = brukernotifikasjon.avtaleMeldingJson,
             minSideJson = brukernotifikasjon.minSideJson,
-            type = brukernotifikasjon.type.name,
+            type = brukernotifikasjon.type?.name,
             status = brukernotifikasjon.status.name,
             feilmelding = brukernotifikasjon.feilmelding,
             avtaleId = brukernotifikasjon.avtaleId,
             avtaleNr = brukernotifikasjon.avtaleNr,
             deltakerFnr = brukernotifikasjon.deltakerFnr,
-            avtaleHendelseType = brukernotifikasjon.avtaleHendelseType.name,
+            avtaleHendelseType = brukernotifikasjon.avtaleHendelseType?.name,
             varselId = brukernotifikasjon.varselId,
-            sendt = brukernotifikasjon.sendt
+            sendt = if (brukernotifikasjon.sendt != null) brukernotifikasjon.sendt?.atOffset(ZoneOffset.UTC) else null,
+            opprettet = brukernotifikasjon.opprettet.atOffset(ZoneOffset.UTC)
         )
     }
 

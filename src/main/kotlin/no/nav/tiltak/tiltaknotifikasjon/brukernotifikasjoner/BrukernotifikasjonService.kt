@@ -4,25 +4,24 @@ import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleStatus
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
 import no.nav.tiltak.tiltaknotifikasjon.kafka.MinSideProdusent
-import no.nav.tiltak.tiltaknotifikasjon.utils.ulid
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
+import java.time.Instant
 
 @Component
 class BrukernotifikasjonService(val minSideProdusent: MinSideProdusent, val brukernotifikasjonRepository: BrukernotifikasjonRepository) {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    fun behandleAvtaleHendelseMelding(avtaleHendelse: AvtaleHendelseMelding, avtaleHendelseJson: String) {
+    fun behandleAvtaleHendelseMelding(avtaleHendelse: AvtaleHendelseMelding, brukernotifikasjon: Brukernotifikasjon) {
         when (avtaleHendelse.hendelseType) {
             HendelseType.ENDRET -> {
                 // Oppgave om å godkjenne
                 log.info("Endret melding, skal muligens til min side")
                 if (avtaleHendelse.avtaleStatus == AvtaleStatus.MANGLER_GODKJENNING && avtaleHendelse.godkjentAvDeltaker == null) {
                     val harSendtOppgaveForEndretHendelse = sjekkOmSendtTilMinSidePåAvtaleHendlese(avtaleHendelse, HendelseType.ENDRET)
-
                     if (!harSendtOppgaveForEndretHendelse) {
-                        val oppgaveJson = lagOppgave(fnr = avtaleHendelse.deltakerFnr, avtaleId = avtaleHendelse.avtaleId.toString())
-                        val brukernotifikasjon = lagBrukernotifikasjon(oppgaveJson, avtaleHendelseJson, avtaleHendelse, BrukernotifikasjonType.Oppgave)
+                        val oppgaveIdOgJson = lagOppgave(fnr = avtaleHendelse.deltakerFnr, avtaleId = avtaleHendelse.avtaleId.toString())
+                        val brukernotifikasjon = oppdaterBrukernotifikasjon(brukernotifikasjon, oppgaveIdOgJson, BrukernotifikasjonType.Oppgave, avtaleHendelse)
                         brukernotifikasjonRepository.save(brukernotifikasjon)
                         minSideProdusent.sendMeldingTilMinSide(brukernotifikasjon)
                         // lagre oppgave i db.
@@ -34,7 +33,7 @@ class BrukernotifikasjonService(val minSideProdusent: MinSideProdusent, val bruk
             HendelseType.DELTAKERS_GODKJENNING_OPPHEVET_AV_ARBEIDSGIVER -> {
                 // Oppgave om å godkjenne (på nytt)
                 val oppgaveJson = lagOppgave(fnr = avtaleHendelse.deltakerFnr, avtaleId = avtaleHendelse.avtaleId.toString())
-                val brukernotifikasjon = lagBrukernotifikasjon(oppgaveJson, avtaleHendelseJson, avtaleHendelse, BrukernotifikasjonType.Oppgave)
+                val brukernotifikasjon = oppdaterBrukernotifikasjon(brukernotifikasjon, oppgaveJson, BrukernotifikasjonType.Oppgave, avtaleHendelse)
                 brukernotifikasjonRepository.save(brukernotifikasjon)
                 minSideProdusent.sendMeldingTilMinSide(brukernotifikasjon)
                 // lagre beskjed i db.
@@ -49,13 +48,14 @@ class BrukernotifikasjonService(val minSideProdusent: MinSideProdusent, val bruk
                     avtaleHendelse.avtaleId.toString(),
                     BrukernotifikasjonType.Oppgave
                 )
-                oppgaverPåAvtaleId.filter { it.status !== BrukernotifikasjonStatus.INAKTIVERT }.forEach {
+                oppgaverPåAvtaleId.filter { it.status !== BrukernotifikasjonStatus.INAKTIVERT && it.varselId !== null }.forEach {
                     it.status = BrukernotifikasjonStatus.INAKTIVERT
                     brukernotifikasjonRepository.save(it)
-                    val inaktiveringMeldingJson = lagInaktiveringAvOppgave(it.varselId)
-                    val brukernotifikasjon = lagBrukernotifikasjon(inaktiveringMeldingJson, avtaleHendelseJson, avtaleHendelse, BrukernotifikasjonType.Inaktivering)
-                    brukernotifikasjonRepository.save(brukernotifikasjon)
-                    minSideProdusent.sendMeldingTilMinSide(brukernotifikasjon)
+                    val inaktiveringMeldingIdOgJson = lagInaktiveringAvOppgave(it.varselId!!)
+
+                    val oppdatertBrukernotifikasjon = oppdaterBrukernotifikasjon(brukernotifikasjon, inaktiveringMeldingIdOgJson, BrukernotifikasjonType.Inaktivering, avtaleHendelse)
+                    brukernotifikasjonRepository.save(oppdatertBrukernotifikasjon)
+                    minSideProdusent.sendMeldingTilMinSide(oppdatertBrukernotifikasjon)
                 }
             }
 
@@ -67,7 +67,7 @@ class BrukernotifikasjonService(val minSideProdusent: MinSideProdusent, val bruk
 
     fun sjekkOmSendtTilMinSidePåAvtaleHendlese(avtaleHendelse: AvtaleHendelseMelding, hendelseType: HendelseType): Boolean {
         brukernotifikasjonRepository.findAllbyAvtaleId(avtaleHendelse.avtaleId.toString()).filter { it.avtaleHendelseType === hendelseType }.forEach {
-            if (it.sendt || it.status == BrukernotifikasjonStatus.MOTTATT) {
+            if (it.sendt !== null || it.status == BrukernotifikasjonStatus.MOTTATT) {
                 log.info("Fant allerede en brukernotifikasjon på hendelse $hendelseType for avtaleId: ${avtaleHendelse.avtaleId}")
                 return true
             }
@@ -75,19 +75,24 @@ class BrukernotifikasjonService(val minSideProdusent: MinSideProdusent, val bruk
         return false
     }
 
-    fun lagBrukernotifikasjon(oppgaveJson: Pair<String, String>, avtaleHendelseJson: String, avtaleHendelse: AvtaleHendelseMelding, type: BrukernotifikasjonType): Brukernotifikasjon {
-        val brukernotifikasjon = Brukernotifikasjon(
-            id = ulid(),
-            varselId = oppgaveJson.first,
-            avtaleMeldingJson = avtaleHendelseJson,
-            minSideJson = oppgaveJson.second,
+
+    fun oppdaterBrukernotifikasjon(brukernotifikasjon: Brukernotifikasjon, oppgaveIdOgJson: Pair<String, String>, type: BrukernotifikasjonType, avtaleHendelse: AvtaleHendelseMelding): Brukernotifikasjon =
+        brukernotifikasjon.copy(
+            varselId = oppgaveIdOgJson.first,
+            minSideJson = oppgaveIdOgJson.second,
             type = type,
-            status = BrukernotifikasjonStatus.MOTTATT,
+            status = BrukernotifikasjonStatus.BEHANDLET,
             deltakerFnr = avtaleHendelse.deltakerFnr,
             avtaleId = avtaleHendelse.avtaleId.toString(),
             avtaleNr = avtaleHendelse.avtaleNr,
-            avtaleHendelseType = avtaleHendelse.hendelseType
+            avtaleHendelseType = avtaleHendelse.hendelseType,
+            opprettet = Instant.now(),
         )
+
+    fun ferdigstillBrukernotifikasjon(brukernotifikasjon: Brukernotifikasjon, oppgaveIdOgJson: Pair<String, String>): Brukernotifikasjon {
+        brukernotifikasjon.status = BrukernotifikasjonStatus.BEHANDLET
+        brukernotifikasjon.varselId = oppgaveIdOgJson.first
+        brukernotifikasjon.minSideJson = oppgaveIdOgJson.second
         return brukernotifikasjon
     }
 

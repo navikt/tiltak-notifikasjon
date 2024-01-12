@@ -35,3 +35,9 @@ spec:
   env:
     - name: MILJO
       value: dev-gcp
+  gcp:
+    sqlInstances:
+      - type: POSTGRES_16
+        databases:
+          - name: tiltak-notifkasjon
+            envVarPrefix: DB
