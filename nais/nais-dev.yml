@@ -39,5 +39,5 @@ spec:
     sqlInstances:
       - type: POSTGRES_15
         databases:
-          - name: tiltak-notifkasjon
+          - name: tiltak-notifikasjon
             envVarPrefix: DB
