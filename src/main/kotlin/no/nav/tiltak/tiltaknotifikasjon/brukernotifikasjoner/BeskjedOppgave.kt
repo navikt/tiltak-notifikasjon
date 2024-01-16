@@ -14,7 +14,7 @@ val APP_NAVN = "tiltak-notifikasjon"
 
 val log =  LoggerFactory.getLogger("BeskjedOppgave")
 
-fun lagOppgave(fnr: String, avtaleId: String): Pair<String, String> {
+fun lagOppgave(fnr: String, avtaleId: String, varslingsformål: Varslingsformål): Pair<String, String> {
     val id = ulid()
     val kafkaValueJson = VarselActionBuilder.opprett {
         type = Varseltype.Oppgave
@@ -23,7 +23,7 @@ fun lagOppgave(fnr: String, avtaleId: String): Pair<String, String> {
         ident = fnr
         tekster += Tekst(
             spraakkode = "nb",
-            tekst = "Du har en avtale om tiltak som venter på din godkjenning",
+            tekst = varslingsformål.tekst,
             default = true
         )
         link = lagLink(avtaleId)
