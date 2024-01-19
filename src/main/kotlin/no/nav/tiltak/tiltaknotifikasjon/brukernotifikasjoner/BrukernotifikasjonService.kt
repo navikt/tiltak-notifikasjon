@@ -12,6 +12,7 @@ import java.time.Instant
 class BrukernotifikasjonService(val minSideProdusent: MinSideProdusent, val brukernotifikasjonRepository: BrukernotifikasjonRepository) {
     private val log = LoggerFactory.getLogger(javaClass)
 
+    // OPPGAVER
     fun behandleAvtaleHendelseMelding(avtaleHendelse: AvtaleHendelseMelding, brukernotifikasjon: Brukernotifikasjon) {
         when (avtaleHendelse.hendelseType) {
             HendelseType.GODKJENT_AV_ARBEIDSGIVER -> {
@@ -29,6 +30,7 @@ class BrukernotifikasjonService(val minSideProdusent: MinSideProdusent, val bruk
                 }
             }
 
+            // INAKTIVERING AV OPPGAVE
             HendelseType.GODKJENT_AV_DELTAKER,
             HendelseType.GODKJENT_PAA_VEGNE_AV,
             HendelseType.GODKJENT_PAA_VEGNE_AV_DELTAKER_OG_ARBEIDSGIVER-> {
@@ -44,6 +46,24 @@ class BrukernotifikasjonService(val minSideProdusent: MinSideProdusent, val bruk
                     brukernotifikasjonRepository.save(oppdatertBrukernotifikasjon)
                     minSideProdusent.sendMeldingTilMinSide(oppdatertBrukernotifikasjon)
                 }
+            }
+
+            // BESKJEDER
+            HendelseType.AVTALE_FORLENGET -> {
+                // Beskjed om at avtalen er blitt forlenget
+                log.info("Avtale forlenget, skal varsle deltaker om forlengelse via min side")
+                val beskjedIdOgJson = lagBeskjed(fnr = avtaleHendelse.deltakerFnr, avtaleId = avtaleHendelse.avtaleId.toString(), Varslingsformål.AVTALE_FORLENGET)
+                val oppdatertBrukernotifikasjon = oppdaterBrukernotifikasjon(brukernotifikasjon, beskjedIdOgJson, BrukernotifikasjonType.Beskjed, avtaleHendelse, Varslingsformål.AVTALE_FORLENGET)
+                brukernotifikasjonRepository.save(oppdatertBrukernotifikasjon)
+                minSideProdusent.sendMeldingTilMinSide(oppdatertBrukernotifikasjon)
+            }
+            HendelseType.AVTALE_FORKORTET -> {
+                // Beskjed om at avtalen er blitt forkortet
+                log.info("Avtale forkortet, skal varsle deltaker om forkortelse via min side")
+                val beskjedIdOgJson = lagBeskjed(fnr = avtaleHendelse.deltakerFnr, avtaleId = avtaleHendelse.avtaleId.toString(), Varslingsformål.AVTALE_FORKORTET)
+                val oppdatertBrukernotifikasjon = oppdaterBrukernotifikasjon(brukernotifikasjon, beskjedIdOgJson, BrukernotifikasjonType.Beskjed, avtaleHendelse, Varslingsformål.AVTALE_FORKORTET)
+                brukernotifikasjonRepository.save(oppdatertBrukernotifikasjon)
+                minSideProdusent.sendMeldingTilMinSide(oppdatertBrukernotifikasjon)
             }
 
             else -> {}

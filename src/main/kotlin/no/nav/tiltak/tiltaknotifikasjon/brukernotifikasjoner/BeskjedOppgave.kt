@@ -34,7 +34,7 @@ fun lagOppgave(fnr: String, avtaleId: String, varslingsformål: Varslingsformål
     return Pair(id, kafkaValueJson)
 }
 
-fun lagBeskjed(fnr: String, avtaleId: String): Pair<String, String> {
+fun lagBeskjed(fnr: String, avtaleId: String, varslingsformål: Varslingsformål): Pair<String, String> {
     val id = ulid()
     val kafkaValueJson = VarselActionBuilder.opprett {
         type = Varseltype.Beskjed
@@ -43,7 +43,7 @@ fun lagBeskjed(fnr: String, avtaleId: String): Pair<String, String> {
         ident = fnr
         tekster += Tekst(
             spraakkode = "nb",
-            tekst = "Det har skjedd noe nytt i en avtale om tiltak",
+            tekst = varslingsformål.tekst,
             default = true
         )
         link = lagLink(avtaleId)
