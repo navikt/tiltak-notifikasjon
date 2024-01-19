@@ -3,6 +3,7 @@ package no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.ninjasquad.springmockk.MockkBean
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
+import no.nav.tiltak.tiltaknotifikasjon.jsonGodkjentAvArbeidsgiverMelding
 import no.nav.tiltak.tiltaknotifikasjon.jsonGodkjentAvDeltaker
 import no.nav.tiltak.tiltaknotifikasjon.jsonManglerGodkjenningEndretAvtaleMelding
 import no.nav.tiltak.tiltaknotifikasjon.kafka.MinSideProdusent
@@ -34,12 +35,23 @@ class BrukernotifikasjonServiceTest {
         brukernotifikasjonRepository.deleteAll()
     }
 
+
     @Test
-    fun `skal lage kun 1 oppgave ved flere mangler godkjenning status meldinger`() {
-        val avtaleHendelseMelding: AvtaleHendelseMelding =
-            jacksonMapper().readValue(jsonManglerGodkjenningEndretAvtaleMelding)
-        val brukernotifikasjonFraAvtaleHendelse =
-            opprettBrukernotifikasjonFraAvtaleHendelse(jsonManglerGodkjenningEndretAvtaleMelding)
+    fun `skal lage oppgave med formål godkjenning av avtale når arbeidsgiver godkjenner`() {
+        val avtaleHendelseMelding: AvtaleHendelseMelding = jacksonMapper().readValue(jsonGodkjentAvArbeidsgiverMelding)
+        val brukernotifikasjonFraAvtaleHendelse = opprettBrukernotifikasjonFraAvtaleHendelse(jsonGodkjentAvArbeidsgiverMelding)
+
+        brukernotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding, brukernotifikasjonFraAvtaleHendelse)
+
+        val brukernotifikasjoner = brukernotifikasjonRepository.findAll()
+        assertThat(brukernotifikasjoner).hasSize(1)
+        assertThat(brukernotifikasjoner[0].varslingsformål).isEqualTo(Varslingsformål.GODKJENNING_AV_AVTALE)
+    }
+
+    @Test
+    fun `skal lage kun 1 oppgave ved flere godkjent av arbeidsgiver status meldinger`() {
+        val avtaleHendelseMelding: AvtaleHendelseMelding = jacksonMapper().readValue(jsonGodkjentAvArbeidsgiverMelding)
+        val brukernotifikasjonFraAvtaleHendelse = opprettBrukernotifikasjonFraAvtaleHendelse(jsonGodkjentAvArbeidsgiverMelding)
 
         brukernotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding, brukernotifikasjonFraAvtaleHendelse)
         brukernotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding, brukernotifikasjonFraAvtaleHendelse)
@@ -50,19 +62,15 @@ class BrukernotifikasjonServiceTest {
 
     @Test
     fun `skal inaktivere oppgave om godkjenning når deltaker har godkjent`() {
-        // Endret melding med status mangler godkjenning
-        val avtaleHendelseMelding1: AvtaleHendelseMelding =
-            jacksonMapper().readValue(jsonManglerGodkjenningEndretAvtaleMelding)
-        val brukernotifikasjonFraAvtaleHendelse =
-            opprettBrukernotifikasjonFraAvtaleHendelse(jsonManglerGodkjenningEndretAvtaleMelding)
+        // Godkjent av arbeidsgiver melding
+        val avtaleHendelseMelding1: AvtaleHendelseMelding = jacksonMapper().readValue(jsonGodkjentAvArbeidsgiverMelding)
+        val brukernotifikasjonFraAvtaleHendelse = opprettBrukernotifikasjonFraAvtaleHendelse(jsonGodkjentAvArbeidsgiverMelding)
 
         brukernotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding1, brukernotifikasjonFraAvtaleHendelse)
 
         // Melding med godkjent av deltaker
-        val avtaleHendelseMelding2: AvtaleHendelseMelding =
-            jacksonMapper().readValue(jsonGodkjentAvDeltaker)
-        val brukernotifikasjonFraAvtaleHendelse2 =
-            opprettBrukernotifikasjonFraAvtaleHendelse(jsonGodkjentAvDeltaker)
+        val avtaleHendelseMelding2: AvtaleHendelseMelding = jacksonMapper().readValue(jsonGodkjentAvDeltaker)
+        val brukernotifikasjonFraAvtaleHendelse2 = opprettBrukernotifikasjonFraAvtaleHendelse(jsonGodkjentAvDeltaker)
         brukernotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding2, brukernotifikasjonFraAvtaleHendelse2)
 
         val brukernotifikasjoner = brukernotifikasjonRepository.findAll()

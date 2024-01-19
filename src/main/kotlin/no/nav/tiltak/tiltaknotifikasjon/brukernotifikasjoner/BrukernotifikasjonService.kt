@@ -54,8 +54,7 @@ class BrukernotifikasjonService(val minSideProdusent: MinSideProdusent, val bruk
         brukernotifikasjonRepository.findAllByAvtaleIdAndType(avtaleHendelse.avtaleId.toString(), BrukernotifikasjonType.Oppgave).filter { it.varslingsformål === varslingsformål }.forEach {
             if (it.status !== BrukernotifikasjonStatus.INAKTIVERT) {
                 // Finnes en oppgave på avtalen som ikke er inaktivert
-                // Oppgave vil implisitt si en oppgave om godkjenning, det er den eneste oppgavetypen vi har.
-                log.info("Fant allerede en aktiv brukernotifikasjon oppgave ${it.id} på avtaleId: ${avtaleHendelse.avtaleId}")
+                log.info("Fant allerede en aktiv brukernotifikasjon oppgave ${it.id} på avtaleId: ${avtaleHendelse.avtaleId} med formål: $varslingsformål")
                 return true
             }
         }
