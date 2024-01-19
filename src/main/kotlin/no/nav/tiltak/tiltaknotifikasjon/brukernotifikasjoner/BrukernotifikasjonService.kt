@@ -35,7 +35,7 @@ class BrukernotifikasjonService(val minSideProdusent: MinSideProdusent, val bruk
                 // Skal inaktivere oppgave om behov for godkjenning
                 //Finn ID på beskjed om godkjenning
                 val oppgaverPåAvtaleId = brukernotifikasjonRepository.findAllByAvtaleIdAndType(avtaleHendelse.avtaleId.toString(), BrukernotifikasjonType.Oppgave)
-                oppgaverPåAvtaleId.filter { it.status !== BrukernotifikasjonStatus.INAKTIVERT && it.varselId !== null && it.varslingsformål == Varslingsformål.GODKJENNING_AV_AVTALE }.forEach {
+                oppgaverPåAvtaleId.filter { it.status != BrukernotifikasjonStatus.INAKTIVERT && it.varselId != null && it.varslingsformål == Varslingsformål.GODKJENNING_AV_AVTALE }.forEach {
                     it.status = BrukernotifikasjonStatus.INAKTIVERT
                     brukernotifikasjonRepository.save(it)
 
@@ -51,8 +51,8 @@ class BrukernotifikasjonService(val minSideProdusent: MinSideProdusent, val bruk
     }
 
     fun sjekkOmDetFinnesAktiveOppgaverPåAvtaleMedFormål(avtaleHendelse: AvtaleHendelseMelding, varslingsformål: Varslingsformål): Boolean {
-        brukernotifikasjonRepository.findAllByAvtaleIdAndType(avtaleHendelse.avtaleId.toString(), BrukernotifikasjonType.Oppgave).filter { it.varslingsformål === varslingsformål }.forEach {
-            if (it.status !== BrukernotifikasjonStatus.INAKTIVERT) {
+        brukernotifikasjonRepository.findAllByAvtaleIdAndType(avtaleHendelse.avtaleId.toString(), BrukernotifikasjonType.Oppgave).filter { it.varslingsformål == varslingsformål }.forEach {
+            if (it.status != BrukernotifikasjonStatus.INAKTIVERT) {
                 // Finnes en oppgave på avtalen som ikke er inaktivert
                 log.info("Fant allerede en aktiv brukernotifikasjon oppgave ${it.id} på avtaleId: ${avtaleHendelse.avtaleId} med formål: $varslingsformål")
                 return true

@@ -30,7 +30,7 @@ enum class BrukernotifikasjonType {
 
 enum class Varslingsformål(val tekst: String) {
     GODKJENNING_AV_AVTALE ("Du har en avtale om tiltak som venter på din godkjenning"),
-    GODKJENNING_AV_TUASHETSERKLÆRING_MENTOR("Du har en taushetserklæring som venter på din godkjenning"),
+    GODKJENNING_AV_TAUSHETSERKLÆRING_MENTOR("Du har en taushetserklæring som venter på din godkjenning"),
     AVTALE_FORLENGET("Din avtale om tiltak er forlenget"),
     AVTALE_FORKORTET("Din avtale om tiltak er forkortet"),
     AVTALE_ANNULLERT("Din avtale om tiltak er annullert"),
