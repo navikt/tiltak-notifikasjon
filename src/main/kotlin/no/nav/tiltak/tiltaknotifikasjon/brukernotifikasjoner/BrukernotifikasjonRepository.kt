@@ -74,7 +74,8 @@ class BrukernotifikasjonRepository(val dsl: DSLContext) {
             avtaleHendelseType = if (record.avtaleHendelseType != null) enumValueOf<HendelseType>(record.avtaleHendelseType!!) else null,
             varselId = record.varselId,
             sendt = record.sendt?.toInstant(),
-            opprettet = record.opprettet.toInstant()
+            opprettet = record.opprettet.toInstant(),
+            varslingsformål = if (record.varslingsformål != null) enumValueOf<Varslingsformål>(record.varslingsformål!!) else null
         )
     }
 
@@ -92,7 +93,8 @@ class BrukernotifikasjonRepository(val dsl: DSLContext) {
             avtaleHendelseType = brukernotifikasjon.avtaleHendelseType?.name,
             varselId = brukernotifikasjon.varselId,
             sendt = if (brukernotifikasjon.sendt != null) brukernotifikasjon.sendt?.atOffset(ZoneOffset.UTC) else null,
-            opprettet = brukernotifikasjon.opprettet.atOffset(ZoneOffset.UTC)
+            opprettet = brukernotifikasjon.opprettet.atOffset(ZoneOffset.UTC),
+            varslingsformål = brukernotifikasjon.varslingsformål?.name
         )
     }
 

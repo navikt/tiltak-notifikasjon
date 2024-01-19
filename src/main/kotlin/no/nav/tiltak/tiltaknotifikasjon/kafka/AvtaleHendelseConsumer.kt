@@ -30,7 +30,6 @@ class AvtaleHendelseConsumer(
             avtaleMeldingJson = avtaleHendelse,
             status = BrukernotifikasjonStatus.MOTTATT,
         )
-        brukernotifikasjonRepository.save(brukernotifikasjon)
 
         try {
             val melding: AvtaleHendelseMelding = mapper.readValue(avtaleHendelse)

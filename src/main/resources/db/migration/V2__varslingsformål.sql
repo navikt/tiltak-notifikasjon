@@ -1,0 +1,1 @@
+alter table brukernotifikasjon add column varslingsformål varchar;

@@ -16,7 +16,8 @@ data class Brukernotifikasjon(
     val avtaleHendelseType: HendelseType? = null,
     var feilmelding: String? = null,
     var sendt: Instant? = null,
-    var opprettet: Instant = Instant.now()
+    var opprettet: Instant = Instant.now(),
+    val varslingsformål: Varslingsformål? = null
 )
 
 enum class BrukernotifikasjonStatus {
@@ -25,4 +26,12 @@ enum class BrukernotifikasjonStatus {
 
 enum class BrukernotifikasjonType {
     Beskjed, Oppgave, Innboks, Inaktivering
+}
+
+enum class Varslingsformål(val tekst: String) {
+    GODKJENNING_AV_AVTALE ("Du har en avtale om tiltak som venter på din godkjenning"),
+    GODKJENNING_AV_TAUSHETSERKLÆRING_MENTOR("Du har en taushetserklæring som venter på din godkjenning"),
+    AVTALE_FORLENGET("Din avtale om tiltak er forlenget"),
+    AVTALE_FORKORTET("Din avtale om tiltak er forkortet"),
+    AVTALE_ANNULLERT("Din avtale om tiltak er annullert"),
 }
