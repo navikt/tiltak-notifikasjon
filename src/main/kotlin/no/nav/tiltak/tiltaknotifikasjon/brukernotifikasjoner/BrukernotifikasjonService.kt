@@ -65,6 +65,14 @@ class BrukernotifikasjonService(val minSideProdusent: MinSideProdusent, val bruk
                 brukernotifikasjonRepository.save(oppdatertBrukernotifikasjon)
                 minSideProdusent.sendMeldingTilMinSide(oppdatertBrukernotifikasjon)
             }
+            HendelseType.AVTALE_INNGÅTT -> {
+                // Beskjed om at avtalen er blitt inngått
+                log.info("Avtale inngått, skal varsle deltaker om inngåelse via min side")
+                val beskjedIdOgJson = lagBeskjed(fnr = avtaleHendelse.deltakerFnr, avtaleId = avtaleHendelse.avtaleId.toString(), Varslingsformål.AVTALE_INNGÅTT)
+                val oppdatertBrukernotifikasjon = oppdaterBrukernotifikasjon(brukernotifikasjon, beskjedIdOgJson, BrukernotifikasjonType.Beskjed, avtaleHendelse, Varslingsformål.AVTALE_INNGÅTT)
+                brukernotifikasjonRepository.save(oppdatertBrukernotifikasjon)
+                minSideProdusent.sendMeldingTilMinSide(oppdatertBrukernotifikasjon)
+            }
 
             else -> {}
         }
