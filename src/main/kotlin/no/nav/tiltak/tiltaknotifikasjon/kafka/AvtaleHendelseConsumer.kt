@@ -31,6 +31,8 @@ class AvtaleHendelseConsumer(
         if (!erToggletPå) {
             log.info("Feature toggle sms-min-side-deltaker er skrudd av. Prosesserer ikke melding")
             return
+        } else {
+            log.info("Feature toggle sms-min-side-deltaker er skrudd på. Prosesserer melding")
         }
         val brukernotifikasjon = Brukernotifikasjon(
             id = ulid(),
