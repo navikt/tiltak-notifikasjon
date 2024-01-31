@@ -45,6 +45,5 @@ spec:
             envVarPrefix: DB
   accessPolicy:
     outbound:
-      rules:
-        external:
-          - host: team-tiltak-unleash-api.nav.cloud.nais.io
+      external:
+        - host: team-tiltak-unleash-api.nav.cloud.nais.io
