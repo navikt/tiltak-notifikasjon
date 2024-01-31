@@ -45,6 +45,6 @@ jobs:
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-gcp
-          RESOURCE: nais/nais-dev.yml,.nais/unleash-apitoken.yml
+          RESOURCE: nais/nais-dev.yml,nais/unleash-apitoken.yml
           PRINT_PAYLOAD: true
           VAR: unleash-environment=development
