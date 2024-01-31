@@ -12,9 +12,9 @@ import java.time.Instant
 class BrukernotifikasjonService(val minSideProdusent: MinSideProdusent, val brukernotifikasjonRepository: BrukernotifikasjonRepository) {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    // OPPGAVER
     fun behandleAvtaleHendelseMelding(avtaleHendelse: AvtaleHendelseMelding, brukernotifikasjon: Brukernotifikasjon) {
         when (avtaleHendelse.hendelseType) {
+            // OPPGAVER
             HendelseType.GODKJENT_AV_ARBEIDSGIVER -> {
                 // Oppgave om å godkjenne
                 log.info("Godkjent av arbeidsgiver, skal muligens varsle deltaker om godkjenning via min side")
