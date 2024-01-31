@@ -12,9 +12,9 @@ import java.time.Instant
 class BrukernotifikasjonService(val minSideProdusent: MinSideProdusent, val brukernotifikasjonRepository: BrukernotifikasjonRepository) {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    // OPPGAVER
     fun behandleAvtaleHendelseMelding(avtaleHendelse: AvtaleHendelseMelding, brukernotifikasjon: Brukernotifikasjon) {
         when (avtaleHendelse.hendelseType) {
+            // OPPGAVER
             HendelseType.GODKJENT_AV_ARBEIDSGIVER -> {
                 // Oppgave om å godkjenne
                 log.info("Godkjent av arbeidsgiver, skal muligens varsle deltaker om godkjenning via min side")
@@ -62,6 +62,14 @@ class BrukernotifikasjonService(val minSideProdusent: MinSideProdusent, val bruk
                 log.info("Avtale forkortet, skal varsle deltaker om forkortelse via min side")
                 val beskjedIdOgJson = lagBeskjed(fnr = avtaleHendelse.deltakerFnr, avtaleId = avtaleHendelse.avtaleId.toString(), Varslingsformål.AVTALE_FORKORTET)
                 val oppdatertBrukernotifikasjon = oppdaterBrukernotifikasjon(brukernotifikasjon, beskjedIdOgJson, BrukernotifikasjonType.Beskjed, avtaleHendelse, Varslingsformål.AVTALE_FORKORTET)
+                brukernotifikasjonRepository.save(oppdatertBrukernotifikasjon)
+                minSideProdusent.sendMeldingTilMinSide(oppdatertBrukernotifikasjon)
+            }
+            HendelseType.AVTALE_INNGÅTT -> {
+                // Beskjed om at avtalen er blitt inngått
+                log.info("Avtale inngått, skal varsle deltaker om inngåelse via min side")
+                val beskjedIdOgJson = lagBeskjed(fnr = avtaleHendelse.deltakerFnr, avtaleId = avtaleHendelse.avtaleId.toString(), Varslingsformål.AVTALE_INNGÅTT)
+                val oppdatertBrukernotifikasjon = oppdaterBrukernotifikasjon(brukernotifikasjon, beskjedIdOgJson, BrukernotifikasjonType.Beskjed, avtaleHendelse, Varslingsformål.AVTALE_INNGÅTT)
                 brukernotifikasjonRepository.save(oppdatertBrukernotifikasjon)
                 minSideProdusent.sendMeldingTilMinSide(oppdatertBrukernotifikasjon)
             }

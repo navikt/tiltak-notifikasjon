@@ -1,6 +1,7 @@
 package no.nav.tiltak.tiltaknotifikasjon.kafka
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.getunleash.Unleash
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.Brukernotifikasjon
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.BrukernotifikasjonRepository
@@ -17,7 +18,8 @@ import org.springframework.stereotype.Component
 @Profile("dev-gcp", "dockercompose")
 class AvtaleHendelseConsumer(
     val brukernotifikasjonService: BrukernotifikasjonService,
-    val brukernotifikasjonRepository: BrukernotifikasjonRepository
+    val brukernotifikasjonRepository: BrukernotifikasjonRepository,
+    val unleash: Unleash
 ) {
     private val mapper = jacksonMapper()
     private val log = LoggerFactory.getLogger(javaClass)
@@ -25,6 +27,11 @@ class AvtaleHendelseConsumer(
     @KafkaListener(topics = [Topics.AVTALE_HENDELSE_COMPACT])
     fun nyAvtaleHendelse(avtaleHendelse: String) {
         log.info("Mottok avtalehendelse: $avtaleHendelse")
+        val erToggletPå = unleash.isEnabled("sms-min-side-deltaker")
+        if (!erToggletPå) {
+            log.info("Feature toggle sms-min-side-deltaker er skrudd av. Prosesserer ikke melding")
+            return
+        }
         val brukernotifikasjon = Brukernotifikasjon(
             id = ulid(),
             avtaleMeldingJson = avtaleHendelse,

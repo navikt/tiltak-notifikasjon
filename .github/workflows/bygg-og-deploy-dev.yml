@@ -47,3 +47,4 @@ jobs:
           CLUSTER: dev-gcp
           RESOURCE: nais/nais-dev.yml
           PRINT_PAYLOAD: true
+          VAR: unleash-environment=development

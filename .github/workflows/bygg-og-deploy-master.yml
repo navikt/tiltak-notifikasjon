@@ -50,3 +50,4 @@ jobs:
           CLUSTER: dev-gcp
           RESOURCE: nais/nais-dev.yml,nais/alerts.yml
           PRINT_PAYLOAD: true
+          VAR: unleash-environment=development

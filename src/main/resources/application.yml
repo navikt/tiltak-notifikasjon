@@ -31,3 +31,9 @@ management:
       base-path: /internal/
       exposure:
         include: info, health, metrics, prometheus
+
+
+tiltak-notifikasjon:
+  unleash:
+    api-uri: ${UNLEASH_SERVER_API_URL}/api
+    api-token: ${UNLEASH_SERVER_API_TOKEN}

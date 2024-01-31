@@ -35,9 +35,15 @@ spec:
   env:
     - name: MILJO
       value: dev-gcp
+  envFrom:
+    - secret: tiltak-notifikasjon-unleash-api-token
   gcp:
     sqlInstances:
       - type: POSTGRES_15
         databases:
           - name: tiltak-notifikasjon
             envVarPrefix: DB
+  outbound:
+    rules:
+      external:
+        - host: team-tiltak-unleash-api.nav.cloud.nais.io

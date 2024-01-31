@@ -34,4 +34,5 @@ enum class Varslingsformål(val tekst: String) {
     AVTALE_FORLENGET("Din avtale om tiltak er forlenget"),
     AVTALE_FORKORTET("Din avtale om tiltak er forkortet"),
     AVTALE_ANNULLERT("Din avtale om tiltak er annullert"),
+    AVTALE_INNGÅTT("Din avtale om tiltak er inngått"),
 }
