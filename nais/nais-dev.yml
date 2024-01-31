@@ -43,7 +43,8 @@ spec:
         databases:
           - name: tiltak-notifikasjon
             envVarPrefix: DB
-  outbound:
-    rules:
-      external:
-        - host: team-tiltak-unleash-api.nav.cloud.nais.io
+  accessPolicy:
+    outbound:
+      rules:
+        external:
+          - host: team-tiltak-unleash-api.nav.cloud.nais.io
