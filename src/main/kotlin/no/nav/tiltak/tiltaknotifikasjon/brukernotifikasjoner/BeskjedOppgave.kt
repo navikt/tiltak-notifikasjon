@@ -27,7 +27,7 @@ fun lagOppgave(fnr: String, avtaleId: String, varslingsformål: Varslingsformål
             default = true
         )
         link = lagLink(avtaleId)
-        aktivFremTil = ZonedDateTime.now(ZoneId.of("Z")).plusDays(14)
+        aktivFremTil = null // Aktiv frem til oppgaven er utført eller 1 år
         eksternVarsling = EksternVarslingBestilling(prefererteKanaler = listOf(EksternKanal.SMS))
         produsent = Produsent(Cluster.current.verdi, NAMESPACE, APP_NAVN)
     }
@@ -47,7 +47,7 @@ fun lagBeskjed(fnr: String, avtaleId: String, varslingsformål: Varslingsformål
             default = true
         )
         link = lagLink(avtaleId)
-        aktivFremTil = ZonedDateTime.now(ZoneId.of("Z")).plusDays(14)
+        aktivFremTil = null // Aktiv frem til beskjeden er lest eller 1 år
         eksternVarsling = EksternVarslingBestilling(prefererteKanaler = listOf(EksternKanal.SMS))
         produsent = Produsent(Cluster.current.verdi, NAMESPACE, APP_NAVN)
     }
