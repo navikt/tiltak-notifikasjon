@@ -44,6 +44,8 @@ class BrukernotifikasjonServiceTest {
         val brukernotifikasjoner = brukernotifikasjonRepository.findAll()
         assertThat(brukernotifikasjoner).hasSize(1)
         assertThat(brukernotifikasjoner[0].varslingsformål).isEqualTo(Varslingsformål.GODKJENNING_AV_AVTALE)
+        assertThat(brukernotifikasjoner[0].type).isEqualTo(BrukernotifikasjonType.Oppgave)
+        assertThat(brukernotifikasjoner[0].status).isEqualTo(BrukernotifikasjonStatus.BEHANDLET)
     }
 
     @Test
@@ -125,6 +127,32 @@ class BrukernotifikasjonServiceTest {
         assertThat(brukernotifikasjoner).hasSize(1)
         assertThat(brukernotifikasjon?.type).isEqualTo(BrukernotifikasjonType.Beskjed)
         assertThat(brukernotifikasjon?.varslingsformål).isEqualTo(Varslingsformål.AVTALE_ANNULLERT)
+    }
+
+    @Test
+    fun `skal lage beskjed ved forlenget avtale`() {
+        val avtaleHendelseMelding: AvtaleHendelseMelding = jacksonMapper().readValue(jsonAvtaleForlengetMelding)
+        val brukernotifikasjonFraAvtaleHendelse = opprettBrukernotifikasjonFraAvtaleHendelse(jsonAvtaleForlengetMelding)
+        brukernotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding, brukernotifikasjonFraAvtaleHendelse)
+
+        val brukernotifikasjon = brukernotifikasjonRepository.findAll().find { it.id == brukernotifikasjonFraAvtaleHendelse.id }
+        val brukernotifikasjoner = brukernotifikasjonRepository.findAll()
+        assertThat(brukernotifikasjoner).hasSize(1)
+        assertThat(brukernotifikasjon?.type).isEqualTo(BrukernotifikasjonType.Beskjed)
+        assertThat(brukernotifikasjon?.varslingsformål).isEqualTo(Varslingsformål.AVTALE_FORLENGET)
+    }
+
+    @Test
+    fun `skal lage beskjed ved forkortet avtale`() {
+        val avtaleHendelseMelding: AvtaleHendelseMelding = jacksonMapper().readValue(jsonAvtaleForkortetMelding)
+        val brukernotifikasjonFraAvtaleHendelse = opprettBrukernotifikasjonFraAvtaleHendelse(jsonAvtaleForkortetMelding)
+        brukernotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding, brukernotifikasjonFraAvtaleHendelse)
+
+        val brukernotifikasjon = brukernotifikasjonRepository.findAll().find { it.id == brukernotifikasjonFraAvtaleHendelse.id }
+        val brukernotifikasjoner = brukernotifikasjonRepository.findAll()
+        assertThat(brukernotifikasjoner).hasSize(1)
+        assertThat(brukernotifikasjon?.type).isEqualTo(BrukernotifikasjonType.Beskjed)
+        assertThat(brukernotifikasjon?.varslingsformål).isEqualTo(Varslingsformål.AVTALE_FORKORTET)
     }
 
 
