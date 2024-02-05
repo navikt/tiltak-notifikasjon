@@ -1,7 +1,6 @@
 package no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner
 
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
-import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleStatus
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
 import no.nav.tiltak.tiltaknotifikasjon.kafka.MinSideProdusent
 import org.slf4j.LoggerFactory
@@ -33,19 +32,10 @@ class BrukernotifikasjonService(val minSideProdusent: MinSideProdusent, val bruk
             // INAKTIVERING AV OPPGAVE
             HendelseType.GODKJENT_AV_DELTAKER,
             HendelseType.GODKJENT_PAA_VEGNE_AV,
-            HendelseType.GODKJENT_PAA_VEGNE_AV_DELTAKER_OG_ARBEIDSGIVER-> {
+            HendelseType.GODKJENT_PAA_VEGNE_AV_DELTAKER_OG_ARBEIDSGIVER -> {
                 // Skal inaktivere oppgave om behov for godkjenning
                 //Finn ID på beskjed om godkjenning
-                val oppgaverPåAvtaleId = brukernotifikasjonRepository.findAllByAvtaleIdAndType(avtaleHendelse.avtaleId.toString(), BrukernotifikasjonType.Oppgave)
-                oppgaverPåAvtaleId.filter { it.status != BrukernotifikasjonStatus.INAKTIVERT && it.varselId != null && it.varslingsformål == Varslingsformål.GODKJENNING_AV_AVTALE }.forEach {
-                    it.status = BrukernotifikasjonStatus.INAKTIVERT
-                    brukernotifikasjonRepository.save(it)
-
-                    val inaktiveringMeldingIdOgJson = lagInaktiveringAvOppgave(it.varselId!!)
-                    val oppdatertBrukernotifikasjon = oppdaterBrukernotifikasjon(brukernotifikasjon, inaktiveringMeldingIdOgJson, BrukernotifikasjonType.Inaktivering, avtaleHendelse, null)
-                    brukernotifikasjonRepository.save(oppdatertBrukernotifikasjon)
-                    minSideProdusent.sendMeldingTilMinSide(oppdatertBrukernotifikasjon)
-                }
+                inaktiverBrukernotifikasjon(avtaleHendelse, brukernotifikasjon)
             }
 
             // BESKJEDER
@@ -73,8 +63,32 @@ class BrukernotifikasjonService(val minSideProdusent: MinSideProdusent, val bruk
                 brukernotifikasjonRepository.save(oppdatertBrukernotifikasjon)
                 minSideProdusent.sendMeldingTilMinSide(oppdatertBrukernotifikasjon)
             }
+            HendelseType.ANNULLERT -> {
+                // Beskjed om at avtalen er blitt annullert
+                log.info("Avtale annullert, skal varsle deltaker om annullering via min side og inaktivere oppgave")
+                val beskjedIdOgJson = lagBeskjed(fnr = avtaleHendelse.deltakerFnr, avtaleId = avtaleHendelse.avtaleId.toString(), Varslingsformål.AVTALE_ANNULLERT)
+                val oppdatertBrukernotifikasjon = oppdaterBrukernotifikasjon(brukernotifikasjon, beskjedIdOgJson, BrukernotifikasjonType.Beskjed, avtaleHendelse, Varslingsformål.AVTALE_ANNULLERT)
+                brukernotifikasjonRepository.save(oppdatertBrukernotifikasjon)
+                minSideProdusent.sendMeldingTilMinSide(oppdatertBrukernotifikasjon)
+                // Inaktivering av evt. oppgave om godkjenning
+                inaktiverBrukernotifikasjon(avtaleHendelse, brukernotifikasjon)
+            }
 
             else -> {}
+        }
+    }
+
+    fun inaktiverBrukernotifikasjon(avtaleHendelse: AvtaleHendelseMelding, brukernotifikasjon: Brukernotifikasjon) {
+        val oppgaverPåAvtaleId = brukernotifikasjonRepository.findAllByAvtaleIdAndType(avtaleHendelse.avtaleId.toString(), BrukernotifikasjonType.Oppgave)
+        oppgaverPåAvtaleId.filter {it.status != BrukernotifikasjonStatus.INAKTIVERT && it.varselId != null && it.varslingsformål == Varslingsformål.GODKJENNING_AV_AVTALE }.forEach {
+            it.status = BrukernotifikasjonStatus.INAKTIVERT
+            brukernotifikasjonRepository.save(it)
+
+            val inaktiveringMeldingIdOgJson = lagInaktiveringAvOppgave(it.varselId!!)
+            val oppdatertBrukernotifikasjon = oppdaterBrukernotifikasjon(brukernotifikasjon, inaktiveringMeldingIdOgJson, BrukernotifikasjonType.Inaktivering, avtaleHendelse, null)
+            brukernotifikasjonRepository.save(oppdatertBrukernotifikasjon)
+            minSideProdusent.sendMeldingTilMinSide(oppdatertBrukernotifikasjon)
+            log.info("Inaktiverer oppgave ${it.id} på avtaleId: ${avtaleHendelse.avtaleId} med formål: ${it.varslingsformål}")
         }
     }
 
@@ -99,7 +113,6 @@ class BrukernotifikasjonService(val minSideProdusent: MinSideProdusent, val bruk
             avtaleId = avtaleHendelse.avtaleId.toString(),
             avtaleNr = avtaleHendelse.avtaleNr,
             avtaleHendelseType = avtaleHendelse.hendelseType,
-            opprettet = Instant.now(),
             varslingsformål = varslingsformål
         )
 }

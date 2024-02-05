@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Component
+import java.time.Instant
 
 @Component
 @Profile("dev-gcp", "dockercompose")
@@ -38,6 +39,7 @@ class AvtaleHendelseConsumer(
             id = ulid(),
             avtaleMeldingJson = avtaleHendelse,
             status = BrukernotifikasjonStatus.MOTTATT,
+            opprettet = Instant.now()
         )
 
         try {
