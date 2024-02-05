@@ -35,6 +35,9 @@ class AvtaleHendelseConsumer(
         } else {
             log.info("Feature toggle sms-min-side-deltaker er skrudd på. Prosesserer melding")
         }
+        log.info("avbryter viderere behandling midlertidig uansett, så vi får testet toggle i prod")
+        return
+
         val brukernotifikasjon = Brukernotifikasjon(
             id = ulid(),
             avtaleMeldingJson = avtaleHendelse,

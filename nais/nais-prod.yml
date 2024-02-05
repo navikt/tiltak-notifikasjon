@@ -1,0 +1,50 @@
+apiVersion: "nais.io/v1alpha1"
+kind: "Application"
+metadata:
+  name: "tiltak-notifikasjon"
+  namespace: "team-tiltak"
+  labels:
+    "team": "team-tiltak"
+spec:
+  kafka:
+    pool: nav-prod
+  image: {{image}}
+  port: 8080
+  liveness:
+    path: /internal/health/liveness
+    initialDelay: 30
+    timeout: 1
+    periodSeconds: 30
+    failureThreshold: 10
+  readiness:
+    path: /internal/health/readiness
+    initialDelay: 30
+    timeout: 1
+    periodSeconds: 30
+    failureThreshold: 10
+  replicas:
+    min: 1
+    max: 1
+  resources:
+    limits:
+      cpu: "200m"
+      memory: "512Mi"
+    requests:
+      cpu: "200m"
+      memory: "512Mi"
+  env:
+    - name: MILJO
+      value: prod-gcp
+  envFrom:
+    - secret: tiltak-notifikasjon-unleash-api-token
+  gcp:
+    sqlInstances:
+      - type: POSTGRES_15
+        tier: db-custom-1-3840
+        databases:
+          - name: tiltak-notifikasjon
+            envVarPrefix: DB
+  accessPolicy:
+    outbound:
+      external:
+        - host: team-tiltak-unleash-api.nav.cloud.nais.io
