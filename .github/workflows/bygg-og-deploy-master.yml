@@ -67,4 +67,4 @@ jobs:
           CLUSTER: prod-gcp
           RESOURCE: nais/nais-prod.yml,nais/alerts.yml,nais/unleash-apitoken.yml
           PRINT_PAYLOAD: true
-          VAR: unleash-environment=development
+          VAR: unleash-environment=production
