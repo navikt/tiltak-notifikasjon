@@ -1,5 +1,6 @@
 package no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner
 
+import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.utils.ulid
 import no.nav.tiltak.tiltaknotifikasjon.utils.Cluster
 import no.nav.tms.varsel.action.*
@@ -14,19 +15,19 @@ val APP_NAVN = "tiltak-notifikasjon"
 
 val log =  LoggerFactory.getLogger("BeskjedOppgave")
 
-fun lagOppgave(fnr: String, avtaleId: String, varslingsformål: Varslingsformål): Pair<String, String> {
+fun lagOppgave(avtaleHendelseMelding: AvtaleHendelseMelding, varslingsformål: Varslingsformål): Pair<String, String> {
     val id = ulid()
     val kafkaValueJson = VarselActionBuilder.opprett {
         type = Varseltype.Oppgave
         varselId = id
         sensitivitet = Sensitivitet.High
-        ident = fnr
+        ident = avtaleHendelseMelding.deltakerFnr
         tekster += Tekst(
             spraakkode = "nb",
-            tekst = varslingsformål.tekst,
+            tekst = lagTekst(varslingsformål, avtaleHendelseMelding),
             default = true
         )
-        link = lagLink(avtaleId)
+        link = lagLink(avtaleHendelseMelding.avtaleId.toString())
         aktivFremTil = null // Aktiv frem til oppgaven er utført eller 1 år
         eksternVarsling = EksternVarslingBestilling(prefererteKanaler = listOf(EksternKanal.SMS))
         produsent = Produsent(Cluster.current.verdi, NAMESPACE, APP_NAVN)
@@ -34,19 +35,19 @@ fun lagOppgave(fnr: String, avtaleId: String, varslingsformål: Varslingsformål
     return Pair(id, kafkaValueJson)
 }
 
-fun lagBeskjed(fnr: String, avtaleId: String, varslingsformål: Varslingsformål): Pair<String, String> {
+fun lagBeskjed(avtaleHendelseMelding: AvtaleHendelseMelding, varslingsformål: Varslingsformål): Pair<String, String> {
     val id = ulid()
     val kafkaValueJson = VarselActionBuilder.opprett {
         type = Varseltype.Beskjed
         varselId = id
         sensitivitet = Sensitivitet.High
-        ident = fnr
+        ident = avtaleHendelseMelding.deltakerFnr
         tekster += Tekst(
             spraakkode = "nb",
-            tekst = varslingsformål.tekst,
+            tekst = lagTekst(varslingsformål, avtaleHendelseMelding),
             default = true
         )
-        link = lagLink(avtaleId)
+        link = lagLink(avtaleHendelseMelding.avtaleId.toString())
         aktivFremTil = null // Aktiv frem til beskjeden er lest eller 1 år
         eksternVarsling = EksternVarslingBestilling(prefererteKanaler = listOf(EksternKanal.SMS))
         produsent = Produsent(Cluster.current.verdi, NAMESPACE, APP_NAVN)
@@ -70,6 +71,17 @@ private fun lagLink(avtaleId: String): String {
             log.warn("Bruker localhost link for avtale: ${avtaleId}")
             "http://localhost:8080/tiltaksgjennomforing/avtale/${avtaleId}"
         }
+    }
+}
+
+private fun lagTekst(varslingsformål: Varslingsformål, avtaleHendelseMelding: AvtaleHendelseMelding): String {
+    return when (varslingsformål) {
+        Varslingsformål.GODKJENNING_AV_AVTALE -> "Du må godkjenne en avtale om ${avtaleHendelseMelding.tiltakstype} hos ${avtaleHendelseMelding.bedriftNavn} med oppstartsdato ${avtaleHendelseMelding.startDato}"
+        Varslingsformål.GODKJENNING_AV_TAUSHETSERKLÆRING_MENTOR -> "Du har en taushetserklæring som venter på din godkjenning"
+        Varslingsformål.AVTALE_FORLENGET -> "Sluttdatoen for ${avtaleHendelseMelding.tiltakstype} hos ${avtaleHendelseMelding.bedriftNavn} er forlenget til ${avtaleHendelseMelding.sluttDato}"
+        Varslingsformål.AVTALE_FORKORTET -> "Sluttdatoen for ${avtaleHendelseMelding.tiltakstype} hos ${avtaleHendelseMelding.bedriftNavn} er forkortet til ${avtaleHendelseMelding.sluttDato}"
+        Varslingsformål.AVTALE_ANNULLERT -> "Avtalen om ${avtaleHendelseMelding.tiltakstype} hos ${avtaleHendelseMelding.bedriftNavn} ble avsluttet/stanset/ble ikke noe av"
+        Varslingsformål.AVTALE_INNGÅTT -> "Din avtale om tiltak er inngått"
     }
 }
 
