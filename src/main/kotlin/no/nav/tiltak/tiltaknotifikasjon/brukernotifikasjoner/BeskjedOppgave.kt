@@ -80,7 +80,7 @@ private fun lagTekst(varslingsformål: Varslingsformål, avtaleHendelseMelding: 
         Varslingsformål.GODKJENNING_AV_TAUSHETSERKLÆRING_MENTOR -> "Du har en taushetserklæring som venter på din godkjenning"
         Varslingsformål.AVTALE_FORLENGET -> "Sluttdatoen for ${avtaleHendelseMelding.tiltakstype} hos ${avtaleHendelseMelding.bedriftNavn} er forlenget til ${avtaleHendelseMelding.sluttDato}"
         Varslingsformål.AVTALE_FORKORTET -> "Sluttdatoen for ${avtaleHendelseMelding.tiltakstype} hos ${avtaleHendelseMelding.bedriftNavn} er forkortet til ${avtaleHendelseMelding.sluttDato}"
-        Varslingsformål.AVTALE_ANNULLERT -> "Avtalen om ${avtaleHendelseMelding.tiltakstype} hos ${avtaleHendelseMelding.bedriftNavn} ble avsluttet/stanset/ble ikke noe av"
+        Varslingsformål.AVTALE_ANNULLERT -> "Avtalen om ${avtaleHendelseMelding.tiltakstype} hos ${avtaleHendelseMelding.bedriftNavn} ble avlyst"
         Varslingsformål.AVTALE_INNGÅTT -> "Din avtale om tiltak er inngått"
     }
 }
