@@ -27,7 +27,6 @@ class AvtaleHendelseConsumer(
 
     @KafkaListener(topics = [Topics.AVTALE_HENDELSE_COMPACT])
     fun nyAvtaleHendelse(avtaleHendelse: String) {
-        log.info("Mottok avtalehendelse: $avtaleHendelse")
         val erToggletPå = unleash.isEnabled("sms-min-side-deltaker")
         if (!erToggletPå) {
             log.info("Feature toggle sms-min-side-deltaker er skrudd av. Prosesserer ikke melding")
