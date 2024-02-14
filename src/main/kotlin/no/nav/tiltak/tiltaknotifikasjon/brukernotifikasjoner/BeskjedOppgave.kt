@@ -76,12 +76,12 @@ private fun lagLink(avtaleId: String): String {
 
 private fun lagTekst(varslingsformål: Varslingsformål, avtaleHendelseMelding: AvtaleHendelseMelding): String {
     return when (varslingsformål) {
-        Varslingsformål.GODKJENNING_AV_AVTALE -> "Du må godkjenne en avtale om ${avtaleHendelseMelding.tiltakstype} hos ${avtaleHendelseMelding.bedriftNavn} med oppstartsdato ${avtaleHendelseMelding.startDato}"
+        Varslingsformål.GODKJENNING_AV_AVTALE -> "Du må godkjenne en avtale om ${avtaleHendelseMelding.tiltakstype.beskrivelse} hos ${avtaleHendelseMelding.bedriftNavn} med oppstartsdato ${avtaleHendelseMelding.startDato}"
         Varslingsformål.GODKJENNING_AV_TAUSHETSERKLÆRING_MENTOR -> "Du har en taushetserklæring som venter på din godkjenning"
-        Varslingsformål.AVTALE_FORLENGET -> "Sluttdatoen for ${avtaleHendelseMelding.tiltakstype} hos ${avtaleHendelseMelding.bedriftNavn} er forlenget til ${avtaleHendelseMelding.sluttDato}"
-        Varslingsformål.AVTALE_FORKORTET -> "Sluttdatoen for ${avtaleHendelseMelding.tiltakstype} hos ${avtaleHendelseMelding.bedriftNavn} er forkortet til ${avtaleHendelseMelding.sluttDato}"
-        Varslingsformål.AVTALE_ANNULLERT -> "Avtalen om ${avtaleHendelseMelding.tiltakstype} hos ${avtaleHendelseMelding.bedriftNavn} ble avlyst"
-        Varslingsformål.AVTALE_INNGÅTT -> "Din avtale om tiltak er inngått"
+        Varslingsformål.AVTALE_FORLENGET -> "Sluttdatoen for ${avtaleHendelseMelding.tiltakstype.beskrivelse} hos ${avtaleHendelseMelding.bedriftNavn} er forlenget til ${avtaleHendelseMelding.sluttDato}"
+        Varslingsformål.AVTALE_FORKORTET -> "Sluttdatoen for ${avtaleHendelseMelding.tiltakstype.beskrivelse} hos ${avtaleHendelseMelding.bedriftNavn} er forkortet til ${avtaleHendelseMelding.sluttDato}"
+        Varslingsformål.AVTALE_ANNULLERT -> "Avtalen om ${avtaleHendelseMelding.tiltakstype.beskrivelse} hos ${avtaleHendelseMelding.bedriftNavn} ble avlyst"
+        Varslingsformål.AVTALE_INNGÅTT -> "Din avtale om ${avtaleHendelseMelding.tiltakstype.beskrivelse} er inngått"
     }
 }
 
