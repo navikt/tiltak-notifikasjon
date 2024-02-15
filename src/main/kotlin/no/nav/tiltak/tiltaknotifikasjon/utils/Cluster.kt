@@ -5,7 +5,7 @@ enum class Cluster(val verdi: String) {
 
     companion object {
         val current: Cluster by lazy {
-            when (val c = System.getenv("NAIS_CLUSTER_NAME")) {
+            when (System.getenv("NAIS_CLUSTER_NAME")) {
                 "dev-gcp" -> DEV_GCP
                 "prod-gcp" -> PROD_GCP
                 else -> LOKAL

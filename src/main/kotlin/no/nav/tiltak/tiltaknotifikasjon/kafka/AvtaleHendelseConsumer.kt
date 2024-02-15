@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component
 import java.time.Instant
 
 @Component
-@Profile("dev-gcp", "dockercompose")
+@Profile("prod-gcp", "dev-gcp", "dockercompose")
 class AvtaleHendelseConsumer(
     val brukernotifikasjonService: BrukernotifikasjonService,
     val brukernotifikasjonRepository: BrukernotifikasjonRepository,
@@ -27,29 +27,31 @@ class AvtaleHendelseConsumer(
 
     @KafkaListener(topics = [Topics.AVTALE_HENDELSE_COMPACT])
     fun nyAvtaleHendelse(avtaleHendelse: String) {
-        val erToggletPå = unleash.isEnabled("sms-min-side-deltaker")
-        if (!erToggletPå) {
+        val erSkruddPå = unleash.isEnabled("sms-min-side-deltaker")
+        if (!erSkruddPå) {
             log.info("Feature toggle sms-min-side-deltaker er skrudd av. Prosesserer ikke melding")
             return
         } else {
             log.info("Feature toggle sms-min-side-deltaker er skrudd på. Prosesserer melding")
         }
+
         log.info("avbryter viderere behandling midlertidig uansett, så vi får testet toggle i prod")
         return
 
-        val brukernotifikasjon = Brukernotifikasjon(
-            id = ulid(),
-            avtaleMeldingJson = avtaleHendelse,
-            status = BrukernotifikasjonStatus.MOTTATT,
-            opprettet = Instant.now()
-        )
+
 
         try {
             val melding: AvtaleHendelseMelding = mapper.readValue(avtaleHendelse)
-            brukernotifikasjonService.behandleAvtaleHendelseMelding(melding, brukernotifikasjon)
+            brukernotifikasjonService.behandleAvtaleHendelseMelding(melding)
+
         } catch (e: Exception) {
-            brukernotifikasjon.status = BrukernotifikasjonStatus.FEILET_VED_PARSING
-            brukernotifikasjon.feilmelding = e.message
+            val brukernotifikasjon = Brukernotifikasjon(
+                id = ulid(),
+                avtaleMeldingJson = avtaleHendelse,
+                status = BrukernotifikasjonStatus.FEILET_VED_PARSING,
+                opprettet = Instant.now(),
+                feilmelding = e.message
+            )
             brukernotifikasjonRepository.save(brukernotifikasjon)
             log.error("Error parsing AvtaleHendelseMelding: ${brukernotifikasjon.id}", e)
         }

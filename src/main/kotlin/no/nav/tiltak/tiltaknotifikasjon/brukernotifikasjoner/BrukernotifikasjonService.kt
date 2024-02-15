@@ -3,6 +3,8 @@ package no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
 import no.nav.tiltak.tiltaknotifikasjon.kafka.MinSideProdusent
+import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
+import no.nav.tiltak.tiltaknotifikasjon.utils.ulid
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.time.Instant
@@ -11,7 +13,7 @@ import java.time.Instant
 class BrukernotifikasjonService(val minSideProdusent: MinSideProdusent, val brukernotifikasjonRepository: BrukernotifikasjonRepository) {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    fun behandleAvtaleHendelseMelding(avtaleHendelse: AvtaleHendelseMelding, brukernotifikasjon: Brukernotifikasjon) {
+    fun behandleAvtaleHendelseMelding(avtaleHendelse: AvtaleHendelseMelding) {
         when (avtaleHendelse.hendelseType) {
             // OPPGAVER
             HendelseType.GODKJENT_AV_ARBEIDSGIVER -> {
@@ -21,10 +23,9 @@ class BrukernotifikasjonService(val minSideProdusent: MinSideProdusent, val bruk
                     val harSendtOppgaveForGodkjenning = sjekkOmDetFinnesAktiveOppgaverPåAvtaleMedFormål(avtaleHendelse, Varslingsformål.GODKJENNING_AV_AVTALE)
                     if (!harSendtOppgaveForGodkjenning) {
                         val oppgaveIdOgJson = lagOppgave(avtaleHendelse, Varslingsformål.GODKJENNING_AV_AVTALE)
-                        val oppdatertBrukernotifikasjon = oppdaterBrukernotifikasjon(brukernotifikasjon, oppgaveIdOgJson, BrukernotifikasjonType.Oppgave, avtaleHendelse, Varslingsformål.GODKJENNING_AV_AVTALE)
-                        brukernotifikasjonRepository.save(oppdatertBrukernotifikasjon)
-                        minSideProdusent.sendMeldingTilMinSide(oppdatertBrukernotifikasjon)
-                        // lagre oppgave i db.
+                        val brukernotifikasjon = nyBrukernotifikasjon(avtaleHendelse, BrukernotifikasjonType.Oppgave, Varslingsformål.GODKJENNING_AV_AVTALE, oppgaveIdOgJson)
+                        brukernotifikasjonRepository.save(brukernotifikasjon)
+                        minSideProdusent.sendMeldingTilMinSide(brukernotifikasjon)
                     }
                 }
             }
@@ -35,7 +36,7 @@ class BrukernotifikasjonService(val minSideProdusent: MinSideProdusent, val bruk
             HendelseType.GODKJENT_PAA_VEGNE_AV_DELTAKER_OG_ARBEIDSGIVER -> {
                 // Skal inaktivere oppgave om behov for godkjenning
                 //Finn ID på beskjed om godkjenning
-                inaktiverBrukernotifikasjon(avtaleHendelse, brukernotifikasjon)
+                inaktiverEksisterendeOppgaverOmGodkjenning(avtaleHendelse)
             }
 
             // BESKJEDER
@@ -43,53 +44,69 @@ class BrukernotifikasjonService(val minSideProdusent: MinSideProdusent, val bruk
                 // Beskjed om at avtalen er blitt forlenget
                 log.info("Avtale forlenget, skal varsle deltaker om forlengelse via min side")
                 val beskjedIdOgJson = lagBeskjed(avtaleHendelse, Varslingsformål.AVTALE_FORLENGET)
-                val oppdatertBrukernotifikasjon = oppdaterBrukernotifikasjon(brukernotifikasjon, beskjedIdOgJson, BrukernotifikasjonType.Beskjed, avtaleHendelse, Varslingsformål.AVTALE_FORLENGET)
-                brukernotifikasjonRepository.save(oppdatertBrukernotifikasjon)
-                minSideProdusent.sendMeldingTilMinSide(oppdatertBrukernotifikasjon)
+                val brukernotifikasjon = nyBrukernotifikasjon(avtaleHendelse, BrukernotifikasjonType.Beskjed, Varslingsformål.AVTALE_FORLENGET, beskjedIdOgJson)
+                brukernotifikasjonRepository.save(brukernotifikasjon)
+                minSideProdusent.sendMeldingTilMinSide(brukernotifikasjon)
             }
             HendelseType.AVTALE_FORKORTET -> {
                 // Beskjed om at avtalen er blitt forkortet
                 log.info("Avtale forkortet, skal varsle deltaker om forkortelse via min side")
                 val beskjedIdOgJson = lagBeskjed(avtaleHendelse, Varslingsformål.AVTALE_FORKORTET)
-                val oppdatertBrukernotifikasjon = oppdaterBrukernotifikasjon(brukernotifikasjon, beskjedIdOgJson, BrukernotifikasjonType.Beskjed, avtaleHendelse, Varslingsformål.AVTALE_FORKORTET)
-                brukernotifikasjonRepository.save(oppdatertBrukernotifikasjon)
-                minSideProdusent.sendMeldingTilMinSide(oppdatertBrukernotifikasjon)
+                val brukernotifikasjon = nyBrukernotifikasjon(avtaleHendelse, BrukernotifikasjonType.Beskjed, Varslingsformål.AVTALE_FORKORTET, beskjedIdOgJson)
+                brukernotifikasjonRepository.save(brukernotifikasjon)
+                minSideProdusent.sendMeldingTilMinSide(brukernotifikasjon)
             }
             HendelseType.AVTALE_INNGÅTT -> {
                 // Beskjed om at avtalen er blitt inngått
                 log.info("Avtale inngått, skal varsle deltaker om inngåelse via min side")
                 val beskjedIdOgJson = lagBeskjed(avtaleHendelse, Varslingsformål.AVTALE_INNGÅTT)
-                val oppdatertBrukernotifikasjon = oppdaterBrukernotifikasjon(brukernotifikasjon, beskjedIdOgJson, BrukernotifikasjonType.Beskjed, avtaleHendelse, Varslingsformål.AVTALE_INNGÅTT)
-                brukernotifikasjonRepository.save(oppdatertBrukernotifikasjon)
-                minSideProdusent.sendMeldingTilMinSide(oppdatertBrukernotifikasjon)
+                val brukernotifikasjon = nyBrukernotifikasjon(avtaleHendelse, BrukernotifikasjonType.Beskjed, Varslingsformål.AVTALE_INNGÅTT, beskjedIdOgJson)
+                brukernotifikasjonRepository.save(brukernotifikasjon)
+                minSideProdusent.sendMeldingTilMinSide(brukernotifikasjon)
             }
             HendelseType.ANNULLERT -> {
-                // Beskjed om at avtalen er blitt annullert
                 log.info("Avtale annullert, skal varsle deltaker om annullering via min side og inaktivere oppgave")
-                val beskjedIdOgJson = lagBeskjed(avtaleHendelse, Varslingsformål.AVTALE_ANNULLERT)
-                val oppdatertBrukernotifikasjon = oppdaterBrukernotifikasjon(brukernotifikasjon, beskjedIdOgJson, BrukernotifikasjonType.Beskjed, avtaleHendelse, Varslingsformål.AVTALE_ANNULLERT)
-                brukernotifikasjonRepository.save(oppdatertBrukernotifikasjon)
-                minSideProdusent.sendMeldingTilMinSide(oppdatertBrukernotifikasjon)
                 // Inaktivering av evt. oppgave om godkjenning
-                inaktiverBrukernotifikasjon(avtaleHendelse, brukernotifikasjon)
+                inaktiverEksisterendeOppgaverOmGodkjenning(avtaleHendelse)
+                // Beskjed om at avtalen er blitt annullert
+                val beskjedIdOgJson = lagBeskjed(avtaleHendelse, Varslingsformål.AVTALE_ANNULLERT)
+                val brukernotifikasjon = nyBrukernotifikasjon(avtaleHendelse, BrukernotifikasjonType.Beskjed, Varslingsformål.AVTALE_ANNULLERT, beskjedIdOgJson)
+                brukernotifikasjonRepository.save(brukernotifikasjon)
+                minSideProdusent.sendMeldingTilMinSide(brukernotifikasjon)
             }
 
             else -> {}
         }
     }
 
-    fun inaktiverBrukernotifikasjon(avtaleHendelse: AvtaleHendelseMelding, brukernotifikasjon: Brukernotifikasjon) {
-        val oppgaverPåAvtaleId = brukernotifikasjonRepository.findAllByAvtaleIdAndType(avtaleHendelse.avtaleId.toString(), BrukernotifikasjonType.Oppgave)
-        oppgaverPåAvtaleId.filter {it.status != BrukernotifikasjonStatus.INAKTIVERT && it.varselId != null && it.varslingsformål == Varslingsformål.GODKJENNING_AV_AVTALE }.forEach {
-            it.status = BrukernotifikasjonStatus.INAKTIVERT
-            brukernotifikasjonRepository.save(it)
 
-            val inaktiveringMeldingIdOgJson = lagInaktiveringAvOppgave(it.varselId!!)
-            val oppdatertBrukernotifikasjon = oppdaterBrukernotifikasjon(brukernotifikasjon, inaktiveringMeldingIdOgJson, BrukernotifikasjonType.Inaktivering, avtaleHendelse, null)
-            brukernotifikasjonRepository.save(oppdatertBrukernotifikasjon)
-            minSideProdusent.sendMeldingTilMinSide(oppdatertBrukernotifikasjon)
-            log.info("Inaktiverer oppgave ${it.id} på avtaleId: ${avtaleHendelse.avtaleId} med formål: ${it.varslingsformål}")
+
+    fun inaktiverEksisterendeOppgaverOmGodkjenning (avtaleHendelse: AvtaleHendelseMelding) {
+        // Sette oppgave om godkjenning av oppgave til inaktivert i DB
+        val oppgaverPåAvtaleMedFormålGodkjenning = brukernotifikasjonRepository.findAllByAvtaleIdAndType(avtaleHendelse.avtaleId.toString(), BrukernotifikasjonType.Oppgave)
+            .filter {it.status != BrukernotifikasjonStatus.INAKTIVERT && it.varselId != null && it.varslingsformål == Varslingsformål.GODKJENNING_AV_AVTALE }
+        if (oppgaverPåAvtaleMedFormålGodkjenning.size > 1) {
+            log.error("Fant flere aktive oppgaver om godkjenning av avtale på avtaleId: ${avtaleHendelse.avtaleId}")
+            throw RuntimeException("Fant flere aktive oppgaver om godkjenning av avtale på avtaleId: ${avtaleHendelse.avtaleId}")
         }
+        val oppgaveSomSkalInaktiveres = oppgaverPåAvtaleMedFormålGodkjenning.firstOrNull()
+        if (oppgaveSomSkalInaktiveres == null) {
+            // Dette kan skje dersom f.eks. en avtale annulleres uten at arbeidsgiver har godkjent, da har vi ikke sendt noen oppgaver om godkjenning
+            // Eller ved eldre avtaler som ikke er sendt ut oppgaver om godkjenning
+            log.info("Fant ingen aktive oppgaver om godkjenning av avtale på avtaleId: ${avtaleHendelse.avtaleId}")
+            return
+        }
+        oppgaveSomSkalInaktiveres.status = BrukernotifikasjonStatus.INAKTIVERT
+        brukernotifikasjonRepository.save(oppgaveSomSkalInaktiveres)
+
+        // Sende inaktiveringsmelding på avtalen på oppgave om godkjenning til min-side
+        val inaktiveringMeldingIdOgJson = lagInaktiveringAvOppgave(oppgaveSomSkalInaktiveres.varselId!!)
+        val inaktiveringsBrukernotifikasjon = nyBrukernotifikasjon(avtaleHendelse, BrukernotifikasjonType.Inaktivering, null, inaktiveringMeldingIdOgJson)
+
+        brukernotifikasjonRepository.save(inaktiveringsBrukernotifikasjon)
+        minSideProdusent.sendMeldingTilMinSide(inaktiveringsBrukernotifikasjon)
+
+        log.info("Inaktiverer oppgave ${oppgaveSomSkalInaktiveres.id} på avtaleId: ${avtaleHendelse.avtaleId} med formål: ${oppgaveSomSkalInaktiveres.varslingsformål}")
     }
 
     fun sjekkOmDetFinnesAktiveOppgaverPåAvtaleMedFormål(avtaleHendelse: AvtaleHendelseMelding, varslingsformål: Varslingsformål): Boolean {
@@ -103,16 +120,34 @@ class BrukernotifikasjonService(val minSideProdusent: MinSideProdusent, val bruk
         return false
     }
 
-    fun oppdaterBrukernotifikasjon(brukernotifikasjon: Brukernotifikasjon, oppgaveIdOgJson: Pair<String, String>, type: BrukernotifikasjonType, avtaleHendelse: AvtaleHendelseMelding, varslingsformål: Varslingsformål?): Brukernotifikasjon =
-        brukernotifikasjon.copy(
-            varselId = oppgaveIdOgJson.first,
-            minSideJson = oppgaveIdOgJson.second,
-            type = type,
+    fun nyBrukernotifikasjon(avtaleHendelse: AvtaleHendelseMelding, type: BrukernotifikasjonType, varslingsformål: Varslingsformål?, oppgaveIdOgJson: Pair<String, String>): Brukernotifikasjon =
+        Brukernotifikasjon(
+            id = ulid(),
+            avtaleMeldingJson = jacksonMapper().writeValueAsString(avtaleHendelse),
             status = BrukernotifikasjonStatus.BEHANDLET,
+            opprettet = Instant.now(),
+            type = type,
             deltakerFnr = avtaleHendelse.deltakerFnr,
             avtaleId = avtaleHendelse.avtaleId.toString(),
             avtaleNr = avtaleHendelse.avtaleNr,
             avtaleHendelseType = avtaleHendelse.hendelseType,
-            varslingsformål = varslingsformål
+            varslingsformål = varslingsformål,
+            varselId = oppgaveIdOgJson.first,
+            minSideJson = oppgaveIdOgJson.second
         )
+
+//    fun oppdaterBrukernotifikasjon(brukernotifikasjon: Brukernotifikasjon, oppgaveIdOgJson: Pair<String, String>, type: BrukernotifikasjonType, avtaleHendelse: AvtaleHendelseMelding, varslingsformål: Varslingsformål?): Brukernotifikasjon =
+//        brukernotifikasjon.copy(
+//            varselId = oppgaveIdOgJson.first,
+//            minSideJson = oppgaveIdOgJson.second,
+//            type = type,
+//            status = BrukernotifikasjonStatus.BEHANDLET,
+//            deltakerFnr = avtaleHendelse.deltakerFnr,
+//            avtaleId = avtaleHendelse.avtaleId.toString(),
+//            avtaleNr = avtaleHendelse.avtaleNr,
+//            avtaleHendelseType = avtaleHendelse.hendelseType,
+//            varslingsformål = varslingsformål
+//        )
 }
+
+private fun Brukernotifikasjon.medNyId(): Brukernotifikasjon = this.copy(id = ulid())

@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 
 @Configuration
-@Profile("dev-gcp", "dockercompose")
+@Profile("prod-gcp", "dev-gcp", "dockercompose")
 class UnleashConfig {
     @Bean
     fun initializeUnleash(
