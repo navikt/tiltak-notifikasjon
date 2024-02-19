@@ -26,4 +26,5 @@ data class AvtaleHendelseMelding(
     val annullertGrunn: String?,
     val antallDagerPerUke: Int?,
     val godkjentAvDeltaker: LocalDateTime?,
+    val feilregistrert: Boolean
 )

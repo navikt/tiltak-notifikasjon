@@ -99,8 +99,19 @@ class BrukernotifikasjonServiceTest {
         val inaktiveringsMelding = brukernotifikasjoner.filter { it.type == BrukernotifikasjonType.Inaktivering && it.status == BrukernotifikasjonStatus.BEHANDLET }
         assertThat(inaktiveringsMelding).hasSize(1)
 
-
+        // Skal være 3 brukernotifikasjoner totalt: 1 oppgave om godkjenning, 1 beskjed om annullering og 1 inaktivering
         assertThat(brukernotifikasjoner).hasSize(3)
+    }
+
+    @Test
+    fun `skal kun sende 1 beskjed om annullering ved flere like meldinger` () {
+        // En avtale kan kun annulleres 1 gang
+        val avtaleHendelseMelding: AvtaleHendelseMelding = jacksonMapper().readValue(jsonAvtaleAnnullertMelding)
+        brukernotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding)
+        brukernotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding)
+
+        val brukernotifikasjoner = brukernotifikasjonRepository.findAll()
+        assertThat(brukernotifikasjoner).hasSize(1)
     }
 
     @Test
@@ -149,6 +160,15 @@ class BrukernotifikasjonServiceTest {
         val brukernotifikasjon = brukernotifikasjoner.first()
         assertThat(brukernotifikasjon.type).isEqualTo(BrukernotifikasjonType.Beskjed)
         assertThat(brukernotifikasjon.varslingsformål).isEqualTo(Varslingsformål.AVTALE_FORKORTET)
+    }
+
+    @Test
+    fun `skal ikke sende annullert beskjed ved annullert grunn feilregistrering`() {
+        val avtaleHendelseMelding: AvtaleHendelseMelding = jacksonMapper().readValue(jsonAvtaleAnnullertFeilregistreringMelding)
+        brukernotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding)
+
+        val brukernotifikasjoner = brukernotifikasjonRepository.findAll()
+        assertThat(brukernotifikasjoner).hasSize(0)
     }
 
 

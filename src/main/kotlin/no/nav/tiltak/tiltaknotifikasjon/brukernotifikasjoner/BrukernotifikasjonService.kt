@@ -1,5 +1,6 @@
 package no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
 import no.nav.tiltak.tiltaknotifikasjon.kafka.MinSideProdusent
@@ -14,6 +15,8 @@ class BrukernotifikasjonService(val minSideProdusent: MinSideProdusent, val bruk
     private val log = LoggerFactory.getLogger(javaClass)
 
     fun behandleAvtaleHendelseMelding(avtaleHendelse: AvtaleHendelseMelding) {
+        if (finnesDuplikatMelding(avtaleHendelse)) return
+
         when (avtaleHendelse.hendelseType) {
             // OPPGAVER
             HendelseType.GODKJENT_AV_ARBEIDSGIVER -> {
@@ -68,6 +71,10 @@ class BrukernotifikasjonService(val minSideProdusent: MinSideProdusent, val bruk
                 log.info("Avtale annullert, skal varsle deltaker om annullering via min side og inaktivere oppgave")
                 // Inaktivering av evt. oppgave om godkjenning
                 inaktiverEksisterendeOppgaverOmGodkjenning(avtaleHendelse)
+                if (avtaleHendelse.feilregistrert) {
+                    log.info("Avtale er feilregistrert, skal ikke varsle deltaker om annullering via min side")
+                    return
+                }
                 // Beskjed om at avtalen er blitt annullert
                 val beskjedIdOgJson = lagBeskjed(avtaleHendelse, Varslingsformål.AVTALE_ANNULLERT)
                 val brukernotifikasjon = nyBrukernotifikasjon(avtaleHendelse, BrukernotifikasjonType.Beskjed, Varslingsformål.AVTALE_ANNULLERT, beskjedIdOgJson)
@@ -119,6 +126,19 @@ class BrukernotifikasjonService(val minSideProdusent: MinSideProdusent, val bruk
         }
         return false
     }
+    fun finnesDuplikatMelding(avtaleHendelse: AvtaleHendelseMelding): Boolean {
+        // Sjekker om finnes avtalehendelsen som kommer inn allerde er behandlet. Bør ikke skje.
+        brukernotifikasjonRepository.findAllbyAvtaleId(avtaleHendelse.avtaleId.toString()).forEach {
+            if (it.status != BrukernotifikasjonStatus.INAKTIVERT) {
+                val melding: AvtaleHendelseMelding = jacksonMapper().readValue(it.avtaleMeldingJson)
+                if (melding.sistEndret == avtaleHendelse.sistEndret && melding.hendelseType == avtaleHendelse.hendelseType) {
+                    log.warn("Fant en brukernotifikasjon med samme hendelsetype og sistEndret tidspunkt som allerede er behandlet, avtaleId: ${avtaleHendelse.avtaleId}")
+                    return true
+                }
+            }
+        }
+        return false
+    }
 
     fun nyBrukernotifikasjon(avtaleHendelse: AvtaleHendelseMelding, type: BrukernotifikasjonType, varslingsformål: Varslingsformål?, oppgaveIdOgJson: Pair<String, String>): Brukernotifikasjon =
         Brukernotifikasjon(
@@ -135,19 +155,6 @@ class BrukernotifikasjonService(val minSideProdusent: MinSideProdusent, val bruk
             varselId = oppgaveIdOgJson.first,
             minSideJson = oppgaveIdOgJson.second
         )
-
-//    fun oppdaterBrukernotifikasjon(brukernotifikasjon: Brukernotifikasjon, oppgaveIdOgJson: Pair<String, String>, type: BrukernotifikasjonType, avtaleHendelse: AvtaleHendelseMelding, varslingsformål: Varslingsformål?): Brukernotifikasjon =
-//        brukernotifikasjon.copy(
-//            varselId = oppgaveIdOgJson.first,
-//            minSideJson = oppgaveIdOgJson.second,
-//            type = type,
-//            status = BrukernotifikasjonStatus.BEHANDLET,
-//            deltakerFnr = avtaleHendelse.deltakerFnr,
-//            avtaleId = avtaleHendelse.avtaleId.toString(),
-//            avtaleNr = avtaleHendelse.avtaleNr,
-//            avtaleHendelseType = avtaleHendelse.hendelseType,
-//            varslingsformål = varslingsformål
-//        )
 }
 
 private fun Brukernotifikasjon.medNyId(): Brukernotifikasjon = this.copy(id = ulid())
