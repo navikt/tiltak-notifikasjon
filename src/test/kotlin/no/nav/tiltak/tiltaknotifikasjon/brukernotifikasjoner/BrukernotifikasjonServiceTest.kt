@@ -49,13 +49,27 @@ class BrukernotifikasjonServiceTest {
 
     @Test
     fun `skal lage kun 1 oppgave ved flere godkjent av arbeidsgiver status meldinger`() {
-        val avtaleHendelseMelding: AvtaleHendelseMelding = jacksonMapper().readValue(jsonGodkjentAvArbeidsgiverMelding)
+        val avtaleHendelseMelding1: AvtaleHendelseMelding = jacksonMapper().readValue(jsonGodkjentAvArbeidsgiverMelding)
+        val avtaleHendelseMelding2: AvtaleHendelseMelding = avtaleHendelseMelding1.copy(sistEndret = avtaleHendelseMelding1.sistEndret.plusSeconds(1000))
 
-        brukernotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding)
-        brukernotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding)
+        brukernotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding1)
+        brukernotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding2)
 
         val brukernotifikasjoner = brukernotifikasjonRepository.findAll()
         assertThat(brukernotifikasjoner).hasSize(1)
+    }
+
+    @Test
+    fun `skal kunne komme flere forlengelse meldinger men like blir ikke prosessert`() {
+        val avtaleHendelseMelding1: AvtaleHendelseMelding = jacksonMapper().readValue(jsonAvtaleForlengetMelding)
+        val avtaleHendelseMelding2: AvtaleHendelseMelding = avtaleHendelseMelding1.copy(sistEndret = avtaleHendelseMelding1.sistEndret.plusSeconds(1000))
+
+        brukernotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding1)
+        brukernotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding1)
+        brukernotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding2)
+
+        val brukernotifikasjoner = brukernotifikasjonRepository.findAll()
+        assertThat(brukernotifikasjoner).hasSize(2)
     }
 
     @Test
