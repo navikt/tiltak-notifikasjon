@@ -4,6 +4,6 @@ Håndtering av notifikasjoner for arbeidsmarkedstiltak som forvaltes av team til
 
 Applikasjonen håndterer notifikasjoner til:
  - Deltakere via min-side på nav.no
- - Arbeidsgivere via min-side-arbeidsgiver
+ - Arbeidsgivere via min-side-arbeidsgiver (ikke implementert enda)
 
 Teamet kan kontakes på slack: #arbeidsgiver-tiltak
