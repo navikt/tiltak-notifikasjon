@@ -21,7 +21,7 @@ data class Brukernotifikasjon(
 )
 
 enum class BrukernotifikasjonStatus {
-    MOTTATT, BEHANDLET, FEILET_VED_SENDING, FEILET_VED_PARSING, INAKTIVERT
+    BEHANDLET, FEILET_VED_SENDING, FEILET_VED_BEHANDLING, INAKTIVERT
 }
 
 enum class BrukernotifikasjonType {

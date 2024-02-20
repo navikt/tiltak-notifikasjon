@@ -37,7 +37,7 @@ class BrukernotifikasjonRepositoryTest {
                 minSideJson = "minSideJson",
                 id = id,
                 type = BrukernotifikasjonType.Beskjed,
-                status = BrukernotifikasjonStatus.MOTTATT,
+                status = BrukernotifikasjonStatus.BEHANDLET,
                 deltakerFnr = "12345678910",
                 avtaleId = "12345678910",
                 avtaleNr = 123,

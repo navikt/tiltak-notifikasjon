@@ -127,7 +127,7 @@ class BrukernotifikasjonService(val minSideProdusent: MinSideProdusent, val bruk
         return false
     }
     fun finnesDuplikatMelding(avtaleHendelse: AvtaleHendelseMelding): Boolean {
-        // Sjekker om det finnes behandlede avtaleHendelser i basen har likt endret tildspunt som den som kommer inn. Bør ikke skje.
+        // Sjekker om det finnes behandlede avtaleHendelser i basen som har likt endret tildspunt som den som kommer inn. Bør ikke skje.
         brukernotifikasjonRepository.findAllbyAvtaleId(avtaleHendelse.avtaleId.toString()).forEach {
             if (it.status != BrukernotifikasjonStatus.INAKTIVERT) {
                 val melding: AvtaleHendelseMelding = jacksonMapper().readValue(it.avtaleMeldingJson)

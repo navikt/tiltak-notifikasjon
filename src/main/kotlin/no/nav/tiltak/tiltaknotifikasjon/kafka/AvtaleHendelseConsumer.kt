@@ -43,7 +43,7 @@ class AvtaleHendelseConsumer(
             val brukernotifikasjon = Brukernotifikasjon(
                 id = ulid(),
                 avtaleMeldingJson = avtaleHendelse,
-                status = BrukernotifikasjonStatus.FEILET_VED_PARSING,
+                status = BrukernotifikasjonStatus.FEILET_VED_BEHANDLING,
                 opprettet = Instant.now(),
                 feilmelding = e.message
             )
