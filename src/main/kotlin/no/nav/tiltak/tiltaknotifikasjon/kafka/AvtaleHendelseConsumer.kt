@@ -35,11 +35,6 @@ class AvtaleHendelseConsumer(
             log.info("Feature toggle sms-min-side-deltaker er skrudd på. Prosesserer melding")
         }
 
-        log.info("avbryter viderere behandling midlertidig uansett, så vi får testet toggle i prod")
-        return
-
-
-
         try {
             val melding: AvtaleHendelseMelding = mapper.readValue(avtaleHendelse)
             brukernotifikasjonService.behandleAvtaleHendelseMelding(melding)
