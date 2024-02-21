@@ -3,6 +3,7 @@ package no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.utils.ulid
 import no.nav.tiltak.tiltaknotifikasjon.utils.Cluster
+import no.nav.tiltak.tiltaknotifikasjon.utils.norskDatoFormat
 import no.nav.tms.varsel.action.*
 import no.nav.tms.varsel.builder.VarselActionBuilder
 import org.slf4j.LoggerFactory
@@ -76,10 +77,10 @@ private fun lagLink(avtaleId: String): String {
 
 private fun lagTekst(varslingsformål: Varslingsformål, avtaleHendelseMelding: AvtaleHendelseMelding): String {
     return when (varslingsformål) {
-        Varslingsformål.GODKJENNING_AV_AVTALE -> "Du må godkjenne en avtale om ${avtaleHendelseMelding.tiltakstype.beskrivelse} hos ${avtaleHendelseMelding.bedriftNavn} med oppstartsdato ${avtaleHendelseMelding.startDato}"
+        Varslingsformål.GODKJENNING_AV_AVTALE -> "Du må godkjenne en avtale om ${avtaleHendelseMelding.tiltakstype.beskrivelse} hos ${avtaleHendelseMelding.bedriftNavn} med oppstartsdato ${norskDatoFormat(avtaleHendelseMelding.startDato!!)}"
         Varslingsformål.GODKJENNING_AV_TAUSHETSERKLÆRING_MENTOR -> "Du har en taushetserklæring som venter på din godkjenning"
-        Varslingsformål.AVTALE_FORLENGET -> "Sluttdatoen for ${avtaleHendelseMelding.tiltakstype.beskrivelse} hos ${avtaleHendelseMelding.bedriftNavn} er forlenget til ${avtaleHendelseMelding.sluttDato}"
-        Varslingsformål.AVTALE_FORKORTET -> "Sluttdatoen for ${avtaleHendelseMelding.tiltakstype.beskrivelse} hos ${avtaleHendelseMelding.bedriftNavn} er forkortet til ${avtaleHendelseMelding.sluttDato}"
+        Varslingsformål.AVTALE_FORLENGET -> "Sluttdatoen for ${avtaleHendelseMelding.tiltakstype.beskrivelse} hos ${avtaleHendelseMelding.bedriftNavn} er forlenget til ${norskDatoFormat(avtaleHendelseMelding.sluttDato!!)}"
+        Varslingsformål.AVTALE_FORKORTET -> "Sluttdatoen for ${avtaleHendelseMelding.tiltakstype.beskrivelse} hos ${avtaleHendelseMelding.bedriftNavn} er forkortet til ${norskDatoFormat(avtaleHendelseMelding.sluttDato!!)}"
         Varslingsformål.AVTALE_ANNULLERT -> "Avtalen om ${avtaleHendelseMelding.tiltakstype.beskrivelse} hos ${avtaleHendelseMelding.bedriftNavn} ble avlyst"
         Varslingsformål.AVTALE_INNGÅTT -> "Din avtale om ${avtaleHendelseMelding.tiltakstype.beskrivelse} er inngått"
     }
