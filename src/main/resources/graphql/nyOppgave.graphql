@@ -1,0 +1,41 @@
+mutation nyOppgave($nyOppgave: NyOppgaveInput!) {
+    nyOppgave(nyOppgave: $nyOppgave) {
+        ... on NyOppgaveVellykket {
+            id
+            __typename
+            eksterneVarsler {
+                id
+            }
+#            paaminnelse {
+#                eksterneVarsler {
+#                    ...NyEksterntVarselResultatFragment
+#                }
+#            }
+        }
+        ... on UgyldigMerkelapp {
+            __typename
+            feilmelding
+        }
+        ... on UgyldigMottaker {
+            __typename
+            feilmelding
+        }
+        ... on DuplikatEksternIdOgMerkelapp {
+            __typename
+            feilmelding
+            idTilEksisterende
+        }
+        ... on UkjentProdusent {
+            __typename
+            feilmelding
+        }
+        ... on UkjentRolle {
+            __typename
+            feilmelding
+        }
+        ... on UgyldigPaaminnelseTidspunkt {
+            __typename
+            feilmelding
+        }
+    }
+}

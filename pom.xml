@@ -18,6 +18,7 @@
 		<kotlin.version>1.9.20</kotlin.version>
 		<jooq.version>3.18.6</jooq.version>
 		<postgresql.version>42.6.0</postgresql.version>
+		<graphql-kotlin.version>7.0.2</graphql-kotlin.version>
 	</properties>
 	<repositories>
 		<!-- Legger til central eksplisitt for prioritet over github package registry -->
@@ -107,7 +108,6 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-webflux</artifactId>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.graphql</groupId>
@@ -140,6 +140,12 @@
 			<groupId>io.getunleash</groupId>
 			<artifactId>unleash-client-java</artifactId>
 			<version>9.2.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.expediagroup</groupId>
+			<artifactId>graphql-kotlin-spring-client</artifactId>
+			<version>7.0.2</version>
 		</dependency>
 
 	</dependencies>
@@ -233,6 +239,27 @@
 					</generator>
 				</configuration>
 			</plugin>
+
+			<plugin>
+				<groupId>com.expediagroup</groupId>
+				<artifactId>graphql-kotlin-maven-plugin</artifactId>
+				<version>${graphql-kotlin.version}</version>
+				<executions>
+					<execution>
+						<id>generate-graphql-client</id>
+						<goals>
+							<goal>introspect-schema</goal>
+							<goal>generate-client</goal>
+						</goals>
+						<configuration>
+							<endpoint>https://notifikasjon-fake-produsent-api.ekstern.dev.nav.no</endpoint>
+							<packageName>no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated</packageName>
+<!--							<schemaFile>${project.build.directory}/schema.graphql</schemaFile>-->
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
 		</plugins>
 	</build>
 
