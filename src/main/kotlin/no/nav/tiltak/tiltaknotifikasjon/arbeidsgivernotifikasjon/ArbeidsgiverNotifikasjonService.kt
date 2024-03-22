@@ -2,11 +2,9 @@ package no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon
 
 import com.expediagroup.graphql.client.spring.GraphQLWebClient
 import kotlinx.coroutines.runBlocking
-import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.NyBeskjed
-import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.NyOppgave
-import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.NySak
-import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.OppgaveUtfoert
+import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.*
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.enums.SaksStatus
+import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.enums.Sendevindu
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.inputs.*
 import org.springframework.stereotype.Component
 import java.time.Instant
@@ -15,7 +13,6 @@ import java.time.Instant
 @Component
 class ArbeidsgiverNotifikasjonService {
     val client = GraphQLWebClient("https://notifikasjon-fake-produsent-api.ekstern.dev.nav.no")
-
     fun nySak(): NySak {
         val variabler = NySak.Variables(
             grupperingsid = "123",
@@ -48,7 +45,17 @@ class ArbeidsgiverNotifikasjonService {
                     grupperingsid = "123",
                     hardDelete = null
                 ),
-                eksterneVarsler = listOf(),
+                eksterneVarsler = listOf(
+                    EksterntVarselInput(
+                        sms = EksterntVarselSmsInput(
+                            mottaker = SmsMottakerInput(
+                                kontaktinfo = SmsKontaktInfoInput(tlf = "12345678")
+                            ),
+                            smsTekst = "Ny avtale til godkjenning!",
+                            sendetidspunkt = SendetidspunktInput(Sendevindu.DAGTID_IKKE_SOENDAG)
+                        )
+                    )
+                ),
             )
         )
         val oppgave = NyOppgave(oppgaveVariables)
@@ -59,6 +66,7 @@ class ArbeidsgiverNotifikasjonService {
         val oppgaveUtfoert = OppgaveUtfoert(OppgaveUtfoert.Variables(id = "123"))
         return oppgaveUtfoert
     }
+
 
     fun nyBeskjed(): NyBeskjed {
         val beskjedVariables = NyBeskjed.Variables(
@@ -77,12 +85,29 @@ class ArbeidsgiverNotifikasjonService {
                     grupperingsid = "123",
                     hardDelete = null
                 ),
-                eksterneVarsler = listOf(),
+                eksterneVarsler = listOf(
+                    EksterntVarselInput(
+                        sms = EksterntVarselSmsInput(
+                            mottaker = SmsMottakerInput(
+                                kontaktinfo = SmsKontaktInfoInput(tlf = "12345678")
+                            ),
+                            smsTekst = "Ny avtale til godkjenning!",
+                            sendetidspunkt = SendetidspunktInput(Sendevindu.DAGTID_IKKE_SOENDAG)
+                        )
+                    )
+                ),
             )
         )
         val beskjed = NyBeskjed(beskjedVariables)
         return beskjed
 
+    }
+
+    fun nySakStatus(sakId: String): NyStatusSak {
+        val nySakStatusVariables =
+            NyStatusSak.Variables(id = sakId, nyStatus = SaksStatus.FERDIG, tidspunkt = Instant.now().toString())
+        val nySakStatus = NyStatusSak(nySakStatusVariables)
+        return nySakStatus
     }
 }
 
