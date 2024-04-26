@@ -1,0 +1,30 @@
+mutation oppgaveUtfoert(
+    $id: ID!,
+    $hardDelete: HardDeleteUpdateInput,
+    $nyLenke: String,
+    $utfoertTidspunkt: ISO8601DateTime
+) {
+    oppgaveUtfoert(
+        id: $id,
+        hardDelete: $hardDelete,
+        nyLenke: $nyLenke,
+        utfoertTidspunkt: $utfoertTidspunkt
+    ) {
+        ... on OppgaveUtfoertVellykket {
+            id
+            __typename
+        }
+        ... on UgyldigMerkelapp {
+            feilmelding
+            __typename
+        }
+        ... on NotifikasjonFinnesIkke {
+            feilmelding
+            __typename
+        }
+        ... on UkjentProdusent {
+            feilmelding
+            __typename
+        }
+    }
+}

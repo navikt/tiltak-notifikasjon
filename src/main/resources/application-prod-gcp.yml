@@ -1,0 +1,14 @@
+tiltak-notifikasjon:
+  altinn-tilgangstyring:
+    arbtreningServiceCode: 5332
+    arbtreningServiceEdition: 2
+    ltsMidlertidigServiceCode: 5516
+    ltsMidlertidigServiceEdition: 1
+    ltsVarigServiceCode: 5516
+    ltsVarigServiceEdition: 2
+    sommerjobbServiceCode: 5516
+    sommerjobbServiceEdition: 3
+    mentorServiceCode: 5516
+    mentorServiceEdition: 4
+    inkluderingstilskuddServiceCode: 5516
+    inkluderingstilskuddServiceEdition: 5
