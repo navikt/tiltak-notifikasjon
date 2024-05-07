@@ -1,7 +1,6 @@
-package no.nav.tiltak.tiltaknotifikasjon
+package no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon
 
 import com.expediagroup.graphql.client.types.GraphQLClientResponse
-import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.ArbeidsgiverNotifikasjonService
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.MineNotifikasjoner
 import org.springframework.context.annotation.Profile
 import org.springframework.web.bind.annotation.GetMapping
