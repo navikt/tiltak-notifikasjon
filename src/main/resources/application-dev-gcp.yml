@@ -12,3 +12,12 @@ tiltak-notifikasjon:
     mentorServiceEdition: 4
     inkluderingstilskuddServiceCode: 5516
     inkluderingstilskuddServiceEdition: 5
+
+  produsent-api-url: http://notifikasjon-produsent-api.fager/api/graphql
+  no.nav.security.jwt:
+    client:
+      registration:
+        notifikasjoner:
+          token-endpoint-url: https://login.microsoftonline.com/${AZURE_APP_TENANT_ID}/oauth2/v2.0/token
+          grant-type: client_credentials
+          scope: api://dev-gcp.fager.notifikasjon-produsent-api/.default
