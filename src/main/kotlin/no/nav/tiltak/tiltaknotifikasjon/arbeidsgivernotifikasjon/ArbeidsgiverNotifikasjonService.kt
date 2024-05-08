@@ -42,6 +42,7 @@ class ArbeidsgiverNotifikasjonService {
     suspend fun hentMineSaker(avtaleId: String, merkelapp: String): GraphQLClientResponse<MineNotifikasjoner.Result> {
         val mineNotifikasjonerQuery =
             mineNotifikasjoner(merkelapp, avtaleId)
+        log.info("laget request for mine saker på avtaleId $avtaleId og merkelapp $merkelapp")
         val response = client.execute(mineNotifikasjonerQuery)
         return response
     }
