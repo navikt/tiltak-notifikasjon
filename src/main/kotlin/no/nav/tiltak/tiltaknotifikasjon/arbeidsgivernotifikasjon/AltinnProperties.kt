@@ -4,7 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.stereotype.Component
 
 @Component
-@ConfigurationProperties(prefix = "tiltak-notifikasjon.altinn")
+@ConfigurationProperties(prefix = "tiltak-notifikasjon.altinn-tilgangstyring")
 data class AltinnProperties(
     var arbtreningServiceCode:String = "",
     var arbtreningServiceEdition:String = "",

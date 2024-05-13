@@ -13,7 +13,8 @@ tiltak-notifikasjon:
     inkluderingstilskuddServiceCode: 5516
     inkluderingstilskuddServiceEdition: 5
 
-  produsent-api-url: http://notifikasjon-produsent-api.fager/api/graphql
+  produsent-api:
+    url: http://notifikasjon-produsent-api.fager/api/graphql
   no.nav.security.jwt:
     client:
       registration:

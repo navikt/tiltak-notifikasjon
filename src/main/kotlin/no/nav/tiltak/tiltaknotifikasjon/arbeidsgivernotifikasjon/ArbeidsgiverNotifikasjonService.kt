@@ -17,8 +17,10 @@ import java.time.Instant
 
 
 @Component
-class ArbeidsgiverNotifikasjonService {
+class ArbeidsgiverNotifikasjonService(val arbeidsgivernotifikasjonProperties: ArbeidsgivernotifikasjonProperties) {
     private val log = LoggerFactory.getLogger(javaClass)
+
+    val notifikasjonGraphQlClient = GraphQLWebClient(arbeidsgivernotifikasjonProperties.url)
 
     suspend fun behandleAvtaleHendelseMelding(avtaleHendelse: AvtaleHendelseMelding) {
         val client = GraphQLWebClient("https://notifikasjon-fake-produsent-api.ekstern.dev.nav.no")
@@ -43,9 +45,8 @@ class ArbeidsgiverNotifikasjonService {
         val mineNotifikasjonerQuery =
             mineNotifikasjoner(merkelapp, avtaleId)
         log.info("laget request for mine saker på avtaleId $avtaleId og merkelapp $merkelapp")
-        val response = client.execute(mineNotifikasjonerQuery)
+        val response = notifikasjonGraphQlClient.execute(mineNotifikasjonerQuery)
         return response
     }
-
 
 }
