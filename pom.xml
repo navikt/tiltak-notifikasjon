@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.1.5</version>
+		<version>3.2.5</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>no.nav.tiltak</groupId>
@@ -105,14 +105,14 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-webflux</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-web</artifactId>
-		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>org.springframework</groupId>-->
+<!--			<artifactId>spring-webflux</artifactId>-->
+<!--		</dependency>-->
+<!--		<dependency>-->
+<!--			<groupId>org.springframework</groupId>-->
+<!--			<artifactId>spring-web</artifactId>-->
+<!--		</dependency>-->
 		<dependency>
 			<groupId>org.springframework.graphql</groupId>
 			<artifactId>spring-graphql-test</artifactId>
@@ -157,6 +157,11 @@
 			<artifactId>token-client-spring</artifactId>
 			<version>4.1.5</version>
 		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>no.nav.security</groupId>-->
+<!--			<artifactId>token-validation-spring</artifactId>-->
+<!--			<version>4.1.5</version>-->
+<!--		</dependency>-->
 
 	</dependencies>
 
