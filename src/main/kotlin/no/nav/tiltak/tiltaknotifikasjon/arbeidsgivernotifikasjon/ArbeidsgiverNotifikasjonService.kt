@@ -2,25 +2,19 @@ package no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon
 
 import com.expediagroup.graphql.client.spring.GraphQLWebClient
 import com.expediagroup.graphql.client.types.GraphQLClientResponse
-import kotlinx.coroutines.runBlocking
-import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.*
-import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.enums.SaksStatus
-import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.enums.Sendevindu
-import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.inputs.*
-import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.minenotifikasjoner.MineNotifikasjonerResultat
-import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.minenotifikasjoner.Notifikasjon
+import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.MineNotifikasjoner
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
-import java.time.Instant
+import org.springframework.web.reactive.function.client.WebClient
 
 
 @Component
-class ArbeidsgiverNotifikasjonService(val arbeidsgivernotifikasjonProperties: ArbeidsgivernotifikasjonProperties) {
+class ArbeidsgiverNotifikasjonService(arbeidsgivernotifikasjonProperties: ArbeidsgivernotifikasjonProperties, azureWebClientBuilder: WebClient.Builder) {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    val notifikasjonGraphQlClient = GraphQLWebClient(arbeidsgivernotifikasjonProperties.url)
+    val notifikasjonGraphQlClient = GraphQLWebClient(arbeidsgivernotifikasjonProperties.url, builder = azureWebClientBuilder)
 
     suspend fun behandleAvtaleHendelseMelding(avtaleHendelse: AvtaleHendelseMelding) {
         val client = GraphQLWebClient("https://notifikasjon-fake-produsent-api.ekstern.dev.nav.no")
@@ -41,7 +35,7 @@ class ArbeidsgiverNotifikasjonService(val arbeidsgivernotifikasjonProperties: Ar
         //  HendelseType.GODKJENNINGER_OPPHEVET_AV_VEILEDER
     }
 
-    suspend fun hentMineSaker(avtaleId: String, merkelapp: String): GraphQLClientResponse<MineNotifikasjoner.Result> {
+     suspend fun hentMineSaker(avtaleId: String, merkelapp: String): GraphQLClientResponse<MineNotifikasjoner.Result> {
         val mineNotifikasjonerQuery =
             mineNotifikasjoner(merkelapp, avtaleId)
         log.info("laget request for mine saker på avtaleId $avtaleId og merkelapp $merkelapp")
