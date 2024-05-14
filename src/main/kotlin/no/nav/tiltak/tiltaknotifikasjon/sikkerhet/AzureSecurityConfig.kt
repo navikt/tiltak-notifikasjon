@@ -18,7 +18,7 @@ class AzureSecurityConfig {
         clientConfigurationProperties: ClientConfigurationProperties,
         oAuth2AccessTokenService: OAuth2AccessTokenService
     ): WebClient.Builder {
-        val clientProperties = clientConfigurationProperties.registration.getValue("notifikasjoner")  // get("notifikasjoner") // .registration["notifikasjoner"]
+        val clientProperties = clientConfigurationProperties.registration["notifikasjoner"]
             ?: return WebClient.builder()// throw RuntimeException("could not find oauth2 client config for aad")
         return WebClient.builder().filter { request, next ->
             try {
