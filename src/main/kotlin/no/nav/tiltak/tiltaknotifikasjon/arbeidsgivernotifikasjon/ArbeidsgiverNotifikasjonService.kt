@@ -7,10 +7,12 @@ import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 
 
+@Profile("dev-gcp")
 @Component
 class ArbeidsgiverNotifikasjonService(arbeidsgivernotifikasjonProperties: ArbeidsgivernotifikasjonProperties, @Qualifier("azureWebClientBuilder") azureWebClientBuilder: WebClient.Builder) {
     private val log = LoggerFactory.getLogger(javaClass)
