@@ -3,12 +3,14 @@ package no.nav.tiltak.tiltaknotifikasjon.sikkerhet
 import no.nav.security.token.support.client.core.oauth2.OAuth2AccessTokenService
 import no.nav.security.token.support.client.spring.ClientConfigurationProperties
 import no.nav.security.token.support.client.spring.oauth2.EnableOAuth2Client
+import no.nav.security.token.support.spring.api.EnableJwtTokenValidation
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 import org.springframework.web.reactive.function.client.WebClient
 
 @EnableOAuth2Client(cacheEnabled = true)
+@EnableJwtTokenValidation
 @Configuration
 @Profile("dev-gcp")
 class AzureSecurityConfig {
