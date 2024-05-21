@@ -157,11 +157,11 @@
 			<artifactId>token-client-spring</artifactId>
 			<version>4.1.5</version>
 		</dependency>
-<!--		<dependency>-->
-<!--			<groupId>no.nav.security</groupId>-->
-<!--			<artifactId>token-validation-spring</artifactId>-->
-<!--			<version>4.1.5</version>-->
-<!--		</dependency>-->
+		<dependency>
+			<groupId>no.nav.security</groupId>
+			<artifactId>token-validation-spring</artifactId>
+			<version>4.1.5</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
