@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
+import org.springframework.web.reactive.function.client.ClientRequest
 import org.springframework.web.reactive.function.client.WebClient
 
 @EnableOAuth2Client(cacheEnabled = true)
@@ -26,11 +27,10 @@ class AzureSecurityConfig {
             ?: return WebClient.builder()// throw RuntimeException("could not find oauth2 client config for aad")
         return WebClient.builder().filter { request, next ->
             try {
-                val response = oAuth2AccessTokenService.getAccessToken(clientProperties)
-                log.info("Got response from oAuth2AccessTokenService.getAccessToken: $response")
-                //request.headers().setBearerAuth(response.accessToken!!)
-                request.headers().setBearerAuth(response.access_token!!)
-                next.exchange(request)
+                val newRequest = ClientRequest.from(request)
+                    .headers { headers -> headers.setBearerAuth(oAuth2AccessTokenService.getAccessToken(clientProperties).access_token!!) }
+                    .build()
+                next.exchange(newRequest)
             } catch (e: Exception) {
                 throw RuntimeException("Failed to get access token", e)
             }
