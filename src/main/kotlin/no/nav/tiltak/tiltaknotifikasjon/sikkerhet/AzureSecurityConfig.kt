@@ -28,7 +28,8 @@ class AzureSecurityConfig {
             try {
                 val response = oAuth2AccessTokenService.getAccessToken(clientProperties)
                 log.info("Got response from oAuth2AccessTokenService.getAccessToken: $response")
-                request.headers().setBearerAuth(response.accessToken!!)
+                //request.headers().setBearerAuth(response.accessToken!!)
+                request.headers().setBearerAuth(response.access_token!!)
                 next.exchange(request)
             } catch (e: Exception) {
                 throw RuntimeException("Failed to get access token", e)
