@@ -2,6 +2,7 @@ package no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon
 
 import com.expediagroup.graphql.client.spring.GraphQLWebClient
 import com.expediagroup.graphql.client.types.GraphQLClientResponse
+import kotlinx.coroutines.runBlocking
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.MineNotifikasjoner
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
@@ -38,12 +39,14 @@ class ArbeidsgiverNotifikasjonService(arbeidsgivernotifikasjonProperties: Arbeid
         //  HendelseType.GODKJENNINGER_OPPHEVET_AV_VEILEDER
     }
 
-     suspend fun hentMineSaker(avtaleId: String, merkelapp: String): GraphQLClientResponse<MineNotifikasjoner.Result> {
+    fun hentMineSaker(avtaleId: String, merkelapp: String): GraphQLClientResponse<MineNotifikasjoner.Result> {
         val mineNotifikasjonerQuery =
             mineNotifikasjoner(merkelapp, avtaleId)
         log.info("laget request for mine saker på avtaleId $avtaleId og merkelapp $merkelapp")
-        val response = notifikasjonGraphQlClient.execute(mineNotifikasjonerQuery)
-        return response
+
+        return runBlocking {
+            notifikasjonGraphQlClient.execute(mineNotifikasjonerQuery)
+        }
     }
 
 }
