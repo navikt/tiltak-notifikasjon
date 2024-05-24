@@ -26,7 +26,11 @@ query mineNotifikasjoner(
                     ... on Oppgave {
                         metadata {
                             id
-                            eksternId
+                            eksternId,
+                        }
+                        oppgave {
+                            tilstand
+                            tekst
                         }
                     }
                 }

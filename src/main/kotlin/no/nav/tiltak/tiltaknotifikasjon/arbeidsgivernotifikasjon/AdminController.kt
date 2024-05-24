@@ -20,7 +20,7 @@ class AdminController(val arbeidsgiverNotifikasjonService: ArbeidsgiverNotifikas
 
     //@Unprotected
     @GetMapping("hent-mine-saker")
-    suspend fun hentMineSaker(@RequestBody mineSaker: MineSaker): GraphQLClientResponse<MineNotifikasjoner.Result> {
+    fun hentMineSaker(@RequestBody mineSaker: MineSaker): GraphQLClientResponse<MineNotifikasjoner.Result> {
         log.info("Henter mine saker")
         val mineSaker = arbeidsgiverNotifikasjonService.hentMineSaker(mineSaker.avtaleId, mineSaker.merkelapp)
         return mineSaker

@@ -4,6 +4,9 @@ GET http://localhost:8080/internal/admin/hent-mine-saker
 Content-Type: application/json
 
 {
-  "avtaleId": "5b0f7322-2e3e-4fa8-bfbc-1badac292c61",
+  "avtaleId": "f193e2dd-a01e-4b48-94e1-3e94ad6cb8b5",
   "merkelapp": "Lønnstilskudd"
 }
+
+### f193e2dd-a01e-4b48-94e1-3e94ad6cb8b5 - mange notifikasjoner
+### 64d627f1-f69a-4613-a20e-056fe0778947
