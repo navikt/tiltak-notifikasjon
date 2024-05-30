@@ -1,32 +1,31 @@
 mutation nyBeskjed($nyBeskjed: NyBeskjedInput!) {
     nyBeskjed(nyBeskjed: $nyBeskjed) {
+        __typename
         ... on NyBeskjedVellykket {
-            __typename
             id
             eksterneVarsler {
-                __typename
                 id
             }
         }
         ... on UgyldigMerkelapp {
-            __typename
+
             feilmelding
         }
         ... on UgyldigMottaker {
-            __typename
+
             feilmelding
         }
         ... on DuplikatEksternIdOgMerkelapp {
-            __typename
+
             feilmelding
             idTilEksisterende
         }
         ... on UkjentProdusent {
-            __typename
+
             feilmelding
         }
         ... on UkjentRolle {
-            __typename
+
             feilmelding
         }
     }

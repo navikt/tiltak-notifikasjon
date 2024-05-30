@@ -1,0 +1,53 @@
+query mineNotifikasjoner(
+    $first: Int,
+    $after: String,
+    $merkelapp: String,
+    $merkelapper: [String!],
+    $grupperingsid: String
+) {
+    mineNotifikasjoner(
+        first: $first,
+        after: $after,
+        merkelapp: $merkelapp,
+        merkelapper: $merkelapper,
+        grupperingsid: $grupperingsid
+    ) {
+        ... on NotifikasjonConnection {
+            __typename
+            edges {
+                node {
+                    __typename
+                    ... on Beskjed {
+                        metadata {
+                            id
+                            eksternId
+                        }
+                    }
+                    ... on Oppgave {
+                        metadata {
+                            id
+                            eksternId,
+                        }
+                        oppgave {
+                            tilstand
+                            tekst
+                        }
+                    }
+                }
+                cursor
+            }
+            pageInfo {
+                hasNextPage
+                endCursor
+            }
+        }
+        ... on UgyldigMerkelapp {
+            __typename
+            feilmelding
+        }
+        ... on UkjentProdusent {
+            __typename
+            feilmelding
+        }
+    }
+}
