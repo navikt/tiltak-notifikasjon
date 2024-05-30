@@ -1,16 +1,14 @@
 package no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon
 
-import com.expediagroup.graphql.client.spring.GraphQLWebClient
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.*
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.enums.SaksStatus
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.enums.Sendevindu
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.inputs.*
-import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.nysak.DuplikatGrupperingsid
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.utils.Cluster
 import java.time.Instant
+import java.util.*
 
-val client = GraphQLWebClient("https://notifikasjon-fake-produsent-api.ekstern.dev.nav.no")
 
 fun nySak(avtaleHendelseMelding: AvtaleHendelseMelding): NySak {
     val variabler = NySak.Variables(
@@ -18,7 +16,7 @@ fun nySak(avtaleHendelseMelding: AvtaleHendelseMelding): NySak {
         merkelapp = avtaleHendelseMelding.tiltakstype.arbeidsgiverNotifikasjonMerkelapp,
         virksomhetsnummer = avtaleHendelseMelding.bedriftNr,
         mottakere = listOf(MottakerInput(AltinnMottakerInput(avtaleHendelseMelding.tiltakstype.serviceCode, avtaleHendelseMelding.tiltakstype.serviceEdition))),
-        tittel = NotifikasjonTekst.TILTAK_AVTALE_OPPRETTET.tekst(avtaleHendelseMelding.tiltakstype),
+        tittel = NotifikasjonTekst.TILTAK_AVTALE_OPPRETTET_SAK.tekst(avtaleHendelseMelding.tiltakstype),
         lenke = lagLink(avtaleHendelseMelding.avtaleId.toString()),
         initiellStatus = SaksStatus.MOTTATT,
         tidspunkt = Instant.now().toString(),
@@ -30,25 +28,24 @@ fun nySak(avtaleHendelseMelding: AvtaleHendelseMelding): NySak {
 fun nyOppgave(avtaleHendelseMelding: AvtaleHendelseMelding): NyOppgave {
     val oppgaveVariables = NyOppgave.Variables(
         NyOppgaveInput(
-            mottaker = MottakerInput(AltinnMottakerInput("1234", "1")),
-            mottakere = listOf(MottakerInput(AltinnMottakerInput("1234", "1"))),
+            mottakere = listOf(MottakerInput(AltinnMottakerInput(avtaleHendelseMelding.tiltakstype.serviceCode, avtaleHendelseMelding.tiltakstype.serviceEdition))),
             notifikasjon = NotifikasjonInput(
-                merkelapp = "Lonnstilskudd",
-                tekst = "Ny avtale til godkjenning!",
-                lenke = "nav.no"
+                merkelapp = avtaleHendelseMelding.tiltakstype.arbeidsgiverNotifikasjonMerkelapp,
+                tekst = NotifikasjonTekst.TILTAK_GODKJENNINGER_OPPHEVET_AV_VEILEDER.tekst(avtaleHendelseMelding.tiltakstype),
+                lenke = lagLink(avtaleHendelseMelding.avtaleId.toString())
             ),
             metadata = MetadataInput(
-                virksomhetsnummer = "123456789",
-                eksternId = "randomUUID",
+                virksomhetsnummer = avtaleHendelseMelding.bedriftNr,
+                eksternId = avtaleHendelseMelding.avtaleId.toString(), // TODO: Sjekke om dette blir riktig
                 opprettetTidspunkt = Instant.now().toString(),
-                grupperingsid = "123",
-                hardDelete = null
+                grupperingsid = avtaleHendelseMelding.avtaleId.toString(), // Dette blir satt til avtaleId som også blir brukt på saken.
+                hardDelete = null // TODO: Sjekke hva dette betyr
             ),
             eksterneVarsler = listOf(
                 EksterntVarselInput(
                     sms = EksterntVarselSmsInput(
-                        mottaker = SmsMottakerInput(kontaktinfo = SmsKontaktInfoInput(tlf = "12345678")),
-                        smsTekst = "Ny avtale til godkjenning!",
+                        mottaker = SmsMottakerInput(kontaktinfo = SmsKontaktInfoInput(tlf = avtaleHendelseMelding.arbeidsgiverTlf!!)), // TODO: kan være null...
+                        smsTekst = "Ny avtale til godkjenning!", // TODO: Bestemme tekst i sms.
                         sendetidspunkt = SendetidspunktInput(Sendevindu.DAGTID_IKKE_SOENDAG)
                     )
                 )
@@ -59,36 +56,36 @@ fun nyOppgave(avtaleHendelseMelding: AvtaleHendelseMelding): NyOppgave {
     return oppgave
 }
 
-fun oppgaveUtført(): OppgaveUtfoert {
-    val oppgaveUtfoert = OppgaveUtfoert(OppgaveUtfoert.Variables(id = "123"))
+fun oppgaveUtført(id: String): OppgaveUtfoert {
+    val oppgaveUtfoert = OppgaveUtfoert(OppgaveUtfoert.Variables(id))
     return oppgaveUtfoert
 }
 
 
-fun nyBeskjed(): NyBeskjed {
+fun nyBeskjed(avtaleHendelseMelding: AvtaleHendelseMelding): NyBeskjed {
     val beskjedVariables = NyBeskjed.Variables(
         NyBeskjedInput(
-            mottaker = MottakerInput(AltinnMottakerInput("1234", "1")),
-            mottakere = listOf(),
+            mottakere = listOf(MottakerInput(AltinnMottakerInput(avtaleHendelseMelding.tiltakstype.serviceCode, avtaleHendelseMelding.tiltakstype.serviceEdition))),
             notifikasjon = NotifikasjonInput(
-                merkelapp = "Lonnstilskudd",
-                tekst = "Ny avtale til godkjenning!",
-                lenke = "nav.no"
+                merkelapp = avtaleHendelseMelding.tiltakstype.arbeidsgiverNotifikasjonMerkelapp,
+                tekst = "Ny avtale til godkjenning!", // TODO: mappe endringstyper til tekster
+                lenke = lagLink(avtaleHendelseMelding.avtaleId.toString())
             ),
             metadata = MetadataInput(
-                virksomhetsnummer = "123456789",
-                eksternId = "randomUUID",
+                virksomhetsnummer = avtaleHendelseMelding.bedriftNr,
+                eksternId = avtaleHendelseMelding.avtaleId.toString() + UUID.randomUUID().toString(), // TODO: Kunne f.eks. laget et løpenummer, som da sier noe om hvor mange notifikasjoner osm er sendt på hver avtale.
                 opprettetTidspunkt = Instant.now().toString(),
-                grupperingsid = "123",
+                grupperingsid = avtaleHendelseMelding.avtaleId.toString(),
                 hardDelete = null
             ),
+
             eksterneVarsler = listOf(
                 EksterntVarselInput(
                     sms = EksterntVarselSmsInput(
                         mottaker = SmsMottakerInput(
-                            kontaktinfo = SmsKontaktInfoInput(tlf = "12345678")
+                            kontaktinfo = SmsKontaktInfoInput(tlf = avtaleHendelseMelding.arbeidsgiverTlf!!)
                         ),
-                        smsTekst = "Ny avtale til godkjenning!",
+                        smsTekst = "Ny avtale til godkjenning!", // TODO: Bestemme tekst i sms.
                         sendetidspunkt = SendetidspunktInput(Sendevindu.DAGTID_IKKE_SOENDAG)
                     )
                 )
@@ -100,7 +97,7 @@ fun nyBeskjed(): NyBeskjed {
 
 }
 
-fun nySakStatus(sakId: String): NyStatusSak {
+fun nySakStatusFerdig(sakId: String): NyStatusSak {
     val nySakStatusVariables =
         NyStatusSak.Variables(id = sakId, nyStatus = SaksStatus.FERDIG, tidspunkt = Instant.now().toString())
     val nySakStatus = NyStatusSak(nySakStatusVariables)
@@ -123,11 +120,4 @@ private fun lagLink(avtaleId: String): String {
         }
     }
 
-}
-
-
-suspend fun main() {
-    val mineNotifikasjoner = mineNotifikasjoner("Lonnstilskudd", "123")
-    val result = client.execute(mineNotifikasjoner)
-    println(result)
 }

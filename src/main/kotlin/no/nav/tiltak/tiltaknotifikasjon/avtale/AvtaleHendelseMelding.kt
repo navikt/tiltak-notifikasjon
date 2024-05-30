@@ -19,6 +19,7 @@ data class AvtaleHendelseMelding(
     val utførtAv: String,
     val utførtAvRolle: AvtaleHendelseUtførtAvRolle,
     val deltakerFnr: String,
+    val arbeidsgiverTlf: String?,
     val avtaleId: UUID,
     val avtaleNr: Int,
     val sistEndret: Instant,
