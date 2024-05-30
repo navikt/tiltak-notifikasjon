@@ -51,7 +51,7 @@ jobs:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-gcp
           RESOURCE: nais/nais-dev.yml,nais/alerts.yml,nais/unleash-apitoken.yml
-          VAR: unleash-environment=development,image=${{ needs.build.outputs.image }}
+          VAR: unleash-environment=development,image=${{ needs.bygg.outputs.image }}
 
   deploy-prod:
     name: Deploy til prod
@@ -70,4 +70,4 @@ jobs:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: prod-gcp
           RESOURCE: nais/nais-prod.yml,nais/alerts.yml,nais/unleash-apitoken.yml
-          VAR: unleash-environment=production,image=${{ needs.build.outputs.image }}
+          VAR: unleash-environment=production,image=${{ needs.bygg.outputs.image }}
