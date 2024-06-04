@@ -46,5 +46,6 @@ enum class HendelseType(val tekst: String) {
     GODKJENT_FOR_ETTERREGISTRERING("Avtale er godkjent for etterregistrering"),
     FJERNET_ETTERREGISTRERING("Fjernet etterregistrering på avtale"),
     DELTAKERS_GODKJENNING_OPPHEVET_AV_VEILEDER("Deltakers godkjenning opphevet av veileder"),
-    DELTAKERS_GODKJENNING_OPPHEVET_AV_ARBEIDSGIVER("Deltakers godkjenning opphevet av arbeidsgiver")
+    DELTAKERS_GODKJENNING_OPPHEVET_AV_ARBEIDSGIVER("Deltakers godkjenning opphevet av arbeidsgiver"),
+    ARBEIDSGIVERS_GODKJENNING_OPPHEVET_AV_VEILEDER("Arbeidsgivers godkjenning opphevet av veileder"),
 }
