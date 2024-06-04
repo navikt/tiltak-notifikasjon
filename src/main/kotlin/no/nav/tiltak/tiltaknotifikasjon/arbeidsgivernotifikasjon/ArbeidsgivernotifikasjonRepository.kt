@@ -10,14 +10,6 @@ import java.time.ZoneOffset
 @Component
 class ArbeidsgivernotifikasjonRepository(val dsl: DSLContext) {
 
-    fun findById(id: String): Arbeidsgivernotifikasjon? {
-        return dsl.select()
-            .from(ARBEIDSGIVERNOTIFIKASJON)
-            .where(ARBEIDSGIVERNOTIFIKASJON.ID.equal(id))
-            .fetchOneInto(ArbeidsgivernotifikasjonRecord::class.java)
-            ?.map { mapToArbeidsgivernotifikasjon(it as ArbeidsgivernotifikasjonRecord) }
-    }
-
     fun save(arbeidsgivernotifikasjon: Arbeidsgivernotifikasjon) {
         val arbeidsgivernotifikasjonRecord = mapToRecord(arbeidsgivernotifikasjon)
         dsl
@@ -28,6 +20,7 @@ class ArbeidsgivernotifikasjonRepository(val dsl: DSLContext) {
             .execute()
     }
 
+    // Ikke i bruk pt.
     private fun mapToArbeidsgivernotifikasjon(record: ArbeidsgivernotifikasjonRecord): Arbeidsgivernotifikasjon {
         return Arbeidsgivernotifikasjon(
             id = record.id,
@@ -46,6 +39,7 @@ class ArbeidsgivernotifikasjonRepository(val dsl: DSLContext) {
         )
     }
 
+    // fra Arbeidsgivernotifikasjon klasse til DB-record som skal lagres
     private fun mapToRecord(arbeidsgivernotifikasjon: Arbeidsgivernotifikasjon): ArbeidsgivernotifikasjonRecord {
         return ArbeidsgivernotifikasjonRecord(
             id = arbeidsgivernotifikasjon.id,
