@@ -35,7 +35,9 @@ class ArbeidsgivernotifikasjonRepository(val dsl: DSLContext) {
             sendt = record.sendt?.toInstant(),
             opprettet = record.opprettet.toInstant(),
             varslingsformål = if (record.varslingsformål != null) Varslingsformål.valueOf(record.varslingsformål!!) else null,
-            responseId = record.responseId
+            responseId = record.responseId,
+            avtaleId = record.avtaleId,
+            avtaleNr = record.avtaleNr
         )
     }
 
@@ -54,7 +56,9 @@ class ArbeidsgivernotifikasjonRepository(val dsl: DSLContext) {
             sendt = if (arbeidsgivernotifikasjon.sendt != null) arbeidsgivernotifikasjon.sendt?.atOffset(ZoneOffset.UTC) else null ,
             opprettet = arbeidsgivernotifikasjon.opprettet.atOffset(ZoneOffset.UTC),
             varslingsformål = arbeidsgivernotifikasjon.varslingsformål?.name,
-            responseId = arbeidsgivernotifikasjon.responseId
+            responseId = arbeidsgivernotifikasjon.responseId,
+            avtaleId = arbeidsgivernotifikasjon.avtaleId,
+            avtaleNr = arbeidsgivernotifikasjon.avtaleNr
         )
     }
 
