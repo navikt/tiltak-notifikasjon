@@ -4,7 +4,7 @@ import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generat
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.enums.SaksStatus
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.enums.Sendevindu
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.inputs.*
-import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
+import no.nav.tiltak.tiltaknotifikasjon.avtale.*
 import no.nav.tiltak.tiltaknotifikasjon.utils.Cluster
 import java.time.Instant
 import java.util.*
@@ -12,7 +12,7 @@ import java.util.*
 
 fun nySak(avtaleHendelseMelding: AvtaleHendelseMelding): NySak {
     val variabler = NySak.Variables(
-        grupperingsid = avtaleHendelseMelding.avtaleId.toString(),
+        grupperingsid = avtaleHendelseMelding.grupperingsId(),
         merkelapp = avtaleHendelseMelding.tiltakstype.arbeidsgiverNotifikasjonMerkelapp,
         virksomhetsnummer = avtaleHendelseMelding.bedriftNr,
         mottakere = listOf(MottakerInput(AltinnMottakerInput(avtaleHendelseMelding.tiltakstype.serviceCode, avtaleHendelseMelding.tiltakstype.serviceEdition))),
@@ -31,35 +31,35 @@ fun nyOppgave(avtaleHendelseMelding: AvtaleHendelseMelding): NyOppgave {
             mottakere = listOf(MottakerInput(AltinnMottakerInput(avtaleHendelseMelding.tiltakstype.serviceCode, avtaleHendelseMelding.tiltakstype.serviceEdition))),
             notifikasjon = NotifikasjonInput(
                 merkelapp = avtaleHendelseMelding.tiltakstype.arbeidsgiverNotifikasjonMerkelapp,
-                tekst = NotifikasjonTekst.TILTAK_AVTALE_OPPRETTET.tekst(avtaleHendelseMelding.tiltakstype),
+                tekst =  avtaleHendelseMelding.lagArbeidsgivernotifikasjonTekst(false),
                 lenke = lagLink(avtaleHendelseMelding.avtaleId.toString())
             ),
             metadata = MetadataInput(
                 virksomhetsnummer = avtaleHendelseMelding.bedriftNr,
-                eksternId = avtaleHendelseMelding.avtaleId.toString(), // TODO: Sjekke om dette blir riktig
+                eksternId = avtaleHendelseMelding.eksternId(),
                 opprettetTidspunkt = Instant.now().toString(),
-                grupperingsid = avtaleHendelseMelding.avtaleId.toString(), // Dette blir satt til avtaleId som også blir brukt på saken.
-                hardDelete = null // TODO: Sjekke hva dette betyr
+                grupperingsid = avtaleHendelseMelding.grupperingsId(),
+                hardDelete = null
             ),
-            eksterneVarsler = listOf(
+            eksterneVarsler = if (avtaleHendelseMelding.hendelseType.skalSendeSmsTilArbeidsgiver()) listOf(
                 EksterntVarselInput(
                     sms = EksterntVarselSmsInput(
-                        mottaker = SmsMottakerInput(kontaktinfo = SmsKontaktInfoInput(tlf = avtaleHendelseMelding.arbeidsgiverTlf!!)), // TODO: kan være null...
-                        smsTekst = "Ny avtale til godkjenning!", // TODO: Bestemme tekst i sms.
+                        mottaker = SmsMottakerInput(
+                            kontaktinfo = SmsKontaktInfoInput(tlf = avtaleHendelseMelding.arbeidsgiverTlf!!)
+                        ),
+                        smsTekst = "Hei! Du har fått en ny oppgave om tiltak. Logg inn på Min side - arbeidsgiver hos NAV for å se hva det gjelder. Vennlig hilsen NAV", // TODO: Finne ut av hva som skal stå i sms
                         sendetidspunkt = SendetidspunktInput(Sendevindu.DAGTID_IKKE_SOENDAG)
                     )
                 )
-            ),
+            ) else emptyList()
         )
     )
     val oppgave = NyOppgave(oppgaveVariables)
     return oppgave
 }
 
-fun oppgaveUtført(id: String): OppgaveUtfoert {
-    val oppgaveUtfoert = OppgaveUtfoert(OppgaveUtfoert.Variables(id))
-    return oppgaveUtfoert
-}
+// TODO: Sjekke om man kan lukke en sak og dermed alle oppgaver på saken.
+fun oppgaveUtført(id: String): OppgaveUtfoert = OppgaveUtfoert(OppgaveUtfoert.Variables(id))
 
 
 fun nyBeskjed(avtaleHendelseMelding: AvtaleHendelseMelding): NyBeskjed {
@@ -68,28 +68,28 @@ fun nyBeskjed(avtaleHendelseMelding: AvtaleHendelseMelding): NyBeskjed {
             mottakere = listOf(MottakerInput(AltinnMottakerInput(avtaleHendelseMelding.tiltakstype.serviceCode, avtaleHendelseMelding.tiltakstype.serviceEdition))),
             notifikasjon = NotifikasjonInput(
                 merkelapp = avtaleHendelseMelding.tiltakstype.arbeidsgiverNotifikasjonMerkelapp,
-                tekst = "Ny avtale til godkjenning!", // TODO: mappe endringstyper til tekster
+                tekst = avtaleHendelseMelding.lagArbeidsgivernotifikasjonTekst(false),
                 lenke = lagLink(avtaleHendelseMelding.avtaleId.toString())
             ),
             metadata = MetadataInput(
                 virksomhetsnummer = avtaleHendelseMelding.bedriftNr,
-                eksternId = avtaleHendelseMelding.avtaleId.toString() + UUID.randomUUID().toString(), // TODO: Kunne f.eks. laget et løpenummer, som da sier noe om hvor mange notifikasjoner osm er sendt på hver avtale.
+                eksternId = avtaleHendelseMelding.eksternId(),
                 opprettetTidspunkt = Instant.now().toString(),
-                grupperingsid = avtaleHendelseMelding.avtaleId.toString(),
+                grupperingsid = avtaleHendelseMelding.grupperingsId(),
                 hardDelete = null
             ),
 
-            eksterneVarsler = listOf(
+            eksterneVarsler = if (avtaleHendelseMelding.hendelseType.skalSendeSmsTilArbeidsgiver()) listOf(
                 EksterntVarselInput(
-                    sms = EksterntVarselSmsInput(
+                    sms = EksterntVarselSmsInput( // TODO: Hva skal varsles på i sms.
                         mottaker = SmsMottakerInput(
                             kontaktinfo = SmsKontaktInfoInput(tlf = avtaleHendelseMelding.arbeidsgiverTlf!!)
                         ),
-                        smsTekst = "Ny avtale til godkjenning!", // TODO: Bestemme tekst i sms.
+                        smsTekst = "Hei! Du har fått en ny beskjed om tiltak. Logg inn på Min side - arbeidsgiver hos NAV for å se hva det gjelder. Vennlig hilsen NAV", // TODO: Bestemme tekst i sms.
                         sendetidspunkt = SendetidspunktInput(Sendevindu.DAGTID_IKKE_SOENDAG)
                     )
                 )
-            ),
+            ) else emptyList()
         )
     )
     val beskjed = NyBeskjed(beskjedVariables)
@@ -115,9 +115,7 @@ private fun lagLink(avtaleId: String): String {
     return when (Cluster.current) {
         Cluster.PROD_GCP -> "https://arbeidsgiver.nav.no/tiltaksgjennomforing/avtale/${avtaleId}?part=ARBEIDSGIVER"
         Cluster.DEV_GCP -> "https://tiltaksgjennomforing.ekstern.dev.nav.no/tiltaksgjennomforing/avtale/${avtaleId}?part=ARBEIDSGIVER"
-        else -> {
-            "https://tiltaksgjennomforing.ekstern.dev.nav.no/tiltaksgjennomforing/avtale/${avtaleId}?part=ARBEIDSGIVER"
-        }
+        Cluster.LOKAL -> "https://tiltaksgjennomforing.ekstern.dev.nav.no/tiltaksgjennomforing/avtale/${avtaleId}?part=ARBEIDSGIVER"
     }
 
 }

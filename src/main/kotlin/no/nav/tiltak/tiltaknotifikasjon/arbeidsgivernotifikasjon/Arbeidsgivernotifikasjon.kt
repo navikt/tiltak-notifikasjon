@@ -26,12 +26,14 @@ enum class ArbeidsgivernotifikasjonStatus {
 }
 
 enum class ArbeidsgivernotifikasjonType {
-    Beskjed, Oppgave, Sak
+    Beskjed, Oppgave, Sak, FerdigstillOppgave
 }
 
 enum class Varslingsformål {
     GODKJENNING_AV_AVTALE,
-    TILTAK_FORLENGET,
-    TILTAK_FORKORTET,
-    TILTAK_ANNULLERT,
+    AVTALE_FORLENGET,
+    AVTALE_FORKORTET,
+    AVTALE_ANNULLERT,
+    AVTALE_INNGÅTT,
+    INGEN_VARSLING
 }

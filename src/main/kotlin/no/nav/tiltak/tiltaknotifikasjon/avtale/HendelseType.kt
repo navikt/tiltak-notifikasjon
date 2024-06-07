@@ -35,7 +35,7 @@ enum class HendelseType(val tekst: String) {
     OM_MENTOR_ENDRET("Om mentor endret av veileder"),
     TILSKUDDSBEREGNING_ENDRET("Tilskuddsberegning endret av veileder"),
     KONTAKTINFORMASJON_ENDRET("Kontaktinformasjon endret av veileder"),
-    STILLINGSBESKRIVELSE_ENDRET("Stillingsbeskrivelse endret av veileder" ),
+    STILLINGSBESKRIVELSE_ENDRET("Stillingsbeskrivelse endret av veileder"),
     OPPFØLGING_OG_TILRETTELEGGING_ENDRET("Oppfølging og tilrettelegging endret av veileder"),
     REFUSJON_KLAR("Refusjon klar"),
     REFUSJON_KLAR_REVARSEL("Refusjon klar, revarsel"),
@@ -47,5 +47,15 @@ enum class HendelseType(val tekst: String) {
     FJERNET_ETTERREGISTRERING("Fjernet etterregistrering på avtale"),
     DELTAKERS_GODKJENNING_OPPHEVET_AV_VEILEDER("Deltakers godkjenning opphevet av veileder"),
     DELTAKERS_GODKJENNING_OPPHEVET_AV_ARBEIDSGIVER("Deltakers godkjenning opphevet av arbeidsgiver"),
-    ARBEIDSGIVERS_GODKJENNING_OPPHEVET_AV_VEILEDER("Arbeidsgivers godkjenning opphevet av veileder"),
+    ARBEIDSGIVERS_GODKJENNING_OPPHEVET_AV_VEILEDER("Arbeidsgivers godkjenning opphevet av veileder"), ;
+
 }
+
+fun HendelseType.skalSendeSmsTilArbeidsgiver(): Boolean =
+    when (this) {
+        HendelseType.ARBEIDSGIVERS_GODKJENNING_OPPHEVET_AV_VEILEDER -> true
+        HendelseType.AVTALE_INNGÅTT -> true
+        HendelseType.AVTALE_FORLENGET -> true
+        HendelseType.AVTALE_FORKORTET -> true
+        else -> false
+    }

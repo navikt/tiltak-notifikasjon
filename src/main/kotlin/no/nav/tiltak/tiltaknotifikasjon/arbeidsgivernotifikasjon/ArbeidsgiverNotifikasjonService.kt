@@ -3,10 +3,7 @@ package no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon
 import com.expediagroup.graphql.client.spring.GraphQLWebClient
 import com.expediagroup.graphql.client.types.GraphQLClientResponse
 import kotlinx.coroutines.runBlocking
-import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.MineNotifikasjoner
-import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.NyBeskjed
-import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.NyOppgave
-import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.NySak
+import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.*
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.enums.OppgaveTilstand
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.minenotifikasjoner.MineNotifikasjonerResultat
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.minenotifikasjoner.NotifikasjonConnection
@@ -44,24 +41,25 @@ class ArbeidsgiverNotifikasjonService(
                 HendelseType.OPPRETTET -> {
                     // Sak
                     val nySak = nySak(avtaleHendelse)
-                    val notifikasjonJson = jacksonMapper().writeValueAsString(nySak)
-                    val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Sak, Varslingsformål.GODKJENNING_AV_AVTALE, notifikasjonJson)
+                    val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Sak, Varslingsformål.GODKJENNING_AV_AVTALE, nySak)
                     arbeidsgivernotifikasjonRepository.save(notifikasjon)
                     opprettNySak(nySak, notifikasjon)
                     //Oppgave (på saken - via grupperingsId)
                     val nyOppgave = nyOppgave(avtaleHendelse)
-                    val notifikasjonJsonOppgave = jacksonMapper().writeValueAsString(nyOppgave)
-                    val notifikasjonOppgave = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Oppgave, Varslingsformål.GODKJENNING_AV_AVTALE, notifikasjonJsonOppgave)
+                    val notifikasjonOppgave = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Oppgave, Varslingsformål.GODKJENNING_AV_AVTALE, nyOppgave)
                     arbeidsgivernotifikasjonRepository.save(notifikasjonOppgave)
                     opprettNyOppgave(nyOppgave, notifikasjonOppgave)
                 }
 
-                HendelseType.GODKJENT_AV_ARBEIDSGIVER -> {
+                HendelseType.GODKJENT_AV_ARBEIDSGIVER,
+                HendelseType.GODKJENT_PAA_VEGNE_AV_ARBEIDSGIVER,
+                HendelseType.GODKJENT_PAA_VEGNE_AV_DELTAKER_OG_ARBEIDSGIVER -> {
                     // Lukk alle oppgaver
-                    val mineNotifikasjonerQuery = mineNotifikasjoner(avtaleHendelse.tiltakstype.beskrivelse, avtaleHendelse.avtaleId.toString())
+                    val mineNotifikasjonerQuery = mineNotifikasjoner(avtaleHendelse.tiltakstype.beskrivelse, avtaleHendelse.avtaleId.toString()) // TODO: tilse at grupperingsId blir laget likt overalt og explisitt.
                     val response = notifikasjonGraphQlClient.execute(mineNotifikasjonerQuery)
                     val notifikasjoner = response.data?.mineNotifikasjoner
                     lukkÅpneOppgaverPåAvtale(notifikasjoner, avtaleHendelse)
+                    // TODO: Sette sak til FERDIG. Sjekke om man trengr å lukke oppgaver når sak settes til ferdig
                 }
 
                 HendelseType.ARBEIDSGIVERS_GODKJENNING_OPPHEVET_AV_VEILEDER -> {
@@ -73,9 +71,35 @@ class ArbeidsgiverNotifikasjonService(
                     opprettNyOppgave(nyOppgave, notifikasjonOppgave)
                 }
 
+                HendelseType.ANNULLERT -> {
+                    // soft delete saker, oppgaver og beskjeder
+                    // Soft delete sak: gjøres med grupperingsId (avtaleId)
+                    // Soft delete oppgaver og beskjeder (hentes med mineNotifikasjoner og deletes med id)
+                    // TODO: Fager skal sjekke opp om de kan cascade på softdelete også (tar med seg alt når vi sletter sak)
+                }
+
+                // BESKJEDER
+                HendelseType.AVTALE_INNGÅTT -> {
+                    val nyBeskjed = nyBeskjed(avtaleHendelse)
+                    val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Beskjed, Varslingsformål.AVTALE_INNGÅTT, nyBeskjed)
+                    arbeidsgivernotifikasjonRepository.save(notifikasjon)
+                    opprettNyBeskjed(nyBeskjed, notifikasjon)
+                }
+                HendelseType.AVTALE_FORLENGET -> {
+                    val nyBeskjed = nyBeskjed(avtaleHendelse)
+                    val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Beskjed, Varslingsformål.AVTALE_FORLENGET, nyBeskjed)
+                    arbeidsgivernotifikasjonRepository.save(notifikasjon)
+                    opprettNyBeskjed(nyBeskjed, notifikasjon)
+                }
+                HendelseType.AVTALE_FORKORTET -> {
+                    val nyBeskjed = nyBeskjed(avtaleHendelse)
+                    val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Beskjed, Varslingsformål.AVTALE_FORKORTET, nyBeskjed)
+                    arbeidsgivernotifikasjonRepository.save(notifikasjon)
+                    opprettNyBeskjed(nyBeskjed, notifikasjon)
+                }
+
                 else -> {}
             }
-            //  HendelseType.GODKJENNINGER_OPPHEVET_AV_VEILEDER
         }
     }
 
@@ -95,21 +119,18 @@ class ArbeidsgiverNotifikasjonService(
                         if (notifikasjon.oppgave.tilstand != OppgaveTilstand.NY) return@forEach
                         val oppgaveId = notifikasjon.metadata.id
                         val oppgaveUtfoert = oppgaveUtført(oppgaveId)
-                        val notifikasjonJsonOppgave = jacksonMapper().writeValueAsString(oppgaveUtfoert)
-                        val notifikasjonOppgave = nyArbeidsgivernotifikasjon(
-                            avtaleHendelse, ArbeidsgivernotifikasjonType.Oppgave, Varslingsformål.GODKJENNING_AV_AVTALE, notifikasjonJsonOppgave
-                        )
+                        val notifikasjonOppgave = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.FerdigstillOppgave, Varslingsformål.INGEN_VARSLING, oppgaveUtfoert)
                         arbeidsgivernotifikasjonRepository.save(notifikasjonOppgave)
                         val response = notifikasjonGraphQlClient.execute(oppgaveUtfoert)
                         if (response.errors != null) {
                             log.error("GraphQl-kall for å lukke oppgave feilet: ${response.errors}")
                             notifikasjonOppgave.status = ArbeidsgivernotifikasjonStatus.FEILET_VED_SENDING
                             notifikasjonOppgave.feilmelding = response.errors.toString()
-                            arbeidsgivernotifikasjonRepository.save(notifikasjonOppgave)
                         } else {
                             notifikasjonOppgave.sendt = Instant.now()
-                            arbeidsgivernotifikasjonRepository.save(notifikasjonOppgave)
+                            log.info("Oppgave $oppgaveId lukket vellykket. avtaleId: ${avtaleHendelse.avtaleId}")
                         }
+                        arbeidsgivernotifikasjonRepository.save(notifikasjonOppgave)
                     }
                 }
             }
@@ -128,15 +149,15 @@ class ArbeidsgiverNotifikasjonService(
                 return@runBlocking
             }
 
-            val nySak = response.data?.nySak
-            if (nySak is NySakVellykket) {
+            val nySakResultat = response.data?.nySak
+            if (nySakResultat is NySakVellykket) {
                 log.info("Sak opprettet vellykket. avtaleId: ${notifikasjon.avtaleId}")
-                notifikasjon.responseId = nySak.id
+                notifikasjon.responseId = nySakResultat.id
                 notifikasjon.sendt = Instant.now()
             } else {
                 // NySakVellykket | UgyldigMerkelapp | UgyldigMottaker | DuplikatGrupperingsid | DuplikatGrupperingsidEtterDelete| UkjentProdusent | UkjentRolle
                 log.error("opprett sak gikk ikke med resultatet: ${response.data?.nySak}")
-                val sakResultat = response.data?.nySak.toString()
+                val sakResultat = response.data?.nySak.toString() // TODO: JSON serialisere her, evt. hente ut kun feilmelding.
                 notifikasjon.feilmelding = sakResultat
                 notifikasjon.status = ArbeidsgivernotifikasjonStatus.FEILET_VED_OPPRETTELSE_HOS_FAGER
             }
@@ -157,15 +178,15 @@ class ArbeidsgiverNotifikasjonService(
                 return@runBlocking
             }
 
-            val nyOppgave = response.data?.nyOppgave
-            if (nyOppgave is NyOppgaveVellykket) {
+            val nyOppgaveResultat = response.data?.nyOppgave
+            if (nyOppgaveResultat is NyOppgaveVellykket) {
                 log.info("Oppgave opprettet vellykket. avtaleId: ${notifikasjon.avtaleId}")
-                notifikasjon.responseId = nyOppgave.id
+                notifikasjon.responseId = nyOppgaveResultat.id
                 notifikasjon.sendt = Instant.now()
             } else {
                 // NyOppgaveVellykket | UgyldigMerkelapp | UgyldigMottaker | DuplikatGrupperingsid | DuplikatGrupperingsidEtterDelete| UkjentProdusent | UkjentRolle
                 log.error("opprett oppgave gikk ikke med resultatet: ${response.data?.nyOppgave}")
-                val oppgaveResultat = response.data?.nyOppgave.toString()
+                val oppgaveResultat = response.data?.nyOppgave.toString() // TODO: JSON serialisere her, evt. hente ut kun feilmelding.
                 notifikasjon.feilmelding = oppgaveResultat
                 notifikasjon.status = ArbeidsgivernotifikasjonStatus.FEILET_VED_OPPRETTELSE_HOS_FAGER
             }
@@ -185,10 +206,10 @@ class ArbeidsgiverNotifikasjonService(
                 return@runBlocking
             }
 
-            val nyBeskjed = response.data?.nyBeskjed
-            if (nyBeskjed is NyBeskjedVellykket) {
+            val nyBeskjedResultat = response.data?.nyBeskjed
+            if (nyBeskjedResultat is NyBeskjedVellykket) {
                 log.info("Beskjed opprettet vellykket. avtaleId: ${notifikasjon.avtaleId}")
-                notifikasjon.responseId = nyBeskjed.id
+                notifikasjon.responseId = nyBeskjedResultat.id
                 notifikasjon.sendt = Instant.now()
             } else {
                 // NyBeskjedVellykket | UgyldigMerkelapp | UgyldigMottaker | DuplikatGrupperingsid | DuplikatGrupperingsidEtterDelete| UkjentProdusent | UkjentRolle
@@ -202,19 +223,40 @@ class ArbeidsgiverNotifikasjonService(
     }
 
 
+
+    private fun nyArbeidsgivernotifikasjon(
+        avtaleHendelse: AvtaleHendelseMelding, type: ArbeidsgivernotifikasjonType, varslingsformål: Varslingsformål, oppgaveUtfoert: OppgaveUtfoert
+    ): Arbeidsgivernotifikasjon =
+        nyArbeidsgivernotifikasjon(avtaleHendelse, type, varslingsformål, jacksonMapper().writeValueAsString(oppgaveUtfoert))
+
     fun nyArbeidsgivernotifikasjon(
+        avtaleHendelse: AvtaleHendelseMelding, type: ArbeidsgivernotifikasjonType, varslingsformål: Varslingsformål, nyBeskjed: NyBeskjed
+    ) = nyArbeidsgivernotifikasjon(avtaleHendelse, type, varslingsformål, jacksonMapper().writeValueAsString(nyBeskjed))
+
+    fun nyArbeidsgivernotifikasjon(
+        avtaleHendelse: AvtaleHendelseMelding, type: ArbeidsgivernotifikasjonType, varslingsformål: Varslingsformål, nyOppgave: NyOppgave
+    ) = nyArbeidsgivernotifikasjon(avtaleHendelse, type, varslingsformål, jacksonMapper().writeValueAsString(nyOppgave))
+
+    fun nyArbeidsgivernotifikasjon(
+        avtaleHendelse: AvtaleHendelseMelding, type: ArbeidsgivernotifikasjonType, varslingsformål: Varslingsformål, nySak: NySak
+    ) = nyArbeidsgivernotifikasjon(avtaleHendelse, type, varslingsformål, jacksonMapper().writeValueAsString(nySak))
+
+    private fun nyArbeidsgivernotifikasjon(
         avtaleHendelse: AvtaleHendelseMelding, type: ArbeidsgivernotifikasjonType, varslingsformål: Varslingsformål, notifikasjonJson: String
     ): Arbeidsgivernotifikasjon {
         return Arbeidsgivernotifikasjon(
             id = ulid(),
-            varselId = "123",
+            varselId = null,
             avtaleMeldingJson = jacksonMapper().writeValueAsString(avtaleHendelse),
             notifikasjonJson = notifikasjonJson,
             type = type,
             status = ArbeidsgivernotifikasjonStatus.BEHANDLET,
             bedriftNr = avtaleHendelse.bedriftNr,
             avtaleHendelseType = avtaleHendelse.hendelseType,
-            varslingsformål = varslingsformål
+            varslingsformål = varslingsformål,
+            avtaleId = avtaleHendelse.avtaleId.toString(),
+            avtaleNr = avtaleHendelse.avtaleNr,
+            opprettet = Instant.now()
         )
     }
 
