@@ -39,6 +39,7 @@ class ArbeidsgiverNotifikasjonService(
             when (avtaleHendelse.hendelseType) {
 
                 HendelseType.OPPRETTET -> {
+                    log.info("Avtale opprettet: lager sak og oppgave. avtaleId: ${avtaleHendelse.avtaleId}")
                     // Sak
                     val nySak = nySak(avtaleHendelse)
                     val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Sak, Varslingsformål.GODKJENNING_AV_AVTALE, nySak)
@@ -54,6 +55,7 @@ class ArbeidsgiverNotifikasjonService(
                 HendelseType.GODKJENT_AV_ARBEIDSGIVER,
                 HendelseType.GODKJENT_PAA_VEGNE_AV_ARBEIDSGIVER,
                 HendelseType.GODKJENT_PAA_VEGNE_AV_DELTAKER_OG_ARBEIDSGIVER -> {
+                    log.info("Avtale godkjent: lukker oppgaver. avtaleId: ${avtaleHendelse.avtaleId}")
                     // Lukk alle oppgaver
                     val mineNotifikasjonerQuery = mineNotifikasjoner(avtaleHendelse.tiltakstype.beskrivelse, avtaleHendelse.avtaleId.toString()) // TODO: tilse at grupperingsId blir laget likt overalt og explisitt.
                     val response = notifikasjonGraphQlClient.execute(mineNotifikasjonerQuery)
@@ -63,6 +65,7 @@ class ArbeidsgiverNotifikasjonService(
                 }
 
                 HendelseType.ARBEIDSGIVERS_GODKJENNING_OPPHEVET_AV_VEILEDER -> {
+                    log.info("Avtale godkjenning opphevet: lager ny oppgave. avtaleId: ${avtaleHendelse.avtaleId}")
                     //Oppgave (på saken - via grupperingsId)
                     val nyOppgave = nyOppgave(avtaleHendelse)
                     val notifikasjonJsonOppgave = jacksonMapper().writeValueAsString(nyOppgave)
@@ -72,6 +75,7 @@ class ArbeidsgiverNotifikasjonService(
                 }
 
                 HendelseType.ANNULLERT -> {
+                    log.info("Avtale annullert: sletter saker, oppgaver og beskjeder. avtaleId: ${avtaleHendelse.avtaleId}")
                     // soft delete saker, oppgaver og beskjeder
                     // Soft delete sak: gjøres med grupperingsId (avtaleId)
                     // Soft delete oppgaver og beskjeder (hentes med mineNotifikasjoner og deletes med id)
@@ -80,18 +84,21 @@ class ArbeidsgiverNotifikasjonService(
 
                 // BESKJEDER
                 HendelseType.AVTALE_INNGÅTT -> {
+                    log.info("Avtale inngått: lager beskjed. avtaleId: ${avtaleHendelse.avtaleId}")
                     val nyBeskjed = nyBeskjed(avtaleHendelse)
                     val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Beskjed, Varslingsformål.AVTALE_INNGÅTT, nyBeskjed)
                     arbeidsgivernotifikasjonRepository.save(notifikasjon)
                     opprettNyBeskjed(nyBeskjed, notifikasjon)
                 }
                 HendelseType.AVTALE_FORLENGET -> {
+                    log.info("Avtale forlenget: lager beskjed. avtaleId: ${avtaleHendelse.avtaleId}")
                     val nyBeskjed = nyBeskjed(avtaleHendelse)
                     val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Beskjed, Varslingsformål.AVTALE_FORLENGET, nyBeskjed)
                     arbeidsgivernotifikasjonRepository.save(notifikasjon)
                     opprettNyBeskjed(nyBeskjed, notifikasjon)
                 }
                 HendelseType.AVTALE_FORKORTET -> {
+                    log.info("Avtale forkortet: lager beskjed. avtaleId: ${avtaleHendelse.avtaleId}")
                     val nyBeskjed = nyBeskjed(avtaleHendelse)
                     val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Beskjed, Varslingsformål.AVTALE_FORKORTET, nyBeskjed)
                     arbeidsgivernotifikasjonRepository.save(notifikasjon)
