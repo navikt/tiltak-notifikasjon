@@ -15,7 +15,7 @@ fun nySak(avtaleHendelseMelding: AvtaleHendelseMelding): NySak {
         grupperingsid = avtaleHendelseMelding.grupperingsId(),
         merkelapp = avtaleHendelseMelding.tiltakstype.arbeidsgiverNotifikasjonMerkelapp,
         virksomhetsnummer = avtaleHendelseMelding.bedriftNr,
-        mottakere = listOf(MottakerInput(AltinnMottakerInput(avtaleHendelseMelding.tiltakstype.serviceCode, avtaleHendelseMelding.tiltakstype.serviceEdition))),
+        mottakere = listOf(MottakerInput(AltinnMottakerInput(avtaleHendelseMelding.tiltakstype.serviceCode(), avtaleHendelseMelding.tiltakstype.serviceEdition()))),
         tittel = NotifikasjonTekst.TILTAK_AVTALE_OPPRETTET_SAK.tekst(avtaleHendelseMelding.tiltakstype),
         lenke = lagLink(avtaleHendelseMelding.avtaleId.toString()),
         initiellStatus = SaksStatus.MOTTATT,
@@ -28,7 +28,7 @@ fun nySak(avtaleHendelseMelding: AvtaleHendelseMelding): NySak {
 fun nyOppgave(avtaleHendelseMelding: AvtaleHendelseMelding): NyOppgave {
     val oppgaveVariables = NyOppgave.Variables(
         NyOppgaveInput(
-            mottakere = listOf(MottakerInput(AltinnMottakerInput(avtaleHendelseMelding.tiltakstype.serviceCode, avtaleHendelseMelding.tiltakstype.serviceEdition))),
+            mottakere = listOf(MottakerInput(AltinnMottakerInput(avtaleHendelseMelding.tiltakstype.serviceCode(), avtaleHendelseMelding.tiltakstype.serviceEdition()))),
             notifikasjon = NotifikasjonInput(
                 merkelapp = avtaleHendelseMelding.tiltakstype.arbeidsgiverNotifikasjonMerkelapp,
                 tekst =  avtaleHendelseMelding.lagArbeidsgivernotifikasjonTekst(false),
@@ -65,7 +65,7 @@ fun oppgaveUtført(id: String): OppgaveUtfoert = OppgaveUtfoert(OppgaveUtfoert.V
 fun nyBeskjed(avtaleHendelseMelding: AvtaleHendelseMelding): NyBeskjed {
     val beskjedVariables = NyBeskjed.Variables(
         NyBeskjedInput(
-            mottakere = listOf(MottakerInput(AltinnMottakerInput(avtaleHendelseMelding.tiltakstype.serviceCode, avtaleHendelseMelding.tiltakstype.serviceEdition))),
+            mottakere = listOf(MottakerInput(AltinnMottakerInput(avtaleHendelseMelding.tiltakstype.serviceCode(), avtaleHendelseMelding.tiltakstype.serviceEdition()))),
             notifikasjon = NotifikasjonInput(
                 merkelapp = avtaleHendelseMelding.tiltakstype.arbeidsgiverNotifikasjonMerkelapp,
                 tekst = avtaleHendelseMelding.lagArbeidsgivernotifikasjonTekst(false),
