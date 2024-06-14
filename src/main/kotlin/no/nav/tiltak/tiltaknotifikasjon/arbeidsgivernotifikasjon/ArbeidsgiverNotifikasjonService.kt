@@ -48,7 +48,7 @@ class ArbeidsgiverNotifikasjonService(
                     arbeidsgivernotifikasjonRepository.save(notifikasjon)
                     opprettNySak(nySak, notifikasjon)
                     //Oppgave (på saken - via grupperingsId)
-                    val nyOppgave = nyOppgave(avtaleHendelse)
+                    val nyOppgave = nyOppgave(avtaleHendelse, altinnProperties)
                     val notifikasjonOppgave = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Oppgave, Varslingsformål.GODKJENNING_AV_AVTALE, nyOppgave)
                     arbeidsgivernotifikasjonRepository.save(notifikasjonOppgave)
                     opprettNyOppgave(nyOppgave, notifikasjonOppgave)
@@ -69,7 +69,7 @@ class ArbeidsgiverNotifikasjonService(
                 HendelseType.ARBEIDSGIVERS_GODKJENNING_OPPHEVET_AV_VEILEDER -> {
                     log.info("Avtale godkjenning opphevet: lager ny oppgave. avtaleId: ${avtaleHendelse.avtaleId}")
                     //Oppgave (på saken - via grupperingsId)
-                    val nyOppgave = nyOppgave(avtaleHendelse)
+                    val nyOppgave = nyOppgave(avtaleHendelse, altinnProperties)
                     val notifikasjonJsonOppgave = jacksonMapper().writeValueAsString(nyOppgave)
                     val notifikasjonOppgave = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Oppgave, Varslingsformål.GODKJENNING_AV_AVTALE, notifikasjonJsonOppgave)
                     arbeidsgivernotifikasjonRepository.save(notifikasjonOppgave)
@@ -87,21 +87,21 @@ class ArbeidsgiverNotifikasjonService(
                 // BESKJEDER
                 HendelseType.AVTALE_INNGÅTT -> {
                     log.info("Avtale inngått: lager beskjed. avtaleId: ${avtaleHendelse.avtaleId}")
-                    val nyBeskjed = nyBeskjed(avtaleHendelse)
+                    val nyBeskjed = nyBeskjed(avtaleHendelse, altinnProperties)
                     val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Beskjed, Varslingsformål.AVTALE_INNGÅTT, nyBeskjed)
                     arbeidsgivernotifikasjonRepository.save(notifikasjon)
                     opprettNyBeskjed(nyBeskjed, notifikasjon)
                 }
                 HendelseType.AVTALE_FORLENGET -> {
                     log.info("Avtale forlenget: lager beskjed. avtaleId: ${avtaleHendelse.avtaleId}")
-                    val nyBeskjed = nyBeskjed(avtaleHendelse)
+                    val nyBeskjed = nyBeskjed(avtaleHendelse, altinnProperties)
                     val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Beskjed, Varslingsformål.AVTALE_FORLENGET, nyBeskjed)
                     arbeidsgivernotifikasjonRepository.save(notifikasjon)
                     opprettNyBeskjed(nyBeskjed, notifikasjon)
                 }
                 HendelseType.AVTALE_FORKORTET -> {
                     log.info("Avtale forkortet: lager beskjed. avtaleId: ${avtaleHendelse.avtaleId}")
-                    val nyBeskjed = nyBeskjed(avtaleHendelse)
+                    val nyBeskjed = nyBeskjed(avtaleHendelse, altinnProperties)
                     val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Beskjed, Varslingsformål.AVTALE_FORKORTET, nyBeskjed)
                     arbeidsgivernotifikasjonRepository.save(notifikasjon)
                     opprettNyBeskjed(nyBeskjed, notifikasjon)
