@@ -15,7 +15,7 @@ fun nySak(avtaleHendelseMelding: AvtaleHendelseMelding): NySak {
         grupperingsid = avtaleHendelseMelding.grupperingsId(),
         merkelapp = avtaleHendelseMelding.tiltakstype.arbeidsgiverNotifikasjonMerkelapp,
         virksomhetsnummer = avtaleHendelseMelding.bedriftNr,
-        mottakere = listOf(MottakerInput(AltinnMottakerInput(avtaleHendelseMelding.tiltakstype.serviceCode(), avtaleHendelseMelding.tiltakstype.serviceEdition()))),
+        mottakere = listOf(MottakerInput(AltinnMottakerInput(serviceEdition(avtaleHendelseMelding.tiltakstype), serviceEdition(avtaleHendelseMelding.tiltakstype)))),
         tittel = NotifikasjonTekst.TILTAK_AVTALE_OPPRETTET_SAK.tekst(avtaleHendelseMelding.tiltakstype),
         lenke = lagLink(avtaleHendelseMelding.avtaleId.toString()),
         initiellStatus = SaksStatus.MOTTATT,
@@ -28,7 +28,7 @@ fun nySak(avtaleHendelseMelding: AvtaleHendelseMelding): NySak {
 fun nyOppgave(avtaleHendelseMelding: AvtaleHendelseMelding): NyOppgave {
     val oppgaveVariables = NyOppgave.Variables(
         NyOppgaveInput(
-            mottakere = listOf(MottakerInput(AltinnMottakerInput(avtaleHendelseMelding.tiltakstype.serviceCode(), avtaleHendelseMelding.tiltakstype.serviceEdition()))),
+            mottakere = listOf(MottakerInput(AltinnMottakerInput(serviceEdition(avtaleHendelseMelding.tiltakstype), serviceEdition(avtaleHendelseMelding.tiltakstype)))),
             notifikasjon = NotifikasjonInput(
                 merkelapp = avtaleHendelseMelding.tiltakstype.arbeidsgiverNotifikasjonMerkelapp,
                 tekst =  avtaleHendelseMelding.lagArbeidsgivernotifikasjonTekst(false),
@@ -65,7 +65,7 @@ fun oppgaveUtført(id: String): OppgaveUtfoert = OppgaveUtfoert(OppgaveUtfoert.V
 fun nyBeskjed(avtaleHendelseMelding: AvtaleHendelseMelding): NyBeskjed {
     val beskjedVariables = NyBeskjed.Variables(
         NyBeskjedInput(
-            mottakere = listOf(MottakerInput(AltinnMottakerInput(avtaleHendelseMelding.tiltakstype.serviceCode(), avtaleHendelseMelding.tiltakstype.serviceEdition()))),
+            mottakere = listOf(MottakerInput(AltinnMottakerInput(serviceEdition(avtaleHendelseMelding.tiltakstype), serviceEdition(avtaleHendelseMelding.tiltakstype)))),
             notifikasjon = NotifikasjonInput(
                 merkelapp = avtaleHendelseMelding.tiltakstype.arbeidsgiverNotifikasjonMerkelapp,
                 tekst = avtaleHendelseMelding.lagArbeidsgivernotifikasjonTekst(false),
@@ -118,4 +118,27 @@ private fun lagLink(avtaleId: String): String {
         Cluster.LOKAL -> "https://tiltaksgjennomforing.ekstern.dev.nav.no/tiltaksgjennomforing/avtale/${avtaleId}?part=ARBEIDSGIVER"
     }
 
+}
+
+private fun serviceCode(tiltakstype: Tiltakstype): String {
+    val altinnProperties = AltinnProperties()
+    return when (tiltakstype) {
+        Tiltakstype.ARBEIDSTRENING -> altinnProperties.arbtreningServiceCode
+        Tiltakstype.MIDLERTIDIG_LONNSTILSKUDD -> altinnProperties.ltsMidlertidigServiceCode
+        Tiltakstype.VARIG_LONNSTILSKUDD -> altinnProperties.ltsVarigServiceCode
+        Tiltakstype.MENTOR -> altinnProperties.mentorServiceCode
+        Tiltakstype.INKLUDERINGSTILSKUDD -> altinnProperties.inkluderingstilskuddServiceCode
+        Tiltakstype.SOMMERJOBB -> altinnProperties.sommerjobbServiceCode
+    }
+}
+private fun serviceEdition(tiltakstype: Tiltakstype): String {
+    val altinnProperties = AltinnProperties()
+    return when (tiltakstype) {
+        Tiltakstype.ARBEIDSTRENING -> altinnProperties.arbtreningServiceEdition
+        Tiltakstype.MIDLERTIDIG_LONNSTILSKUDD -> altinnProperties.ltsMidlertidigServiceEdition
+        Tiltakstype.VARIG_LONNSTILSKUDD -> altinnProperties.ltsVarigServiceEdition
+        Tiltakstype.MENTOR -> altinnProperties.mentorServiceEdition
+        Tiltakstype.INKLUDERINGSTILSKUDD -> altinnProperties.inkluderingstilskuddServiceEdition
+        Tiltakstype.SOMMERJOBB -> altinnProperties.sommerjobbServiceEdition
+    }
 }
