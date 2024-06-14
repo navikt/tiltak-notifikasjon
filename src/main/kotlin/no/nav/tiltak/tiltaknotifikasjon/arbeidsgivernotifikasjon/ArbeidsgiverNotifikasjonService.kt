@@ -27,8 +27,10 @@ import java.time.Instant
 @Component
 class ArbeidsgiverNotifikasjonService(
     arbeidsgivernotifikasjonProperties: ArbeidsgivernotifikasjonProperties,
+    private val altinnProperties: AltinnProperties,
     @Qualifier("azureWebClientBuilder") azureWebClientBuilder: WebClient.Builder,
-    val arbeidsgivernotifikasjonRepository: ArbeidsgivernotifikasjonRepository
+    val arbeidsgivernotifikasjonRepository: ArbeidsgivernotifikasjonRepository,
+    properties: AltinnProperties
 ) {
 
     private val log = LoggerFactory.getLogger(javaClass)
@@ -41,7 +43,7 @@ class ArbeidsgiverNotifikasjonService(
                 HendelseType.OPPRETTET -> {
                     log.info("Avtale opprettet: lager sak og oppgave. avtaleId: ${avtaleHendelse.avtaleId}")
                     // Sak
-                    val nySak = nySak(avtaleHendelse)
+                    val nySak = nySak(avtaleHendelse, altinnProperties)
                     val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Sak, Varslingsformål.GODKJENNING_AV_AVTALE, nySak)
                     arbeidsgivernotifikasjonRepository.save(notifikasjon)
                     opprettNySak(nySak, notifikasjon)

@@ -47,8 +47,7 @@ enum class Tiltakstype(val beskrivelse: String, val skalTilAktivitetsplan: Boole
     );
 }
 
-fun Tiltakstype.serviceCode(): String {
-    val altinnProperties = AltinnProperties()
+fun Tiltakstype.serviceCode(altinnProperties: AltinnProperties): String {
     return when (this) {
         Tiltakstype.ARBEIDSTRENING -> altinnProperties.arbtreningServiceCode
         Tiltakstype.MIDLERTIDIG_LONNSTILSKUDD -> altinnProperties.ltsMidlertidigServiceCode
@@ -58,8 +57,7 @@ fun Tiltakstype.serviceCode(): String {
         Tiltakstype.SOMMERJOBB -> altinnProperties.sommerjobbServiceCode
     }
 }
-fun Tiltakstype.serviceEdition(): String {
-    val altinnProperties = AltinnProperties()
+fun Tiltakstype.serviceEdition(altinnProperties: AltinnProperties): String {
     return when (this) {
         Tiltakstype.ARBEIDSTRENING -> altinnProperties.arbtreningServiceEdition
         Tiltakstype.MIDLERTIDIG_LONNSTILSKUDD -> altinnProperties.ltsMidlertidigServiceEdition

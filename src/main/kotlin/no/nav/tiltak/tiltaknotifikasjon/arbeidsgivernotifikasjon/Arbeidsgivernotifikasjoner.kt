@@ -7,15 +7,14 @@ import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generat
 import no.nav.tiltak.tiltaknotifikasjon.avtale.*
 import no.nav.tiltak.tiltaknotifikasjon.utils.Cluster
 import java.time.Instant
-import java.util.*
 
 
-fun nySak(avtaleHendelseMelding: AvtaleHendelseMelding): NySak {
+fun nySak(avtaleHendelseMelding: AvtaleHendelseMelding, altinnProperties: AltinnProperties): NySak {
     val variabler = NySak.Variables(
         grupperingsid = avtaleHendelseMelding.grupperingsId(),
         merkelapp = avtaleHendelseMelding.tiltakstype.arbeidsgiverNotifikasjonMerkelapp,
         virksomhetsnummer = avtaleHendelseMelding.bedriftNr,
-        mottakere = listOf(MottakerInput(AltinnMottakerInput(serviceEdition(avtaleHendelseMelding.tiltakstype), serviceEdition(avtaleHendelseMelding.tiltakstype)))),
+        mottakere = listOf(MottakerInput(AltinnMottakerInput(avtaleHendelseMelding.tiltakstype.serviceCode(altinnProperties), avtaleHendelseMelding.tiltakstype.serviceEdition(altinnProperties)))),
         tittel = NotifikasjonTekst.TILTAK_AVTALE_OPPRETTET_SAK.tekst(avtaleHendelseMelding.tiltakstype),
         lenke = lagLink(avtaleHendelseMelding.avtaleId.toString()),
         initiellStatus = SaksStatus.MOTTATT,
@@ -25,10 +24,10 @@ fun nySak(avtaleHendelseMelding: AvtaleHendelseMelding): NySak {
     return nySak
 }
 
-fun nyOppgave(avtaleHendelseMelding: AvtaleHendelseMelding): NyOppgave {
+fun nyOppgave(avtaleHendelseMelding: AvtaleHendelseMelding, altinnProperties: AltinnProperties): NyOppgave {
     val oppgaveVariables = NyOppgave.Variables(
         NyOppgaveInput(
-            mottakere = listOf(MottakerInput(AltinnMottakerInput(serviceEdition(avtaleHendelseMelding.tiltakstype), serviceEdition(avtaleHendelseMelding.tiltakstype)))),
+            mottakere = listOf(MottakerInput(AltinnMottakerInput(avtaleHendelseMelding.tiltakstype.serviceCode(altinnProperties), avtaleHendelseMelding.tiltakstype.serviceEdition(altinnProperties)))),
             notifikasjon = NotifikasjonInput(
                 merkelapp = avtaleHendelseMelding.tiltakstype.arbeidsgiverNotifikasjonMerkelapp,
                 tekst =  avtaleHendelseMelding.lagArbeidsgivernotifikasjonTekst(false),
@@ -62,10 +61,10 @@ fun nyOppgave(avtaleHendelseMelding: AvtaleHendelseMelding): NyOppgave {
 fun oppgaveUtført(id: String): OppgaveUtfoert = OppgaveUtfoert(OppgaveUtfoert.Variables(id))
 
 
-fun nyBeskjed(avtaleHendelseMelding: AvtaleHendelseMelding): NyBeskjed {
+fun nyBeskjed(avtaleHendelseMelding: AvtaleHendelseMelding, altinnProperties: AltinnProperties): NyBeskjed {
     val beskjedVariables = NyBeskjed.Variables(
         NyBeskjedInput(
-            mottakere = listOf(MottakerInput(AltinnMottakerInput(serviceEdition(avtaleHendelseMelding.tiltakstype), serviceEdition(avtaleHendelseMelding.tiltakstype)))),
+            mottakere = listOf(MottakerInput(AltinnMottakerInput(avtaleHendelseMelding.tiltakstype.serviceCode(altinnProperties), avtaleHendelseMelding.tiltakstype.serviceEdition(altinnProperties)))),
             notifikasjon = NotifikasjonInput(
                 merkelapp = avtaleHendelseMelding.tiltakstype.arbeidsgiverNotifikasjonMerkelapp,
                 tekst = avtaleHendelseMelding.lagArbeidsgivernotifikasjonTekst(false),
