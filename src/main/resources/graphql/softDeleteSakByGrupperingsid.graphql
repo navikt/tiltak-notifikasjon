@@ -1,0 +1,23 @@
+mutation softDeleteSakByGrupperingsid(
+    $merkelapp: String!,
+    $grupperingsid: String!
+) {
+    softDeleteSakByGrupperingsid(
+        merkelapp: $merkelapp,
+        grupperingsid: $grupperingsid
+    ) {
+        __typename
+        ... on SoftDeleteSakVellykket {
+            id
+        }
+        ... on UgyldigMerkelapp {
+            feilmelding
+        }
+        ... on SakFinnesIkke {
+            feilmelding
+        }
+        ... on UkjentProdusent {
+            feilmelding
+        }
+    }
+}

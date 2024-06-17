@@ -11,6 +11,8 @@ import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generat
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.nybeskjed.NyBeskjedVellykket
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.nyoppgave.NyOppgaveVellykket
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.nysak.NySakVellykket
+import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.softdeletesakbygrupperingsid.SakFinnesIkke
+import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.softdeletesakbygrupperingsid.SoftDeleteSakVellykket
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
 import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
@@ -82,6 +84,12 @@ class ArbeidsgiverNotifikasjonService(
                     // Soft delete sak: gjøres med grupperingsId (avtaleId)
                     // Soft delete oppgaver og beskjeder (hentes med mineNotifikasjoner og deletes med id)
                     // TODO: Fager skal sjekke opp om de kan cascade på softdelete også (tar med seg alt når vi sletter sak)
+                    // TODO2: Fager skal implementere cascade på soft-delete. ETA er denne uken (uke 25) Avventer til det er på plass.
+                    // men det kan finnes oppgaver/beskjeder på avtalen uten at det er en sak der (fra gammelt oppsett) må uansett slette de.
+
+                    // SAK
+                    val softDeleteSakQuery = softDeleteSak(avtaleHendelse.tiltakstype.arbeidsgiverNotifikasjonMerkelapp, avtaleHendelse.avtaleId.toString())
+                    softDeleteSak(softDeleteSakQuery)
                 }
 
                 // BESKJEDER
@@ -141,6 +149,24 @@ class ArbeidsgiverNotifikasjonService(
                         }
                         arbeidsgivernotifikasjonRepository.save(notifikasjonOppgave)
                     }
+                }
+            }
+        }
+    }
+
+    fun softDeleteSak(softDeleteSakQuery: SoftDeleteSakByGrupperingsid) {
+        runBlocking {
+            val response = notifikasjonGraphQlClient.execute(softDeleteSakQuery)
+            if (response.errors != null) {
+                log.error("GraphQl-kall for å softDelete sak feilet: ${response.errors}")
+            } else {
+                val resultat = response.data?.softDeleteSakByGrupperingsid
+                if (resultat is SoftDeleteSakVellykket) {
+                    log.info("Sak slettet vellykket. grupperingsId: ${softDeleteSakQuery.variables.grupperingsid}")
+                } else if (resultat is SakFinnesIkke) {
+                    log.info("Sak finnes ikke. Må slette notifikasjoner mauelt. grupperingsId: ${softDeleteSakQuery.variables.grupperingsid}")
+                } else {
+                    log.error("Sak sletting gikk ikke med resultatet: ${response.data?.softDeleteSakByGrupperingsid}")
                 }
             }
         }

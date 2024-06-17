@@ -109,6 +109,16 @@ fun mineNotifikasjoner(merkelapp: String, grupperingsid: String): MineNotifikasj
     return mineNotifikasjoner
 }
 
+fun softDeleteSak(merkelapp: String, grupperingsid: String): SoftDeleteSakByGrupperingsid {
+    val variables = SoftDeleteSakByGrupperingsid.Variables(merkelapp = merkelapp, grupperingsid = grupperingsid)
+    val softDeleteSak = SoftDeleteSakByGrupperingsid(variables)
+    return softDeleteSak
+}
+fun softDeleteNotifikasjon(notifikasjonId: String): SoftDeleteNotifikasjon {
+    val softDeleteNotifikasjon = SoftDeleteNotifikasjon(SoftDeleteNotifikasjon.Variables(notifikasjonId))
+    return softDeleteNotifikasjon
+}
+
 
 private fun lagLink(avtaleId: String): String {
     return when (Cluster.current) {
