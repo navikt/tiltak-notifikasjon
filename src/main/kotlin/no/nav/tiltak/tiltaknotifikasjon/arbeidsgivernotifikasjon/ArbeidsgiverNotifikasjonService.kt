@@ -26,7 +26,7 @@ import org.springframework.web.reactive.function.client.WebClient
 import java.time.Instant
 
 
-@Profile("dev-gcp")
+@Profile("prod-gcp", "dev-gcp", "dockercompose")
 @Component
 class ArbeidsgiverNotifikasjonService(
     arbeidsgivernotifikasjonProperties: ArbeidsgivernotifikasjonProperties,

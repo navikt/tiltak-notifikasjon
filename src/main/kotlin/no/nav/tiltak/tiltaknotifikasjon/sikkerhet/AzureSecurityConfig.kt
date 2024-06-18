@@ -7,14 +7,12 @@ import no.nav.security.token.support.spring.api.EnableJwtTokenValidation
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Profile
 import org.springframework.web.reactive.function.client.ClientRequest
 import org.springframework.web.reactive.function.client.WebClient
 
 @EnableOAuth2Client(cacheEnabled = true)
 @EnableJwtTokenValidation
 @Configuration
-@Profile("dev-gcp")
 class AzureSecurityConfig {
     private val log = LoggerFactory.getLogger(javaClass)
 
