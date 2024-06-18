@@ -68,7 +68,7 @@ private fun lagLink(avtaleId: String): String {
     return when (Cluster.current) {
         Cluster.PROD_GCP -> "https://arbeidsgiver.nav.no/tiltaksgjennomforing/avtale/${avtaleId}?part=DELTAKER"
         Cluster.DEV_GCP -> "https://tiltaksgjennomforing.ekstern.dev.nav.no/tiltaksgjennomforing/avtale/${avtaleId}?part=DELTAKER"
-        else -> {
+        Cluster.LOKAL -> {
             log.warn("Bruker localhost link for avtale: ${avtaleId}")
             "http://localhost:8080/tiltaksgjennomforing/avtale/${avtaleId}"
         }
