@@ -129,6 +129,9 @@ class ArbeidsgiverNotifikasjonService(
         }
     }
 
+
+
+
     fun lukkÅpneOppgaverPåAvtale(notifikasjonerPåAvtale: MineNotifikasjonerResultat?, avtaleHendelse: AvtaleHendelseMelding) {
         runBlocking {
             if (notifikasjonerPåAvtale is NotifikasjonConnection) {
@@ -214,7 +217,7 @@ class ArbeidsgiverNotifikasjonService(
                     return@runBlocking true
 
                 } else if (resultat is SakFinnesIkke) {
-                    log.info("Sak finnes ikke. Må slette notifikasjoner mauelt. grupperingsId: ${softDeleteSakQuery.variables.grupperingsid}")
+                    log.info("Sak finnes ikke. Må slette notifikasjoner manuelt. grupperingsId: ${softDeleteSakQuery.variables.grupperingsid}")
                     return@runBlocking false
                 } else {
                     log.error("Sak sletting gikk ikke med resultatet: ${response.data?.softDeleteSakByGrupperingsid}")
