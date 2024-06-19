@@ -20,6 +20,14 @@ class ArbeidsgivernotifikasjonRepository(val dsl: DSLContext) {
             .execute()
     }
 
+    fun findByResponseId(id: String): Arbeidsgivernotifikasjon? {
+        return dsl
+            .selectFrom(ARBEIDSGIVERNOTIFIKASJON)
+            .where(ARBEIDSGIVERNOTIFIKASJON.RESPONSE_ID.eq(id))
+            .fetchOneInto(ArbeidsgivernotifikasjonRecord::class.java)
+            ?.map { mapToArbeidsgivernotifikasjon(it as ArbeidsgivernotifikasjonRecord) }
+    }
+
     // Ikke i bruk pt.
     private fun mapToArbeidsgivernotifikasjon(record: ArbeidsgivernotifikasjonRecord): Arbeidsgivernotifikasjon {
         return Arbeidsgivernotifikasjon(
@@ -53,7 +61,7 @@ class ArbeidsgivernotifikasjonRepository(val dsl: DSLContext) {
             bedriftNr = arbeidsgivernotifikasjon.bedriftNr,
             avtaleHendelseType = arbeidsgivernotifikasjon.avtaleHendelseType?.name,
             feilmelding = arbeidsgivernotifikasjon.feilmelding,
-            sendt = if (arbeidsgivernotifikasjon.sendt != null) arbeidsgivernotifikasjon.sendt?.atOffset(ZoneOffset.UTC) else null ,
+            sendt = if (arbeidsgivernotifikasjon.sendt != null) arbeidsgivernotifikasjon.sendt?.atOffset(ZoneOffset.UTC) else null,
             opprettet = arbeidsgivernotifikasjon.opprettet.atOffset(ZoneOffset.UTC),
             varslingsformål = arbeidsgivernotifikasjon.varslingsformål?.name,
             responseId = arbeidsgivernotifikasjon.responseId,

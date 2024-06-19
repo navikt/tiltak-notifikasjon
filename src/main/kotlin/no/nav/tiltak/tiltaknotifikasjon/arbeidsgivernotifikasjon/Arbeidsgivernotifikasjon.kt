@@ -22,7 +22,7 @@ data class Arbeidsgivernotifikasjon(
 )
 
 enum class ArbeidsgivernotifikasjonStatus {
-    BEHANDLET, FEILET_VED_BEHANDLING, FEILET_VED_SENDING, FEILET_VED_OPPRETTELSE_HOS_FAGER
+    BEHANDLET, FEILET_VED_BEHANDLING, FEILET_VED_SENDING, FEILET_VED_OPPRETTELSE_HOS_FAGER, SLETTET
 }
 
 enum class ArbeidsgivernotifikasjonType {
