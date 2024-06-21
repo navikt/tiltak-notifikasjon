@@ -83,8 +83,6 @@ class ArbeidsgiverNotifikasjonService(
                     log.info("Avtale annullert: sletter saker, oppgaver og beskjeder. avtaleId: ${avtaleHendelse.avtaleId}")
                     // TODO: Fager skal implementere cascade på soft-delete. ETA er denne uken (uke 25) Avventer til det er på plass.
                     // men det kan finnes oppgaver/beskjeder på avtalen uten at det er en sak der (fra gammelt oppsett) må uansett slette de.
-
-                    // SAK
                     val softDeleteSakQuery = softDeleteSak(avtaleHendelse.tiltakstype.arbeidsgiverNotifikasjonMerkelapp, avtaleHendelse.avtaleId.toString())
                     val gikkSoftDeleteSakBra = softDeleteSak(softDeleteSakQuery)
                     if (!gikkSoftDeleteSakBra) {
@@ -115,6 +113,54 @@ class ArbeidsgiverNotifikasjonService(
                     log.info("Avtale forkortet: lager beskjed. avtaleId: ${avtaleHendelse.avtaleId}")
                     val nyBeskjed = nyBeskjed(avtaleHendelse, altinnProperties)
                     val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Beskjed, Varslingsformål.AVTALE_FORKORTET, nyBeskjed)
+                    arbeidsgivernotifikasjonRepository.save(notifikasjon)
+                    opprettNyBeskjed(nyBeskjed, notifikasjon)
+                }
+                HendelseType.MÅL_ENDRET -> {
+                    log.info("Mål endret: lager beskjed. avtaleId: ${avtaleHendelse.avtaleId}")
+                    val nyBeskjed = nyBeskjed(avtaleHendelse, altinnProperties)
+                    val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Beskjed, Varslingsformål.MÅL_ENDRET, nyBeskjed)
+                    arbeidsgivernotifikasjonRepository.save(notifikasjon)
+                    opprettNyBeskjed(nyBeskjed, notifikasjon)
+                }
+                HendelseType.INKLUDERINGSTILSKUDD_ENDRET -> {
+                    log.info("Inkluderingstilskudd endret: lager beskjed. avtaleId: ${avtaleHendelse.avtaleId}")
+                    val nyBeskjed = nyBeskjed(avtaleHendelse, altinnProperties)
+                    val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Beskjed, Varslingsformål.INKLUDERINGSTILSKUDD_ENDRET, nyBeskjed)
+                    arbeidsgivernotifikasjonRepository.save(notifikasjon)
+                }
+                HendelseType.OM_MENTOR_ENDRET -> {
+                    log.info("Om mentor endret: lager beskjed. avtaleId: ${avtaleHendelse.avtaleId}")
+                    val nyBeskjed = nyBeskjed(avtaleHendelse, altinnProperties)
+                    val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Beskjed, Varslingsformål.OM_MENTOR_ENDRET, nyBeskjed)
+                    arbeidsgivernotifikasjonRepository.save(notifikasjon)
+                    opprettNyBeskjed(nyBeskjed, notifikasjon)
+                }
+                HendelseType.STILLINGSBESKRIVELSE_ENDRET -> {
+                    log.info("Stillingsbeskrivelse endret: lager beskjed. avtaleId: ${avtaleHendelse.avtaleId}")
+                    val nyBeskjed = nyBeskjed(avtaleHendelse, altinnProperties)
+                    val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Beskjed, Varslingsformål.STILLINGSBESKRIVELSE_ENDRET, nyBeskjed)
+                    arbeidsgivernotifikasjonRepository.save(notifikasjon)
+                    opprettNyBeskjed(nyBeskjed, notifikasjon)
+                }
+                HendelseType.OPPFØLGING_OG_TILRETTELEGGING_ENDRET -> {
+                    log.info("Oppfølging og tilrettelegging endret: lager beskjed. avtaleId: ${avtaleHendelse.avtaleId}")
+                    val nyBeskjed = nyBeskjed(avtaleHendelse, altinnProperties)
+                    val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Beskjed, Varslingsformål.OPPFØLGING_OG_TILRETTELEGGING_ENDRET, nyBeskjed)
+                    arbeidsgivernotifikasjonRepository.save(notifikasjon)
+                    opprettNyBeskjed(nyBeskjed, notifikasjon)
+                }
+                HendelseType.TILSKUDDSBEREGNING_ENDRET -> {
+                    log.info("Tilskuddsberegning endret: lager beskjed. avtaleId: ${avtaleHendelse.avtaleId}")
+                    val nyBeskjed = nyBeskjed(avtaleHendelse, altinnProperties)
+                    val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Beskjed, Varslingsformål.TILSKUDDSBEREGNING_ENDRET, nyBeskjed)
+                    arbeidsgivernotifikasjonRepository.save(notifikasjon)
+                    opprettNyBeskjed(nyBeskjed, notifikasjon)
+                }
+                HendelseType.KONTAKTINFORMASJON_ENDRET -> {
+                    log.info("Kontaktinformasjon endret: lager beskjed. avtaleId: ${avtaleHendelse.avtaleId}")
+                    val nyBeskjed = nyBeskjed(avtaleHendelse, altinnProperties)
+                    val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Beskjed, Varslingsformål.KONTAKTINFORMASJON_ENDRET, nyBeskjed)
                     arbeidsgivernotifikasjonRepository.save(notifikasjon)
                     opprettNyBeskjed(nyBeskjed, notifikasjon)
                 }

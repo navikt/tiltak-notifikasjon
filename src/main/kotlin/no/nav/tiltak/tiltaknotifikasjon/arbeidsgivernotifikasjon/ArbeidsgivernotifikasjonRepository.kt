@@ -20,6 +20,7 @@ class ArbeidsgivernotifikasjonRepository(val dsl: DSLContext) {
             .execute()
     }
 
+    /** responseId: ID'en til selve notifikasjonen som blir oprrettet av min-side-arbeidsgiver når nySak/nyOppgave/nyBeskjed går gjennom, da returneres denne id'en og lagres i 'response_id'  */
     fun findByResponseId(id: String): Arbeidsgivernotifikasjon? {
         return dsl
             .selectFrom(ARBEIDSGIVERNOTIFIKASJON)
@@ -28,7 +29,7 @@ class ArbeidsgivernotifikasjonRepository(val dsl: DSLContext) {
             ?.map { mapToArbeidsgivernotifikasjon(it as ArbeidsgivernotifikasjonRecord) }
     }
 
-    // Ikke i bruk pt.
+    // Fra DB-record til Arbeidsgivernotifikasjon
     private fun mapToArbeidsgivernotifikasjon(record: ArbeidsgivernotifikasjonRecord): Arbeidsgivernotifikasjon {
         return Arbeidsgivernotifikasjon(
             id = record.id,
