@@ -1,0 +1,199 @@
+{
+  "mappings": [
+    {
+      "priority": 1,
+      "request": {
+        "method": "POST",
+        "urlPattern": "/",
+        "bodyPatterns": [
+          {
+            "matchesJsonPath": "$..[?(@.operationName=='nySak')]",
+            "ignoreArrayOrder": true,
+            "ignoreExtraElements": true
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+            "data": {
+              "nySak": {
+                "__typename": "NySakVellykket",
+                "id": "aff3f892-a32e-4045-953d-251279d0d74e"
+              }
+            }
+        }
+      }
+    },
+    {
+      "priority": 2,
+      "request": {
+        "method": "POST",
+        "urlPattern": "/",
+        "bodyPatterns": [
+          {
+            "matchesJsonPath": "$..[?(@.operationName=='nyOppgave')]",
+            "ignoreArrayOrder": true,
+            "ignoreExtraElements": true
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+            "data": {
+              "nyOppgave": {
+                "__typename": "NyOppgaveVellykket",
+                "id": "1b36183e-8799-44ef-8bff-14fe39517c79",
+                "eksterneVarsler": [{"id": "a9dcec82-9014-4c89-8b96-8693022c682a"}]
+              }
+            }
+
+        }
+      }
+    },
+    {
+      "priority": 2,
+      "request": {
+        "method": "POST",
+        "urlPattern": "/",
+        "bodyPatterns": [
+          {
+            "matchesJsonPath": "$..[?(@.operationName=='nyBeskjed')]",
+            "ignoreArrayOrder": true,
+            "ignoreExtraElements": true
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "data": {
+            "nyBeskjed": {
+              "__typename": "NyBeskjedVellykket",
+              "id": "1b36183e-8799-44ef-8bff-14fe39517c79",
+              "eksterneVarsler": [{"id": "a9dcec82-9014-4c89-8b96-8693022c682a"}]
+            }
+          }
+
+        }
+      }
+    },
+    {
+      "priority": 3,
+      "request": {
+        "method": "POST",
+        "urlPattern": "/",
+        "bodyPatterns": [
+          {
+            "matchesJsonPath": "$..[?(@.operationName=='mineNotifikasjoner')]",
+            "ignoreArrayOrder": true,
+            "ignoreExtraElements": true
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "data": {
+            "mineNotifikasjoner": {
+              "__typename": "NotifikasjonConnection",
+              "edges": [
+                {
+                  "node": {
+                    "__typename": "Oppgave",
+                    "metadata": {"id": "1b36183e-8799-44ef-8bff-14fe39517c79", "eksternId": "consequatur similique provident eligendi aspernatur reprehenderit cupiditate"},
+                    "oppgave": {"tilstand": "NY", "tekst":  "Fyll ut avtalen"}
+                  },
+                  "cursor": "aut enim voluptate omnis accusamus praesentium dolores"
+                },
+                {
+                  "node": {
+                    "__typename": "Beskjed",
+                    "metadata": {
+                      "id": "aff3f892-a32e-4045-953d-251279d0d74e",
+                      "eksternId": "provident distinctio nihil quaerat iusto architecto quod"
+                    }
+                  },
+                  "cursor": "sed labore magni autem quasi molestiae sapiente"
+                }
+              ],
+              "pageInfo": {
+                "hasNextPage": false,
+                "endCursor": "provident sint eos commodi quis vero accusamus"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "priority": 4,
+      "request": {
+        "method": "POST",
+        "urlPattern": "/",
+        "bodyPatterns": [
+          {
+            "matchesJsonPath": "$..[?(@.operationName=='oppgaveUtfoert')]",
+            "ignoreArrayOrder": true,
+            "ignoreExtraElements": true
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "data": {
+            "oppgaveUtfoert": {
+              "id": "1b36183e-8799-44ef-8bff-14fe39517c79",
+              "__typename": "OppgaveUtfoertVellykket"
+            }
+          }
+        }
+      }
+    },
+    {
+      "priority": 5,
+      "request": {
+        "method": "POST",
+        "urlPattern": "/",
+        "bodyPatterns": [
+          {
+            "matchesJsonPath": "$..[?(@.operationName=='softDeleteSakByGrupperingsid')]",
+            "ignoreArrayOrder": true,
+            "ignoreExtraElements": true
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "data": {
+            "softDeleteSakByGrupperingsid": {
+              "__typename": "SoftDeleteSakVellykket",
+              "id": "aff3f892-a32e-4045-953d-251279d0d74e"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

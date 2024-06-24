@@ -2,6 +2,7 @@ package no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon
 
 import com.expediagroup.graphql.client.spring.GraphQLWebClient
 import com.expediagroup.graphql.client.types.GraphQLClientResponse
+import com.fasterxml.jackson.module.kotlin.readValue
 import kotlinx.coroutines.runBlocking
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.*
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.enums.OppgaveTilstand
@@ -16,6 +17,7 @@ import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generat
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.softdeletesakbygrupperingsid.SoftDeleteSakVellykket
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
+import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.BrukernotifikasjonStatus
 import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
 import no.nav.tiltak.tiltaknotifikasjon.utils.ulid
 import org.slf4j.LoggerFactory
@@ -26,20 +28,21 @@ import org.springframework.web.reactive.function.client.WebClient
 import java.time.Instant
 
 
-@Profile("prod-gcp", "dev-gcp", "dockercompose")
+//@Profile("prod-gcp", "dev-gcp", "dockercompose")
 @Component
 class ArbeidsgiverNotifikasjonService(
     arbeidsgivernotifikasjonProperties: ArbeidsgivernotifikasjonProperties,
     private val altinnProperties: AltinnProperties,
     @Qualifier("azureWebClientBuilder") azureWebClientBuilder: WebClient.Builder,
     val arbeidsgivernotifikasjonRepository: ArbeidsgivernotifikasjonRepository,
-    properties: AltinnProperties
 ) {
 
     private val log = LoggerFactory.getLogger(javaClass)
     val notifikasjonGraphQlClient = GraphQLWebClient(arbeidsgivernotifikasjonProperties.url, builder = azureWebClientBuilder)
 
     fun behandleAvtaleHendelseMelding(avtaleHendelse: AvtaleHendelseMelding) {
+        if (finnesDuplikatMelding(avtaleHendelse)) return
+
         runBlocking {
             when (avtaleHendelse.hendelseType) {
 
@@ -84,7 +87,7 @@ class ArbeidsgiverNotifikasjonService(
                     // TODO: Fager skal implementere cascade på soft-delete. ETA er denne uken (uke 25) Avventer til det er på plass.
                     // men det kan finnes oppgaver/beskjeder på avtalen uten at det er en sak der (fra gammelt oppsett) må uansett slette de.
                     val softDeleteSakQuery = softDeleteSak(avtaleHendelse.tiltakstype.arbeidsgiverNotifikasjonMerkelapp, avtaleHendelse.avtaleId.toString())
-                    val gikkSoftDeleteSakBra = softDeleteSak(softDeleteSakQuery)
+                    val gikkSoftDeleteSakBra = softDeleteSak(softDeleteSakQuery, avtaleHendelse.avtaleId.toString())
                     if (!gikkSoftDeleteSakBra) {
                         log.warn("Soft delete av sak gikk ikke/fant ikke sak, må slette notifikasjoner manuelt. avtaleId: ${avtaleHendelse.avtaleId}")
                         val mineNotifikasjonerQuery = mineNotifikasjoner(avtaleHendelse.tiltakstype.beskrivelse, avtaleHendelse.avtaleId.toString()) // TODO: tilse at grupperingsId blir laget likt overalt og explisitt.
@@ -198,6 +201,13 @@ class ArbeidsgiverNotifikasjonService(
                             notifikasjonOppgave.feilmelding = response.errors.toString()
                         } else {
                             notifikasjonOppgave.sendt = Instant.now()
+                            val opprinneligOppgave = arbeidsgivernotifikasjonRepository.findByResponseId(oppgaveId)
+                            if (opprinneligOppgave != null) {
+                                opprinneligOppgave.status = ArbeidsgivernotifikasjonStatus.OppgaveFerdigstilt
+                                arbeidsgivernotifikasjonRepository.save(opprinneligOppgave)
+                            } else {
+                                log.warn("Fant ikke oppgave i DB for ferdigstilling. Trolig opprettet tidligere. oppgaveId: $oppgaveId avtaleId: ${avtaleHendelse.avtaleId}")
+                            }
                             log.info("Oppgave $oppgaveId lukket vellykket. avtaleId: ${avtaleHendelse.avtaleId}")
                         }
                         arbeidsgivernotifikasjonRepository.save(notifikasjonOppgave)
@@ -252,7 +262,7 @@ class ArbeidsgiverNotifikasjonService(
         }
     }
 
-    fun softDeleteSak(softDeleteSakQuery: SoftDeleteSakByGrupperingsid): Boolean {
+    fun softDeleteSak(softDeleteSakQuery: SoftDeleteSakByGrupperingsid, avtaleId: String): Boolean {
         val resultat = runBlocking {
             val response = notifikasjonGraphQlClient.execute(softDeleteSakQuery)
             if (response.errors != null) {
@@ -260,6 +270,7 @@ class ArbeidsgiverNotifikasjonService(
                 //TODO: lagre i DB
                 throw RuntimeException("GraphQl-kall for å softDelete sak feilet: ${response.errors}")
             } else {
+                // Kall gikk bra
                 val resultat = response.data?.softDeleteSakByGrupperingsid
                 if (resultat is SoftDeleteSakVellykket) {
                     log.info("Sak slettet vellykket. grupperingsId: ${softDeleteSakQuery.variables.grupperingsid}")
@@ -271,6 +282,11 @@ class ArbeidsgiverNotifikasjonService(
                         arbeidsgivernotifikasjonRepository.save(arbeidsgivernotifikasjonIDb)
                     } else {
                         log.warn("Fant ikke SAK i DB for sletting. grupperingsId: ${softDeleteSakQuery.variables.grupperingsid}")
+                    }
+                    // Sett andre notifikasjoner også til slettet. Fager skal ha cascade på soft-delete av sak.
+                    arbeidsgivernotifikasjonRepository.findAllbyAvtaleId(avtaleId).filter { it.type == ArbeidsgivernotifikasjonType.Beskjed || it.type == ArbeidsgivernotifikasjonType.Oppgave }.forEach {
+                        it.status = ArbeidsgivernotifikasjonStatus.SLETTET
+                        arbeidsgivernotifikasjonRepository.save(it)
                     }
                     return@runBlocking true
 
@@ -412,6 +428,20 @@ class ArbeidsgiverNotifikasjonService(
             avtaleNr = avtaleHendelse.avtaleNr,
             opprettet = Instant.now()
         )
+    }
+
+    fun finnesDuplikatMelding(avtaleHendelse: AvtaleHendelseMelding): Boolean {
+        // Sjekker om det finnes behandlede avtaleHendelser i basen som har likt endret tildspunt som den som kommer inn. Bør ikke skje.
+        arbeidsgivernotifikasjonRepository.findAllbyAvtaleId(avtaleHendelse.avtaleId.toString()).forEach {
+            if (it.status != ArbeidsgivernotifikasjonStatus.SLETTET) {
+                val melding: AvtaleHendelseMelding = jacksonMapper().readValue(it.avtaleMeldingJson)
+                if (melding.sistEndret == avtaleHendelse.sistEndret && melding.hendelseType == avtaleHendelse.hendelseType) {
+                    log.warn("Fant en brukernotifikasjon med samme hendelsetype og sistEndret tidspunkt som allerede er behandlet, avtaleId: ${avtaleHendelse.avtaleId}")
+                    return true
+                }
+            }
+        }
+        return false
     }
 
 

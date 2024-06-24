@@ -1,8 +1,10 @@
 package no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon
 
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
+import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.log
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.tables.Arbeidsgivernotifikasjon.Companion.ARBEIDSGIVERNOTIFIKASJON
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.tables.records.ArbeidsgivernotifikasjonRecord
+import no.nav.tiltak.tiltaknotifikasjon.utils.Cluster
 import org.jooq.DSLContext
 import org.springframework.stereotype.Component
 import java.time.ZoneOffset
@@ -70,5 +72,30 @@ class ArbeidsgivernotifikasjonRepository(val dsl: DSLContext) {
             avtaleNr = arbeidsgivernotifikasjon.avtaleNr
         )
     }
+
+    fun findAll(): List<Arbeidsgivernotifikasjon> {
+        return dsl
+            .select()
+            .from(ARBEIDSGIVERNOTIFIKASJON)
+            .fetchInto(ArbeidsgivernotifikasjonRecord::class.java)
+            .map { mapToArbeidsgivernotifikasjon(it as ArbeidsgivernotifikasjonRecord) }
+    }
+
+    fun deleteAll() {
+        if (Cluster.current != Cluster.LOKAL) {
+            throw IllegalStateException("Skal kun brukes i tester")
+        }
+        dsl.deleteFrom(ARBEIDSGIVERNOTIFIKASJON).execute()
+    }
+
+    fun findAllbyAvtaleId(avtaleId: String): List<Arbeidsgivernotifikasjon> {
+        return dsl
+            .select()
+            .from(ARBEIDSGIVERNOTIFIKASJON)
+            .where(ARBEIDSGIVERNOTIFIKASJON.AVTALE_ID.eq(avtaleId))
+            .fetchInto(ArbeidsgivernotifikasjonRecord::class.java)
+            .map { mapToArbeidsgivernotifikasjon(it as ArbeidsgivernotifikasjonRecord) }
+    }
+
 
 }
