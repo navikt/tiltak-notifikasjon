@@ -33,11 +33,11 @@ class AvtaleHendelseConsumer(
 
     @KafkaListener(topics = [Topics.AVTALE_HENDELSE_COMPACT])
     fun nyAvtaleHendelse(avtaleHendelse: String) {
-        behandleBrukernoitfikasjon(avtaleHendelse)
+        behandleBrukernotifikasjon(avtaleHendelse)
         behandleArbeidsgivernotifikasjon(avtaleHendelse)
     }
 
-    fun behandleBrukernoitfikasjon(avtaleHendelse: String) {
+    fun behandleBrukernotifikasjon(avtaleHendelse: String) {
         log.info("Behandle brukernotifikasjon")
         val erSkruddPå = unleash.isEnabled("sms-min-side-deltaker")
         if (!erSkruddPå) {

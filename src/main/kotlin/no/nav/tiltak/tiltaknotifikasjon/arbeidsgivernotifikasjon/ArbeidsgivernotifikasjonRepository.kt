@@ -3,6 +3,7 @@ package no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.tables.Arbeidsgivernotifikasjon.Companion.ARBEIDSGIVERNOTIFIKASJON
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.tables.records.ArbeidsgivernotifikasjonRecord
+import no.nav.tiltak.tiltaknotifikasjon.utils.Cluster
 import org.jooq.DSLContext
 import org.springframework.stereotype.Component
 import java.time.ZoneOffset
@@ -11,7 +12,7 @@ import java.time.ZoneOffset
 class ArbeidsgivernotifikasjonRepository(val dsl: DSLContext) {
 
     fun save(arbeidsgivernotifikasjon: Arbeidsgivernotifikasjon) {
-        val arbeidsgivernotifikasjonRecord = mapToRecord(arbeidsgivernotifikasjon)
+        val arbeidsgivernotifikasjonRecord = mapToDatabaseRecord(arbeidsgivernotifikasjon)
         dsl
             .insertInto(ARBEIDSGIVERNOTIFIKASJON)
             .set(arbeidsgivernotifikasjonRecord)
@@ -51,7 +52,7 @@ class ArbeidsgivernotifikasjonRepository(val dsl: DSLContext) {
     }
 
     // fra Arbeidsgivernotifikasjon klasse til DB-record som skal lagres
-    private fun mapToRecord(arbeidsgivernotifikasjon: Arbeidsgivernotifikasjon): ArbeidsgivernotifikasjonRecord {
+    private fun mapToDatabaseRecord(arbeidsgivernotifikasjon: Arbeidsgivernotifikasjon): ArbeidsgivernotifikasjonRecord {
         return ArbeidsgivernotifikasjonRecord(
             id = arbeidsgivernotifikasjon.id,
             varselId = arbeidsgivernotifikasjon.varselId,
@@ -70,5 +71,43 @@ class ArbeidsgivernotifikasjonRepository(val dsl: DSLContext) {
             avtaleNr = arbeidsgivernotifikasjon.avtaleNr
         )
     }
+
+    fun findAll(): List<Arbeidsgivernotifikasjon> {
+        return dsl
+            .select()
+            .from(ARBEIDSGIVERNOTIFIKASJON)
+            .fetchInto(ArbeidsgivernotifikasjonRecord::class.java)
+            .map { mapToArbeidsgivernotifikasjon(it as ArbeidsgivernotifikasjonRecord) }
+    }
+
+    fun findAllbyAvtaleId(avtaleId: String): List<Arbeidsgivernotifikasjon> {
+        return dsl
+            .select()
+            .from(ARBEIDSGIVERNOTIFIKASJON)
+            .where(ARBEIDSGIVERNOTIFIKASJON.AVTALE_ID.eq(avtaleId))
+            .fetchInto(ArbeidsgivernotifikasjonRecord::class.java)
+            .map { mapToArbeidsgivernotifikasjon(it as ArbeidsgivernotifikasjonRecord) }
+    }
+
+    fun findSakByResponseId(responseId: String): Arbeidsgivernotifikasjon? {
+        return dsl
+            .select()
+            .from(ARBEIDSGIVERNOTIFIKASJON)
+            .where(ARBEIDSGIVERNOTIFIKASJON.RESPONSE_ID.eq(responseId))
+            .and(ARBEIDSGIVERNOTIFIKASJON.TYPE.eq(ArbeidsgivernotifikasjonType.Sak.name))
+            .fetchOneInto(ArbeidsgivernotifikasjonRecord::class.java)
+            ?.map { mapToArbeidsgivernotifikasjon(it as ArbeidsgivernotifikasjonRecord) }
+    }
+
+    fun findSakByAvtaleId(avtaleId: String): Arbeidsgivernotifikasjon? {
+        return dsl
+            .select()
+            .from(ARBEIDSGIVERNOTIFIKASJON)
+            .where(ARBEIDSGIVERNOTIFIKASJON.AVTALE_ID.eq(avtaleId))
+            .and(ARBEIDSGIVERNOTIFIKASJON.TYPE.eq(ArbeidsgivernotifikasjonType.Sak.name))
+            .fetchOneInto(ArbeidsgivernotifikasjonRecord::class.java)
+            ?.map { mapToArbeidsgivernotifikasjon(it as ArbeidsgivernotifikasjonRecord) }
+    }
+
 
 }

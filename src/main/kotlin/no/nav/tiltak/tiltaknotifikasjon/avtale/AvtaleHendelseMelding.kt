@@ -35,7 +35,8 @@ data class AvtaleHendelseMelding(
 /** grupperingsId for saker, beskjeder og oppgaver. Bruker avtaleId, alle notifikasjoner med denne grupperingsIden vil knyttes sammen */
 fun AvtaleHendelseMelding.grupperingsId(): String = avtaleId.toString()
 
-/** ID sammensatt av avtaleNr og en random ulid (avtaleNr_ulid) */
+/** ID sammensatt av avtaleNr og en random ulid (avtaleNr_ulid) Skal være unik for hver notifikasjon hos fager.
+ * VI BRUKER IKKE DENNE. Vi slår opp på oppgaver via ID'en Fager returnerer */
 fun AvtaleHendelseMelding.eksternId(): String = "${avtaleNr}_${ulid()}"
 /** Lag tekst til notifikasjon for min side arbeidsgiver. Baserer seg på HendelsesType. Skiller på sak og oppgave. */
 fun AvtaleHendelseMelding.lagArbeidsgivernotifikasjonTekst(erSak: Boolean): String =
@@ -53,5 +54,8 @@ fun AvtaleHendelseMelding.lagArbeidsgivernotifikasjonTekst(erSak: Boolean): Stri
         HendelseType.TILSKUDDSBEREGNING_ENDRET -> NotifikasjonTekst.TILTAK_TILSKUDDSBEREGNING_ENDRET.tekst(this.tiltakstype)
         HendelseType.GODKJENNINGER_OPPHEVET_AV_VEILEDER -> NotifikasjonTekst.TILTAK_GODKJENNINGER_OPPHEVET_AV_VEILEDER.tekst(this.tiltakstype)
         HendelseType.KONTAKTINFORMASJON_ENDRET -> NotifikasjonTekst.TILTAK_KONTAKTINFORMASJON_ENDRET.tekst(this.tiltakstype)
-        else -> ""
+        HendelseType.ANNULLERT -> NotifikasjonTekst.TILTAK_AVTALE_ANNULLERT.tekst(this.tiltakstype)
+        else -> {
+            throw IllegalArgumentException("HendelseType $hendelseType har ikke definert notifikasjonstekst")
+        }
     }

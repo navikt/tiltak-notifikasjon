@@ -14,7 +14,14 @@ fun nySak(avtaleHendelseMelding: AvtaleHendelseMelding, altinnProperties: Altinn
         grupperingsid = avtaleHendelseMelding.grupperingsId(),
         merkelapp = avtaleHendelseMelding.tiltakstype.arbeidsgiverNotifikasjonMerkelapp,
         virksomhetsnummer = avtaleHendelseMelding.bedriftNr,
-        mottakere = listOf(MottakerInput(AltinnMottakerInput(avtaleHendelseMelding.tiltakstype.serviceCode(altinnProperties), avtaleHendelseMelding.tiltakstype.serviceEdition(altinnProperties)))),
+        mottakere = listOf(
+            MottakerInput(
+                AltinnMottakerInput(
+                    avtaleHendelseMelding.tiltakstype.serviceCode(altinnProperties),
+                    avtaleHendelseMelding.tiltakstype.serviceEdition(altinnProperties)
+                )
+            )
+        ),
         tittel = NotifikasjonTekst.TILTAK_AVTALE_OPPRETTET_SAK.tekst(avtaleHendelseMelding.tiltakstype),
         lenke = lagLink(avtaleHendelseMelding.avtaleId.toString()),
         initiellStatus = SaksStatus.MOTTATT,
@@ -27,20 +34,24 @@ fun nySak(avtaleHendelseMelding: AvtaleHendelseMelding, altinnProperties: Altinn
 fun nyOppgave(avtaleHendelseMelding: AvtaleHendelseMelding, altinnProperties: AltinnProperties): NyOppgave {
     val oppgaveVariables = NyOppgave.Variables(
         NyOppgaveInput(
-            mottakere = listOf(MottakerInput(AltinnMottakerInput(avtaleHendelseMelding.tiltakstype.serviceCode(altinnProperties), avtaleHendelseMelding.tiltakstype.serviceEdition(altinnProperties)))),
-            notifikasjon = NotifikasjonInput(
+            mottakere = listOf(
+                MottakerInput(
+                    AltinnMottakerInput(
+                        avtaleHendelseMelding.tiltakstype.serviceCode(altinnProperties),
+                        avtaleHendelseMelding.tiltakstype.serviceEdition(altinnProperties)
+                    )
+                )
+            ), notifikasjon = NotifikasjonInput(
                 merkelapp = avtaleHendelseMelding.tiltakstype.arbeidsgiverNotifikasjonMerkelapp,
-                tekst =  avtaleHendelseMelding.lagArbeidsgivernotifikasjonTekst(false),
+                tekst = avtaleHendelseMelding.lagArbeidsgivernotifikasjonTekst(false),
                 lenke = lagLink(avtaleHendelseMelding.avtaleId.toString())
-            ),
-            metadata = MetadataInput(
+            ), metadata = MetadataInput(
                 virksomhetsnummer = avtaleHendelseMelding.bedriftNr,
                 eksternId = avtaleHendelseMelding.eksternId(),
                 opprettetTidspunkt = Instant.now().toString(),
                 grupperingsid = avtaleHendelseMelding.grupperingsId(),
                 hardDelete = null
-            ),
-            eksterneVarsler = if (avtaleHendelseMelding.hendelseType.skalSendeSmsTilArbeidsgiver()) listOf(
+            ), eksterneVarsler = if (avtaleHendelseMelding.hendelseType.skalSendeSmsTilArbeidsgiver()) listOf(
                 EksterntVarselInput(
                     sms = EksterntVarselSmsInput(
                         mottaker = SmsMottakerInput(
@@ -64,13 +75,18 @@ fun oppgaveUtført(id: String): OppgaveUtfoert = OppgaveUtfoert(OppgaveUtfoert.V
 fun nyBeskjed(avtaleHendelseMelding: AvtaleHendelseMelding, altinnProperties: AltinnProperties): NyBeskjed {
     val beskjedVariables = NyBeskjed.Variables(
         NyBeskjedInput(
-            mottakere = listOf(MottakerInput(AltinnMottakerInput(avtaleHendelseMelding.tiltakstype.serviceCode(altinnProperties), avtaleHendelseMelding.tiltakstype.serviceEdition(altinnProperties)))),
-            notifikasjon = NotifikasjonInput(
+            mottakere = listOf(
+                MottakerInput(
+                    AltinnMottakerInput(
+                        avtaleHendelseMelding.tiltakstype.serviceCode(altinnProperties),
+                        avtaleHendelseMelding.tiltakstype.serviceEdition(altinnProperties)
+                    )
+                )
+            ), notifikasjon = NotifikasjonInput(
                 merkelapp = avtaleHendelseMelding.tiltakstype.arbeidsgiverNotifikasjonMerkelapp,
                 tekst = avtaleHendelseMelding.lagArbeidsgivernotifikasjonTekst(false),
                 lenke = lagLink(avtaleHendelseMelding.avtaleId.toString())
-            ),
-            metadata = MetadataInput(
+            ), metadata = MetadataInput(
                 virksomhetsnummer = avtaleHendelseMelding.bedriftNr,
                 eksternId = avtaleHendelseMelding.eksternId(),
                 opprettetTidspunkt = Instant.now().toString(),
@@ -96,9 +112,15 @@ fun nyBeskjed(avtaleHendelseMelding: AvtaleHendelseMelding, altinnProperties: Al
 
 }
 
-fun nySakStatusFerdig(sakId: String): NyStatusSak {
+fun nySakStatusAnnullert(sakId: String): NyStatusSak {
     val nySakStatusVariables =
-        NyStatusSak.Variables(id = sakId, nyStatus = SaksStatus.FERDIG, tidspunkt = Instant.now().toString())
+        NyStatusSak.Variables(id = sakId, nyStatus = SaksStatus.FERDIG, overstyrStatustekstMed = "Annullert", tidspunkt = Instant.now().toString())
+    val nySakStatus = NyStatusSak(nySakStatusVariables)
+    return nySakStatus
+}
+
+fun nySakStatusFerdig(sakId: String): NyStatusSak {
+    val nySakStatusVariables = NyStatusSak.Variables(id = sakId, nyStatus = SaksStatus.FERDIG, tidspunkt = Instant.now().toString())
     val nySakStatus = NyStatusSak(nySakStatusVariables)
     return nySakStatus
 }
@@ -109,11 +131,12 @@ fun mineNotifikasjoner(merkelapp: String, grupperingsid: String): MineNotifikasj
     return mineNotifikasjoner
 }
 
-fun softDeleteSak(merkelapp: String, grupperingsid: String): SoftDeleteSakByGrupperingsid {
+fun nySoftDeleteSakQuery(merkelapp: String, grupperingsid: String): SoftDeleteSakByGrupperingsid {
     val variables = SoftDeleteSakByGrupperingsid.Variables(merkelapp = merkelapp, grupperingsid = grupperingsid)
     val softDeleteSak = SoftDeleteSakByGrupperingsid(variables)
     return softDeleteSak
 }
+
 fun softDeleteNotifikasjon(notifikasjonId: String): SoftDeleteNotifikasjon {
     val softDeleteNotifikasjon = SoftDeleteNotifikasjon(SoftDeleteNotifikasjon.Variables(notifikasjonId))
     return softDeleteNotifikasjon
@@ -140,6 +163,7 @@ private fun serviceCode(tiltakstype: Tiltakstype): String {
         Tiltakstype.SOMMERJOBB -> altinnProperties.sommerjobbServiceCode
     }
 }
+
 private fun serviceEdition(tiltakstype: Tiltakstype): String {
     val altinnProperties = AltinnProperties()
     return when (tiltakstype) {
