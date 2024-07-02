@@ -17,5 +17,6 @@ enum class NotifikasjonTekst(val tekst: (Tiltakstype) -> String) {
     TILTAK_AVTALE_FORLENGET({ "Avtale forlenget av veileder." }),
     TILTAK_TILSKUDDSBEREGNING_ENDRET({ "Tilskuddsberegning i avtale endret av veileder." }),
     TILTAK_GODKJENNINGER_OPPHEVET_AV_VEILEDER({ "Avtalen må godkjennes på nytt." }),
-    TILTAK_KONTAKTINFORMASJON_ENDRET({ "Kontaktinformasjon i avtale endret av veileder." })
+    TILTAK_KONTAKTINFORMASJON_ENDRET({ "Kontaktinformasjon i avtale endret av veileder." }),
+    TILTAK_AVTALE_ANNULLERT({ "Avtale ble avlyst." }),
 }

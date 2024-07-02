@@ -194,6 +194,34 @@
           }
         }
       }
+    },
+    {
+      "priority": 6,
+      "request": {
+        "method": "POST",
+        "urlPattern": "/",
+        "bodyPatterns": [
+          {
+            "matchesJsonPath": "$..[?(@.operationName=='softDeleteNotifikasjon')]",
+            "ignoreArrayOrder": true,
+            "ignoreExtraElements": true
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "data": {
+            "softDeleteNotifikasjon": {
+              "__typename": "SoftDeleteNotifikasjonVellykket",
+              "id": "aff3f892-a32e-4045-953d-251279d0d74e"
+            }
+          }
+        }
+      }
     }
   ]
 }

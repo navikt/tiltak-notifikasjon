@@ -13,16 +13,17 @@ import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generat
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.nybeskjed.NyBeskjedVellykket
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.nyoppgave.NyOppgaveVellykket
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.nysak.NySakVellykket
+import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.nystatussak.NyStatusSakVellykket
+import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.softdeletenotifikasjon.SoftDeleteNotifikasjonVellykket
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.softdeletesakbygrupperingsid.SakFinnesIkke
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.softdeletesakbygrupperingsid.SoftDeleteSakVellykket
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
-import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.BrukernotifikasjonStatus
+import no.nav.tiltak.tiltaknotifikasjon.avtale.grupperingsId
 import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
 import no.nav.tiltak.tiltaknotifikasjon.utils.ulid
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import java.time.Instant
@@ -65,35 +66,79 @@ class ArbeidsgiverNotifikasjonService(
                 HendelseType.GODKJENT_PAA_VEGNE_AV_DELTAKER_OG_ARBEIDSGIVER -> {
                     log.info("Avtale godkjent: lukker oppgaver. avtaleId: ${avtaleHendelse.avtaleId}")
                     // Lukk alle oppgaver
-                    val mineNotifikasjonerQuery = mineNotifikasjoner(avtaleHendelse.tiltakstype.beskrivelse, avtaleHendelse.avtaleId.toString()) // TODO: tilse at grupperingsId blir laget likt overalt og explisitt.
+                    val mineNotifikasjonerQuery = mineNotifikasjoner(avtaleHendelse.tiltakstype.beskrivelse, avtaleHendelse.grupperingsId()) // TODO: tilse at grupperingsId blir laget likt overalt og explisitt.
                     val response = notifikasjonGraphQlClient.execute(mineNotifikasjonerQuery)
                     val notifikasjoner = response.data?.mineNotifikasjoner
                     lukkÅpneOppgaverPåAvtale(notifikasjoner, avtaleHendelse)
-                    // TODO: Sette sak til FERDIG. Sjekke om man trengr å lukke oppgaver når sak settes til ferdig
                 }
 
                 HendelseType.ARBEIDSGIVERS_GODKJENNING_OPPHEVET_AV_VEILEDER -> {
                     log.info("Avtale godkjenning opphevet: lager ny oppgave. avtaleId: ${avtaleHendelse.avtaleId}")
                     //Oppgave (på saken - via grupperingsId)
                     val nyOppgave = nyOppgave(avtaleHendelse, altinnProperties)
-                    val notifikasjonJsonOppgave = jacksonMapper().writeValueAsString(nyOppgave)
-                    val notifikasjonOppgave = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Oppgave, Varslingsformål.GODKJENNING_AV_AVTALE, notifikasjonJsonOppgave)
+                    val notifikasjonOppgave = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Oppgave, Varslingsformål.GODKJENNING_AV_AVTALE, nyOppgave)
                     arbeidsgivernotifikasjonRepository.save(notifikasjonOppgave)
                     opprettNyOppgave(nyOppgave, notifikasjonOppgave)
                 }
 
                 HendelseType.ANNULLERT -> {
                     log.info("Avtale annullert: sletter saker, oppgaver og beskjeder. avtaleId: ${avtaleHendelse.avtaleId}")
-                    // TODO: Fager skal implementere cascade på soft-delete. ETA er denne uken (uke 25) Avventer til det er på plass.
+                    // TODO: Fager har "cascade" på softDeleteSak, den tar da med seg oppgaver og beskjeder også.
                     // men det kan finnes oppgaver/beskjeder på avtalen uten at det er en sak der (fra gammelt oppsett) må uansett slette de.
-                    val softDeleteSakQuery = softDeleteSak(avtaleHendelse.tiltakstype.arbeidsgiverNotifikasjonMerkelapp, avtaleHendelse.avtaleId.toString())
-                    val gikkSoftDeleteSakBra = softDeleteSak(softDeleteSakQuery, avtaleHendelse.avtaleId.toString())
-                    if (!gikkSoftDeleteSakBra) {
-                        log.warn("Soft delete av sak gikk ikke/fant ikke sak, må slette notifikasjoner manuelt. avtaleId: ${avtaleHendelse.avtaleId}")
-                        val mineNotifikasjonerQuery = mineNotifikasjoner(avtaleHendelse.tiltakstype.beskrivelse, avtaleHendelse.avtaleId.toString()) // TODO: tilse at grupperingsId blir laget likt overalt og explisitt.
+                    if (avtaleHendelse.feilregistrert) {
+                        // Ved annullering av avtale med årsak feilregistrert, skjules avtalen for alle. Dermed fjerner vi notifikasjoner også.
+                        val softDeleteSakQuery = nySoftDeleteSakQuery(avtaleHendelse.tiltakstype.arbeidsgiverNotifikasjonMerkelapp, avtaleHendelse.grupperingsId())
+                        val notifikasjonSakSletting = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.SoftDeleteSak, Varslingsformål.AVTALE_ANNULLERT, softDeleteSakQuery)
+                        val gikkSoftDeleteSakBra = softDeleteSak(softDeleteSakQuery, avtaleHendelse.avtaleId.toString(), notifikasjonSakSletting)
+                        if (!gikkSoftDeleteSakBra) {
+                            log.warn("Soft delete av sak gikk ikke/fant ikke sak, må slette notifikasjoner manuelt. avtaleId: ${avtaleHendelse.avtaleId}")
+                            val mineNotifikasjonerQuery = mineNotifikasjoner(avtaleHendelse.tiltakstype.beskrivelse, avtaleHendelse.grupperingsId())
+                            val response = notifikasjonGraphQlClient.execute(mineNotifikasjonerQuery)
+                            val notifikasjoner = response.data?.mineNotifikasjoner
+                            softDeleteOppgaverOgBeskjeder(notifikasjoner, avtaleHendelse)
+                        }
+                    } else {
+                        // Ikke feilregistrert.
+                        // Hvis vi har sak: sletter kun oppgaver. kaller nyStatusSak med hardDelete = now().pus12weeks. Lagrer de som slettet i basen.
+                        // Hvis vi ikke har sak: sletter både oppgaver og beskjeder.
+                        val saken = arbeidsgivernotifikasjonRepository.findSakByAvtaleId(avtaleHendelse.avtaleId.toString())
+                        if (saken != null) {
+                            // slett oppgaver og sett hardDelete til 12 uker på sak.
+                            val mineNotifikasjonerQuery = mineNotifikasjoner(avtaleHendelse.tiltakstype.beskrivelse, avtaleHendelse.grupperingsId())
+                            val response = notifikasjonGraphQlClient.execute(mineNotifikasjonerQuery)
+                            val notifikasjoner = response.data?.mineNotifikasjoner
+                            if (notifikasjoner is NotifikasjonConnection) {
+                                notifikasjoner.edges
+                            }
+                            softDeleteOppgaverOgBeskjeder(notifikasjoner, avtaleHendelse)
+                        }
+
+
+
+
+
+
+
+
+                        val mineNotifikasjonerQuery = mineNotifikasjoner(avtaleHendelse.tiltakstype.beskrivelse, avtaleHendelse.grupperingsId())
                         val response = notifikasjonGraphQlClient.execute(mineNotifikasjonerQuery)
                         val notifikasjoner = response.data?.mineNotifikasjoner
                         softDeleteOppgaverOgBeskjeder(notifikasjoner, avtaleHendelse)
+                        // Sett saksstatus til Annullert
+                        val sak = arbeidsgivernotifikasjonRepository.findSakByAvtaleId(avtaleHendelse.avtaleId.toString())
+                        if (sak != null) {
+                            val nySakStatusAnnullert = nySakStatusAnnullert(sak.responseId!!)
+                            val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.NySakStatus, Varslingsformål.AVTALE_ANNULLERT, nySakStatusAnnullert)
+                            nySakStatusAnnullert(nySakStatusAnnullert, notifikasjon, sak)
+
+                        }
+
+                        // Send beskjed om annullering
+                        log.info("Avtale annullert. lager beskjed om annullering. avtaleId: ${avtaleHendelse.avtaleId}")
+                        val nyBeskjed = nyBeskjed(avtaleHendelse, altinnProperties)
+                        val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Beskjed, Varslingsformål.AVTALE_ANNULLERT, nyBeskjed)
+                        arbeidsgivernotifikasjonRepository.save(notifikasjon)
+                        opprettNyBeskjed(nyBeskjed, notifikasjon)
                     }
                 }
 
@@ -192,25 +237,25 @@ class ArbeidsgiverNotifikasjonService(
                         if (notifikasjon.oppgave.tilstand != OppgaveTilstand.NY) return@forEach
                         val oppgaveId = notifikasjon.metadata.id
                         val oppgaveUtfoert = oppgaveUtført(oppgaveId)
-                        val notifikasjonOppgave = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.FerdigstillOppgave, Varslingsformål.INGEN_VARSLING, oppgaveUtfoert)
-                        arbeidsgivernotifikasjonRepository.save(notifikasjonOppgave)
+                        val notifikasjonFerdigstillOppgave = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.FerdigstillOppgave, Varslingsformål.INGEN_VARSLING, oppgaveUtfoert)
+                        arbeidsgivernotifikasjonRepository.save(notifikasjonFerdigstillOppgave)
                         val response = notifikasjonGraphQlClient.execute(oppgaveUtfoert)
                         if (response.errors != null) {
                             log.error("GraphQl-kall for å lukke oppgave feilet: ${response.errors}")
-                            notifikasjonOppgave.status = ArbeidsgivernotifikasjonStatus.FEILET_VED_SENDING
-                            notifikasjonOppgave.feilmelding = response.errors.toString()
+                            notifikasjonFerdigstillOppgave.status = ArbeidsgivernotifikasjonStatus.FEILET_VED_SENDING
+                            notifikasjonFerdigstillOppgave.feilmelding = response.errors.toString()
                         } else {
-                            notifikasjonOppgave.sendt = Instant.now()
+                            notifikasjonFerdigstillOppgave.sendt = Instant.now()
                             val opprinneligOppgave = arbeidsgivernotifikasjonRepository.findByResponseId(oppgaveId)
                             if (opprinneligOppgave != null) {
-                                opprinneligOppgave.status = ArbeidsgivernotifikasjonStatus.OppgaveFerdigstilt
+                                opprinneligOppgave.status = ArbeidsgivernotifikasjonStatus.OPPGAVE_FERDIGSTILT
                                 arbeidsgivernotifikasjonRepository.save(opprinneligOppgave)
                             } else {
                                 log.warn("Fant ikke oppgave i DB for ferdigstilling. Trolig opprettet tidligere. oppgaveId: $oppgaveId avtaleId: ${avtaleHendelse.avtaleId}")
                             }
                             log.info("Oppgave $oppgaveId lukket vellykket. avtaleId: ${avtaleHendelse.avtaleId}")
                         }
-                        arbeidsgivernotifikasjonRepository.save(notifikasjonOppgave)
+                        arbeidsgivernotifikasjonRepository.save(notifikasjonFerdigstillOppgave)
                     }
                 }
             }
@@ -227,7 +272,7 @@ class ArbeidsgiverNotifikasjonService(
                 log.info("Fant ${notifikasjonerPåAvtale.edges.size} notifikasjoner på avtaleId: ${avtaleHendelse.avtaleId} for softDelete.")
                 notifikasjonerPåAvtale.edges.forEach {
                     val notifikasjon = it.node
-                    var notifikasjonId: ID = ""
+                    val notifikasjonId: ID
                     if (notifikasjon is Beskjed) {
                         notifikasjonId = notifikasjon.metadata.id
                     } else if (notifikasjon is Oppgave) {
@@ -236,16 +281,25 @@ class ArbeidsgiverNotifikasjonService(
                         log.error("Fant en notifikasjon som ikke er beskjed eller oppgave. avtaleId: ${avtaleHendelse.avtaleId}")
                         return@forEach
                     }
-                        val softDeleteNotifikasjonQuery = softDeleteNotifikasjon(notifikasjonId)
-                        val notifikasjonSoftDelete = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.SoftDeleteNotifikasjon, Varslingsformål.INGEN_VARSLING, softDeleteNotifikasjonQuery)
-                        arbeidsgivernotifikasjonRepository.save(notifikasjonSoftDelete)
-                        val response = notifikasjonGraphQlClient.execute(softDeleteNotifikasjonQuery)
-                        if (response.errors != null) {
-                            log.error("GraphQl-kall for å softDelete notifikasjon feilet: ${response.errors}")
-                            notifikasjonSoftDelete.status = ArbeidsgivernotifikasjonStatus.FEILET_VED_SENDING
-                            notifikasjonSoftDelete.feilmelding = response.errors.toString()
-                        } else {
+                    val softDeleteNotifikasjonQuery = softDeleteNotifikasjon(notifikasjonId)
+                    val notifikasjonSoftDelete = nyArbeidsgivernotifikasjon(
+                        avtaleHendelse,
+                        ArbeidsgivernotifikasjonType.SoftDeleteNotifikasjon,
+                        Varslingsformål.INGEN_VARSLING,
+                        softDeleteNotifikasjonQuery
+                    )
+                    arbeidsgivernotifikasjonRepository.save(notifikasjonSoftDelete)
+                    val response = notifikasjonGraphQlClient.execute(softDeleteNotifikasjonQuery)
+                    if (response.errors != null) {
+                        log.error("GraphQl-kall for å softDelete notifikasjon feilet: ${response.errors}")
+                        notifikasjonSoftDelete.status = ArbeidsgivernotifikasjonStatus.FEILET_VED_SENDING
+                        notifikasjonSoftDelete.feilmelding = response.errors.toString()
+                    } else {
+                        val resultat = response.data?.softDeleteNotifikasjon
+                        if (resultat is SoftDeleteNotifikasjonVellykket) {
+                            log.info("notifikasjon $notifikasjonId softDeletet vellykket. avtaleId: ${avtaleHendelse.avtaleId}")
                             notifikasjonSoftDelete.sendt = Instant.now()
+                            notifikasjonSoftDelete.responseId = resultat.id
                             val arbeidsgivernotifikasjonIDb = arbeidsgivernotifikasjonRepository.findByResponseId(notifikasjonId)
                             if (arbeidsgivernotifikasjonIDb != null) {
                                 arbeidsgivernotifikasjonIDb.status = ArbeidsgivernotifikasjonStatus.SLETTET
@@ -253,53 +307,65 @@ class ArbeidsgiverNotifikasjonService(
                             } else {
                                 log.warn("Fant ikke notifikasjon i DB for sletting. notifikasjonId: $notifikasjonId avtaleId: ${avtaleHendelse.avtaleId}")
                             }
-                            log.info("Beskjed $notifikasjonId slettet vellykket. avtaleId: ${avtaleHendelse.avtaleId}")
+                        } else {
+                            // UgyldigMerkelapp | NotifikasjonFinnesIkke | UkjentProdusent
+                            log.error("Soft delete av beskjed eller oppgave gikk ikke med resultatet: ${response.data?.softDeleteNotifikasjon}")
+                            val softDeleteResultat = response.data?.softDeleteNotifikasjon.toString()
+                            notifikasjonSoftDelete.feilmelding = softDeleteResultat
+                            notifikasjonSoftDelete.status = ArbeidsgivernotifikasjonStatus.FEILET_VED_OPPRETTELSE_HOS_FAGER
                         }
-                        arbeidsgivernotifikasjonRepository.save(notifikasjonSoftDelete)
+
+                    }
+                    arbeidsgivernotifikasjonRepository.save(notifikasjonSoftDelete)
 
                 }
             }
         }
     }
 
-    fun softDeleteSak(softDeleteSakQuery: SoftDeleteSakByGrupperingsid, avtaleId: String): Boolean {
-        val resultat = runBlocking {
-            val response = notifikasjonGraphQlClient.execute(softDeleteSakQuery)
-            if (response.errors != null) {
-                log.error("GraphQl-kall for å softDelete sak feilet: ${response.errors}")
-                //TODO: lagre i DB
-                throw RuntimeException("GraphQl-kall for å softDelete sak feilet: ${response.errors}")
-            } else {
-                // Kall gikk bra
-                val resultat = response.data?.softDeleteSakByGrupperingsid
-                if (resultat is SoftDeleteSakVellykket) {
-                    log.info("Sak slettet vellykket. grupperingsId: ${softDeleteSakQuery.variables.grupperingsid}")
-                    // Oppdatere sak til slettet i DB:
-                    // bruk response id
-                    val arbeidsgivernotifikasjonIDb = arbeidsgivernotifikasjonRepository.findByResponseId(resultat.id)
-                    if (arbeidsgivernotifikasjonIDb != null) {
-                        arbeidsgivernotifikasjonIDb.status = ArbeidsgivernotifikasjonStatus.SLETTET
-                        arbeidsgivernotifikasjonRepository.save(arbeidsgivernotifikasjonIDb)
-                    } else {
-                        log.warn("Fant ikke SAK i DB for sletting. grupperingsId: ${softDeleteSakQuery.variables.grupperingsid}")
-                    }
-                    // Sett andre notifikasjoner også til slettet. Fager skal ha cascade på soft-delete av sak.
-                    arbeidsgivernotifikasjonRepository.findAllbyAvtaleId(avtaleId).filter { it.type == ArbeidsgivernotifikasjonType.Beskjed || it.type == ArbeidsgivernotifikasjonType.Oppgave }.forEach {
-                        it.status = ArbeidsgivernotifikasjonStatus.SLETTET
-                        arbeidsgivernotifikasjonRepository.save(it)
-                    }
-                    return@runBlocking true
-
-                } else if (resultat is SakFinnesIkke) {
-                    log.info("Sak finnes ikke. Må slette notifikasjoner manuelt. grupperingsId: ${softDeleteSakQuery.variables.grupperingsid}")
-                    return@runBlocking false
+    fun softDeleteSak(
+        softDeleteSakQuery: SoftDeleteSakByGrupperingsid,
+        avtaleId: String,
+        notifikasjonSakSletting: Arbeidsgivernotifikasjon
+    ): Boolean = runBlocking {
+        val response = notifikasjonGraphQlClient.execute(softDeleteSakQuery)
+        if (response.errors != null) {
+            log.error("GraphQl-kall for å softDelete sak feilet: ${response.errors}")
+            notifikasjonSakSletting.status = ArbeidsgivernotifikasjonStatus.FEILET_VED_SENDING
+            notifikasjonSakSletting.feilmelding = response.errors.toString()
+            arbeidsgivernotifikasjonRepository.save(notifikasjonSakSletting)
+            throw RuntimeException("GraphQl-kall for å softDelete sak feilet: ${response.errors}")
+        } else {
+            // Kall gikk bra
+            val resultat = response.data?.softDeleteSakByGrupperingsid
+            if (resultat is SoftDeleteSakVellykket) {
+                log.info("Sak slettet vellykket. grupperingsId: ${softDeleteSakQuery.variables.grupperingsid}")
+                notifikasjonSakSletting.responseId = resultat.id
+                notifikasjonSakSletting.sendt = Instant.now()
+                arbeidsgivernotifikasjonRepository.save(notifikasjonSakSletting)
+                // Oppdatere opprinnelig sak til slettet i DB:
+                val arbeidsgivernotifikasjonIDb = arbeidsgivernotifikasjonRepository.findByResponseId(resultat.id)
+                if (arbeidsgivernotifikasjonIDb != null) {
+                    arbeidsgivernotifikasjonIDb.status = ArbeidsgivernotifikasjonStatus.SLETTET
+                    arbeidsgivernotifikasjonRepository.save(arbeidsgivernotifikasjonIDb)
                 } else {
-                    log.error("Sak sletting gikk ikke med resultatet: ${response.data?.softDeleteSakByGrupperingsid}")
-                    return@runBlocking false
+                    log.error("Fant ikke SAK i DB for sletting. grupperingsId: ${softDeleteSakQuery.variables.grupperingsid}")
                 }
+                // Sett andre notifikasjoner også til slettet. Fager skal ha cascade på soft-delete av sak.
+                arbeidsgivernotifikasjonRepository.findAllbyAvtaleId(avtaleId).filter { it.type == ArbeidsgivernotifikasjonType.Beskjed || it.type == ArbeidsgivernotifikasjonType.Oppgave }.forEach {
+                    it.status = ArbeidsgivernotifikasjonStatus.SLETTET
+                    arbeidsgivernotifikasjonRepository.save(it)
+                }
+                return@runBlocking true
+
+            } else if (resultat is SakFinnesIkke) {
+                log.info("Sak finnes ikke. Må slette notifikasjoner manuelt. grupperingsId: ${softDeleteSakQuery.variables.grupperingsid}")
+                return@runBlocking false
+            } else {
+                log.error("Sak sletting gikk ikke med resultatet: ${response.data?.softDeleteSakByGrupperingsid}")
+                return@runBlocking false
             }
         }
-        return resultat
     }
 
 
@@ -321,7 +387,7 @@ class ArbeidsgiverNotifikasjonService(
                 notifikasjon.responseId = nySakResultat.id
                 notifikasjon.sendt = Instant.now()
             } else {
-                // NySakVellykket | UgyldigMerkelapp | UgyldigMottaker | DuplikatGrupperingsid | DuplikatGrupperingsidEtterDelete| UkjentProdusent | UkjentRolle
+                // UgyldigMerkelapp | UgyldigMottaker | DuplikatGrupperingsid | DuplikatGrupperingsidEtterDelete| UkjentProdusent | UkjentRolle
                 log.error("opprett sak gikk ikke med resultatet: ${response.data?.nySak}")
                 val sakResultat = response.data?.nySak.toString() // TODO: JSON serialisere her, evt. hente ut kun feilmelding.
                 notifikasjon.feilmelding = sakResultat
@@ -329,6 +395,35 @@ class ArbeidsgiverNotifikasjonService(
             }
             arbeidsgivernotifikasjonRepository.save(notifikasjon)
 
+        }
+    }
+
+    fun nySakStatusAnnullert(nyStatusSak: NyStatusSak, notifikasjon: Arbeidsgivernotifikasjon, opprinneligSak: Arbeidsgivernotifikasjon) {
+        runBlocking {
+            val response = notifikasjonGraphQlClient.execute(nyStatusSak)
+
+            if (response.errors != null) {
+                log.error("GraphQl-kall for å sette sak til annullert feilet: ${response.errors}")
+                notifikasjon.status = ArbeidsgivernotifikasjonStatus.FEILET_VED_SENDING
+                notifikasjon.feilmelding = response.errors.toString()
+                arbeidsgivernotifikasjonRepository.save(notifikasjon)
+                return@runBlocking
+            }
+
+            val nySakStatusResultat = response.data?.nyStatusSak
+            if (nySakStatusResultat is NyStatusSakVellykket) {
+                log.info("Sak status oppdatert vellykket (annullert). NyStatus: ${nyStatusSak.variables.nyStatus} overstyrtTekst: ${nyStatusSak.variables.overstyrStatustekstMed}")
+                notifikasjon.responseId = nySakStatusResultat.id
+                notifikasjon.sendt = Instant.now()
+                opprinneligSak.status = ArbeidsgivernotifikasjonStatus.SAK_ANNULLERT
+                arbeidsgivernotifikasjonRepository.save(opprinneligSak)
+            } else {
+                log.error("Sett sak status til annullert gikk ikke med resultatet: ${response.data?.nyStatusSak}")
+                val sakResultat = response.data?.nyStatusSak.toString() // TODO: JSON serialisere her, evt. hente ut kun feilmelding.
+                notifikasjon.feilmelding = sakResultat
+                notifikasjon.status = ArbeidsgivernotifikasjonStatus.FEILET_VED_OPPRETTELSE_HOS_FAGER
+            }
+            arbeidsgivernotifikasjonRepository.save(notifikasjon)
         }
     }
 
@@ -350,9 +445,9 @@ class ArbeidsgiverNotifikasjonService(
                 notifikasjon.responseId = nyOppgaveResultat.id
                 notifikasjon.sendt = Instant.now()
             } else {
-                // NyOppgaveVellykket | UgyldigMerkelapp | UgyldigMottaker | DuplikatGrupperingsid | DuplikatGrupperingsidEtterDelete| UkjentProdusent | UkjentRolle
+                //  UgyldigMerkelapp | UgyldigMottaker | DuplikatGrupperingsid | DuplikatGrupperingsidEtterDelete| UkjentProdusent | UkjentRolle
                 log.error("opprett oppgave gikk ikke med resultatet: ${response.data?.nyOppgave}")
-                val oppgaveResultat = response.data?.nyOppgave.toString() // TODO: JSON serialisere her, evt. hente ut kun feilmelding.
+                val oppgaveResultat = response.data?.nyOppgave.toString()
                 notifikasjon.feilmelding = oppgaveResultat
                 notifikasjon.status = ArbeidsgivernotifikasjonStatus.FEILET_VED_OPPRETTELSE_HOS_FAGER
             }
@@ -389,36 +484,13 @@ class ArbeidsgiverNotifikasjonService(
     }
 
 
-
-    private fun nyArbeidsgivernotifikasjon(
-        avtaleHendelse: AvtaleHendelseMelding, softDeleteNotifikasjon: ArbeidsgivernotifikasjonType, ingenVarsling: Varslingsformål, softDeleteBeskjed: SoftDeleteNotifikasjon
-    ): Arbeidsgivernotifikasjon =
-        nyArbeidsgivernotifikasjon(avtaleHendelse, softDeleteNotifikasjon, ingenVarsling, jacksonMapper().writeValueAsString(softDeleteBeskjed))
-    private fun nyArbeidsgivernotifikasjon(
-        avtaleHendelse: AvtaleHendelseMelding, type: ArbeidsgivernotifikasjonType, varslingsformål: Varslingsformål, oppgaveUtfoert: OppgaveUtfoert
-    ): Arbeidsgivernotifikasjon =
-        nyArbeidsgivernotifikasjon(avtaleHendelse, type, varslingsformål, jacksonMapper().writeValueAsString(oppgaveUtfoert))
-
-    fun nyArbeidsgivernotifikasjon(
-        avtaleHendelse: AvtaleHendelseMelding, type: ArbeidsgivernotifikasjonType, varslingsformål: Varslingsformål, nyBeskjed: NyBeskjed
-    ) = nyArbeidsgivernotifikasjon(avtaleHendelse, type, varslingsformål, jacksonMapper().writeValueAsString(nyBeskjed))
-
-    fun nyArbeidsgivernotifikasjon(
-        avtaleHendelse: AvtaleHendelseMelding, type: ArbeidsgivernotifikasjonType, varslingsformål: Varslingsformål, nyOppgave: NyOppgave
-    ) = nyArbeidsgivernotifikasjon(avtaleHendelse, type, varslingsformål, jacksonMapper().writeValueAsString(nyOppgave))
-
-    fun nyArbeidsgivernotifikasjon(
-        avtaleHendelse: AvtaleHendelseMelding, type: ArbeidsgivernotifikasjonType, varslingsformål: Varslingsformål, nySak: NySak
-    ) = nyArbeidsgivernotifikasjon(avtaleHendelse, type, varslingsformål, jacksonMapper().writeValueAsString(nySak))
-
-    private fun nyArbeidsgivernotifikasjon(
-        avtaleHendelse: AvtaleHendelseMelding, type: ArbeidsgivernotifikasjonType, varslingsformål: Varslingsformål, notifikasjonJson: String
+    private fun nyArbeidsgivernotifikasjon(avtaleHendelse: AvtaleHendelseMelding, type: ArbeidsgivernotifikasjonType, varslingsformål: Varslingsformål, notifikasjonObject: Any
     ): Arbeidsgivernotifikasjon {
         return Arbeidsgivernotifikasjon(
             id = ulid(),
-            varselId = null,
+            varselId = null, // TODO: KAN VEL FJERNES TROR JEG.
             avtaleMeldingJson = jacksonMapper().writeValueAsString(avtaleHendelse),
-            notifikasjonJson = notifikasjonJson,
+            notifikasjonJson = jacksonMapper().writeValueAsString(notifikasjonObject),
             type = type,
             status = ArbeidsgivernotifikasjonStatus.BEHANDLET,
             bedriftNr = avtaleHendelse.bedriftNr,
@@ -426,12 +498,12 @@ class ArbeidsgiverNotifikasjonService(
             varslingsformål = varslingsformål,
             avtaleId = avtaleHendelse.avtaleId.toString(),
             avtaleNr = avtaleHendelse.avtaleNr,
-            opprettet = Instant.now()
+            opprettet = Instant.now() // TODO: opprettetTidspunkt?
         )
     }
 
     fun finnesDuplikatMelding(avtaleHendelse: AvtaleHendelseMelding): Boolean {
-        // Sjekker om det finnes behandlede avtaleHendelser i basen som har likt endret tildspunt som den som kommer inn. Bør ikke skje.
+        // Sjekker om det finnes behandlede avtaleHendelser i basen som har likt endret tildspunt som den som kommer inn. IDEMPOTENCE-SJEKK
         arbeidsgivernotifikasjonRepository.findAllbyAvtaleId(avtaleHendelse.avtaleId.toString()).forEach {
             if (it.status != ArbeidsgivernotifikasjonStatus.SLETTET) {
                 val melding: AvtaleHendelseMelding = jacksonMapper().readValue(it.avtaleMeldingJson)

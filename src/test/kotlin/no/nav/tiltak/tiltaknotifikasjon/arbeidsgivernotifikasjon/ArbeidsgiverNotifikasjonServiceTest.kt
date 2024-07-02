@@ -68,7 +68,7 @@ class ArbeidsgiverNotifikasjonServiceTest {
 
         val oppgaveEtterGodkjenning = arbeidsgivernotifikasjonRepository.findByResponseId(oppgave.responseId!!)
         assertThat(oppgaveEtterGodkjenning).isNotNull()
-        assertThat(oppgaveEtterGodkjenning!!.status).isEqualTo(ArbeidsgivernotifikasjonStatus.OppgaveFerdigstilt)
+        assertThat(oppgaveEtterGodkjenning!!.status).isEqualTo(ArbeidsgivernotifikasjonStatus.OPPGAVE_FERDIGSTILT)
 
 
     }
@@ -106,10 +106,27 @@ class ArbeidsgiverNotifikasjonServiceTest {
         assertThat(arbeidsgivernotifikasjon.type).isEqualTo(ArbeidsgivernotifikasjonType.Beskjed)
         assertThat(arbeidsgivernotifikasjon.varslingsformål).isEqualTo(Varslingsformål.AVTALE_INNGÅTT)
     }
+
     @Test
-    fun `skal lage beskjed ved annullering av avtale`() {
+    fun `skal lage beskjed ved annullering av avtale og ikke årsak feilregistrering`() {
         // TODO: Skal vi lage beskejd ved annullert avtale?? Vi gjør tydeligvis det til personbruker, hmm.
         // TODO: Det sendes kun beskjed dersom det ikke er grunn feilregistrering..
+        val avtaleHendelseMeldingOpprettet: AvtaleHendelseMelding = jacksonMapper().readValue(jsonAvtaleOpprettetMelding)
+        val avtaleHendelseMeldingAnnullert: AvtaleHendelseMelding = jacksonMapper().readValue(jsonAvtaleAnnullertMelding)
+        arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMeldingOpprettet) // Skal generere 1 sak og 1 oppgave
+        arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMeldingAnnullert) // Skal generere 1 beskjed
+
+        val arbeidsgivernotifikasjoner = arbeidsgivernotifikasjonRepository.findAll()
+        assertThat(arbeidsgivernotifikasjoner).hasSize(3)
+        val annullertNotifikasjon =
+            arbeidsgivernotifikasjoner.first { it.type == ArbeidsgivernotifikasjonType.Beskjed && it.varslingsformål == Varslingsformål.AVTALE_ANNULLERT }
+        assertThat(annullertNotifikasjon).isNotNull()
+
+
+    }
+    @Test
+    fun `skal softDelete sak, oppgave og beskjeder ved annulering av avtale med årsak feilregistrering`() {
+
     }
     @Test
     fun `skal lage beskjed ved forlenget avtale`() {
@@ -134,5 +151,13 @@ class ArbeidsgiverNotifikasjonServiceTest {
         assertThat(arbeidsgivernotifikasjon.varslingsformål).isEqualTo(Varslingsformål.AVTALE_FORKORTET)
     }
 
+    @Test
+    fun `skal sette sak til ferdig når avtalen endrer status til avsluttet`() {
+
+    }
+    @Test
+    fun `skal sette status på sak tilbake til mottatt når en avtale går fra avsluttet tilbake til aktiv`() {
+
+    }
 
 }
