@@ -517,7 +517,7 @@ val jsonAvtaleAnnullertFeilregistreringMelding = """
       "veilederNavIdent": "Z123456",
       "tiltakstype": "MIDLERTIDIG_LONNSTILSKUDD",
       "opprettetTidspunkt": "2024-02-16T10:26:18.906216",
-      "avtaleId": "74eb9506-7f70-40fb-a2f6-f47c55b6d4cb",
+      "avtaleId": "1b36183e-8799-44ef-8bff-14fe39517c79",
       "avtaleNr": 11,
       "sistEndret": "2024-02-16T14:39:25.454746Z",
       "annullertTidspunkt": "2024-02-16T14:39:25.454722Z",

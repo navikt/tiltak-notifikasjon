@@ -123,7 +123,7 @@
                   "node": {
                     "__typename": "Beskjed",
                     "metadata": {
-                      "id": "aff3f892-a32e-4045-953d-251279d0d74e",
+                      "id": "1b36183e-8799-44ef-8bff-14fe39517c79",
                       "eksternId": "provident distinctio nihil quaerat iusto architecto quod"
                     }
                   },
@@ -218,6 +218,35 @@
             "softDeleteNotifikasjon": {
               "__typename": "SoftDeleteNotifikasjonVellykket",
               "id": "aff3f892-a32e-4045-953d-251279d0d74e"
+            }
+          }
+        }
+      }
+    },
+    {
+      "priority": 7,
+      "request": {
+        "method": "POST",
+        "urlPattern": "/",
+        "bodyPatterns": [
+          {
+            "matchesJsonPath": "$..[?(@.operationName=='nyStatusSak')]",
+            "ignoreArrayOrder": true,
+            "ignoreExtraElements": true
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "data": {
+            "nyStatusSak": {
+              "__typename": "NyStatusSakVellykket",
+              "id": "vff3f892-a32e-4045-953d-251279d0d74e",
+              "statuser": [{"overstyrStatusTekstMed": "Avlyst", "status": "FERDIG", "tidspunkt": "2024-01-01T10:15:30+01:00"}]
             }
           }
         }

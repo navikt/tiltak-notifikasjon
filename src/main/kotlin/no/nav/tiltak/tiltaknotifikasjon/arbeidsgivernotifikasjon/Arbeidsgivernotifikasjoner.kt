@@ -1,12 +1,14 @@
 package no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon
 
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.*
+import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.enums.NyTidStrategi
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.enums.SaksStatus
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.enums.Sendevindu
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.inputs.*
 import no.nav.tiltak.tiltaknotifikasjon.avtale.*
 import no.nav.tiltak.tiltaknotifikasjon.utils.Cluster
 import java.time.Instant
+import java.time.LocalDateTime
 
 
 fun nySak(avtaleHendelseMelding: AvtaleHendelseMelding, altinnProperties: AltinnProperties): NySak {
@@ -112,14 +114,20 @@ fun nyBeskjed(avtaleHendelseMelding: AvtaleHendelseMelding, altinnProperties: Al
 
 }
 
-fun nySakStatusAnnullert(sakId: String): NyStatusSak {
-    val nySakStatusVariables =
-        NyStatusSak.Variables(id = sakId, nyStatus = SaksStatus.FERDIG, overstyrStatustekstMed = "Annullert", tidspunkt = Instant.now().toString())
+fun nySakStatusAnnullertQuery(sakId: String): NyStatusSak {
+    val om12Uker = LocalDateTime.now().plusWeeks(12).toString()
+    val nySakStatusVariables = NyStatusSak.Variables(
+        id = sakId,
+        nyStatus = SaksStatus.FERDIG,
+        overstyrStatustekstMed = "Avlyst",
+        tidspunkt = Instant.now().toString(),
+        hardDelete = HardDeleteUpdateInput(nyTid = FutureTemporalInput(den = om12Uker), strategi = NyTidStrategi.OVERSKRIV)
+    )
     val nySakStatus = NyStatusSak(nySakStatusVariables)
     return nySakStatus
 }
 
-fun nySakStatusFerdig(sakId: String): NyStatusSak {
+fun nySakStatusFerdig(sakId: String): NyStatusSak { // TODO: Implementere dette ved statusendring til avsluttet. Husk også hardDelete 12 uker.
     val nySakStatusVariables = NyStatusSak.Variables(id = sakId, nyStatus = SaksStatus.FERDIG, tidspunkt = Instant.now().toString())
     val nySakStatus = NyStatusSak(nySakStatusVariables)
     return nySakStatus
@@ -137,7 +145,7 @@ fun nySoftDeleteSakQuery(merkelapp: String, grupperingsid: String): SoftDeleteSa
     return softDeleteSak
 }
 
-fun softDeleteNotifikasjon(notifikasjonId: String): SoftDeleteNotifikasjon {
+fun nySoftDeleteNotifikasjonQuery(notifikasjonId: String): SoftDeleteNotifikasjon {
     val softDeleteNotifikasjon = SoftDeleteNotifikasjon(SoftDeleteNotifikasjon.Variables(notifikasjonId))
     return softDeleteNotifikasjon
 }

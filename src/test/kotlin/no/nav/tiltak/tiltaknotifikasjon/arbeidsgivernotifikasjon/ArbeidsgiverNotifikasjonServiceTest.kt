@@ -66,7 +66,7 @@ class ArbeidsgiverNotifikasjonServiceTest {
         val avtaleHendelseMeldingGodkjent: AvtaleHendelseMelding = jacksonMapper().readValue(jsonGodkjentAvArbeidsgiverMelding) // TODO: Samme avtaleid på json
         arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMeldingGodkjent)
 
-        val oppgaveEtterGodkjenning = arbeidsgivernotifikasjonRepository.findByResponseId(oppgave.responseId!!)
+        val oppgaveEtterGodkjenning = arbeidsgivernotifikasjonRepository.findNotifikasjonByResponseId(oppgave.responseId!!)
         assertThat(oppgaveEtterGodkjenning).isNotNull()
         assertThat(oppgaveEtterGodkjenning!!.status).isEqualTo(ArbeidsgivernotifikasjonStatus.OPPGAVE_FERDIGSTILT)
 
@@ -74,23 +74,21 @@ class ArbeidsgiverNotifikasjonServiceTest {
     }
 
     @Test
-    fun `skal slette notifikasjoner ved annullering av avtale`(){
+    fun `skal slette alle notifikasjoner ved annullering av avtale og feilregistrering`(){
         val avtaleHendelseMeldingOpprettet: AvtaleHendelseMelding = jacksonMapper().readValue(jsonAvtaleOpprettetMelding)
         arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMeldingOpprettet)
         val notifikasjoner = arbeidsgivernotifikasjonRepository.findAll()
         assertThat(notifikasjoner).hasSize(2)
-        notifikasjoner.forEach {
-            assertThat(it.status).isEqualTo(ArbeidsgivernotifikasjonStatus.BEHANDLET)
-        }
+        notifikasjoner.forEach { assertThat(it.status).isEqualTo(ArbeidsgivernotifikasjonStatus.BEHANDLET) }
 
-        val avtaleHendelseMeldingAnnullert: AvtaleHendelseMelding = jacksonMapper().readValue(jsonAvtaleAnnullertMelding) // TODO: Samme avtaleid på json
+        val avtaleHendelseMeldingAnnullert: AvtaleHendelseMelding = jacksonMapper().readValue(jsonAvtaleAnnullertFeilregistreringMelding) // TODO: Samme avtaleid på json
         arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMeldingAnnullert)
         val alleIDB = arbeidsgivernotifikasjonRepository.findAll()
         val sak = alleIDB.first { it.type == ArbeidsgivernotifikasjonType.Sak }
         assertThat(sak.status).isEqualTo(ArbeidsgivernotifikasjonStatus.SLETTET)
         // Hvis vi får satt sak til slettet, skal også alle andre notifikasjoner slettes på fager sin side. (cascalde)
         // dette bør vi da sette
-        alleIDB.forEach {
+        alleIDB.filter { it.type == ArbeidsgivernotifikasjonType.Sak || it.type == ArbeidsgivernotifikasjonType.Beskjed || it.type == ArbeidsgivernotifikasjonType.Oppgave } .forEach {
             assertThat(it.status).isEqualTo(ArbeidsgivernotifikasjonStatus.SLETTET)
         }
     }
@@ -109,21 +107,33 @@ class ArbeidsgiverNotifikasjonServiceTest {
 
     @Test
     fun `skal lage beskjed ved annullering av avtale og ikke årsak feilregistrering`() {
-        // TODO: Skal vi lage beskejd ved annullert avtale?? Vi gjør tydeligvis det til personbruker, hmm.
-        // TODO: Det sendes kun beskjed dersom det ikke er grunn feilregistrering..
         val avtaleHendelseMeldingOpprettet: AvtaleHendelseMelding = jacksonMapper().readValue(jsonAvtaleOpprettetMelding)
         val avtaleHendelseMeldingAnnullert: AvtaleHendelseMelding = jacksonMapper().readValue(jsonAvtaleAnnullertMelding)
         arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMeldingOpprettet) // Skal generere 1 sak og 1 oppgave
-        arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMeldingAnnullert) // Skal generere 1 beskjed
+        arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMeldingAnnullert) // Skal generere 1 annullerSak, 1 slettOppgaver og 1 beskjed
 
         val arbeidsgivernotifikasjoner = arbeidsgivernotifikasjonRepository.findAll()
-        assertThat(arbeidsgivernotifikasjoner).hasSize(3)
+        assertThat(arbeidsgivernotifikasjoner).hasSize(5)
         val annullertNotifikasjon =
             arbeidsgivernotifikasjoner.first { it.type == ArbeidsgivernotifikasjonType.Beskjed && it.varslingsformål == Varslingsformål.AVTALE_ANNULLERT }
         assertThat(annullertNotifikasjon).isNotNull()
-
-
     }
+
+    @Test
+    fun `skal ikke lage beskjed ved annullering av avtale og årsak feilregistrering`() {
+        val avtaleHendelseMeldingOpprettet: AvtaleHendelseMelding = jacksonMapper().readValue(jsonAvtaleOpprettetMelding)
+        val avtaleHendelseMeldingAnnullert: AvtaleHendelseMelding = jacksonMapper().readValue(jsonAvtaleAnnullertFeilregistreringMelding)
+        arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMeldingOpprettet) // Skal generere 1 sak og 1 oppgave
+        arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMeldingAnnullert) // Skal generere 1 slettSak
+
+        val arbeidsgivernotifikasjoner = arbeidsgivernotifikasjonRepository.findAll()
+        assertThat(arbeidsgivernotifikasjoner).hasSize(3)
+        val softDeleteSak =
+            arbeidsgivernotifikasjoner.first { it.type == ArbeidsgivernotifikasjonType.SoftDeleteSak && it.varslingsformål == Varslingsformål.AVTALE_ANNULLERT }
+        assertThat(softDeleteSak).isNotNull()
+    }
+
+
     @Test
     fun `skal softDelete sak, oppgave og beskjeder ved annulering av avtale med årsak feilregistrering`() {
 

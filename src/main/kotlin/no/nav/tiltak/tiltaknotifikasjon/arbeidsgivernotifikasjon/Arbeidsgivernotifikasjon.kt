@@ -19,7 +19,7 @@ data class Arbeidsgivernotifikasjon(
     val avtaleId: String? = null,
     val avtaleNr: Int? = null,
     var responseId: String? = null,
-    // TODO: slettetTdispunkt el.
+    // TODO: slettetTdispunkt el. og hardDeleteSkedulertTidspunkt
 )
 
 enum class ArbeidsgivernotifikasjonStatus {
