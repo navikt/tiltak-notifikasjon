@@ -11,7 +11,7 @@ import java.time.ZoneOffset
 class ArbeidsgivernotifikasjonRepository(val dsl: DSLContext) {
 
     fun save(arbeidsgivernotifikasjon: Arbeidsgivernotifikasjon) {
-        val arbeidsgivernotifikasjonRecord = mapToRecord(arbeidsgivernotifikasjon)
+        val arbeidsgivernotifikasjonRecord = mapToDatabaseRecord(arbeidsgivernotifikasjon)
         dsl
             .insertInto(ARBEIDSGIVERNOTIFIKASJON)
             .set(arbeidsgivernotifikasjonRecord)
@@ -20,11 +20,36 @@ class ArbeidsgivernotifikasjonRepository(val dsl: DSLContext) {
             .execute()
     }
 
-    /** responseId: ID'en til selve notifikasjonen som blir oprrettet av min-side-arbeidsgiver når nySak/nyOppgave/nyBeskjed går gjennom, da returneres denne id'en og lagres i 'response_id'  */
-    fun findByResponseId(id: String): Arbeidsgivernotifikasjon? {
+    /** responseId: ID'en til selve notifikasjonen som blir oprrettet av min-side-arbeidsgiver når nySak/nyOppgave/nyBeskjed går gjennom, da returneres denne id'en og lagres i 'response_id'
+     * Det kan være flere entiteter med samme responseId i basen, fordi: Når vi lager f.eks. en nysak får denne en ID, og når vi kaller softDeleteNotifikasjon på den saken så får vi tilbake den samme ID'en, altså IDen som ble slettet */
+    fun findAllByResponseId(id: String): List<Arbeidsgivernotifikasjon> {
         return dsl
-            .selectFrom(ARBEIDSGIVERNOTIFIKASJON)
+            .select()
+            .from(ARBEIDSGIVERNOTIFIKASJON)
             .where(ARBEIDSGIVERNOTIFIKASJON.RESPONSE_ID.eq(id))
+            .fetchInto(ArbeidsgivernotifikasjonRecord::class.java)
+            .map { mapToArbeidsgivernotifikasjon(it as ArbeidsgivernotifikasjonRecord) }
+    }
+    fun findOppgaveByResponseId(responseId: String): Arbeidsgivernotifikasjon? {
+        return dsl
+            .select()
+            .from(ARBEIDSGIVERNOTIFIKASJON)
+            .where(ARBEIDSGIVERNOTIFIKASJON.RESPONSE_ID.eq(responseId))
+            .and(ARBEIDSGIVERNOTIFIKASJON.TYPE.eq(ArbeidsgivernotifikasjonType.Oppgave.name))
+            .fetchOneInto(ArbeidsgivernotifikasjonRecord::class.java)
+            ?.map { mapToArbeidsgivernotifikasjon(it as ArbeidsgivernotifikasjonRecord) }
+    }
+
+    /** Finner notifikasjon basert på responseId, altså en Sak, Oppgave eller Beskjed. En responseId kan kun referere til en notifikasjon, men den kan også være referert i en softDelete eller OppgaveUtført*/
+    fun findNotifikasjonByResponseId(responseId: String): Arbeidsgivernotifikasjon? {
+        return dsl
+            .select()
+            .from(ARBEIDSGIVERNOTIFIKASJON)
+            .where(ARBEIDSGIVERNOTIFIKASJON.RESPONSE_ID.eq(responseId))
+            // Beskjed or Oppgave or Sak:
+            .and(ARBEIDSGIVERNOTIFIKASJON.TYPE.eq(ArbeidsgivernotifikasjonType.Beskjed.name)
+                .or(ARBEIDSGIVERNOTIFIKASJON.TYPE.eq(ArbeidsgivernotifikasjonType.Oppgave.name))
+                .or(ARBEIDSGIVERNOTIFIKASJON.TYPE.eq(ArbeidsgivernotifikasjonType.Sak.name)))
             .fetchOneInto(ArbeidsgivernotifikasjonRecord::class.java)
             ?.map { mapToArbeidsgivernotifikasjon(it as ArbeidsgivernotifikasjonRecord) }
     }
@@ -51,7 +76,7 @@ class ArbeidsgivernotifikasjonRepository(val dsl: DSLContext) {
     }
 
     // fra Arbeidsgivernotifikasjon klasse til DB-record som skal lagres
-    private fun mapToRecord(arbeidsgivernotifikasjon: Arbeidsgivernotifikasjon): ArbeidsgivernotifikasjonRecord {
+    private fun mapToDatabaseRecord(arbeidsgivernotifikasjon: Arbeidsgivernotifikasjon): ArbeidsgivernotifikasjonRecord {
         return ArbeidsgivernotifikasjonRecord(
             id = arbeidsgivernotifikasjon.id,
             varselId = arbeidsgivernotifikasjon.varselId,
@@ -70,5 +95,43 @@ class ArbeidsgivernotifikasjonRepository(val dsl: DSLContext) {
             avtaleNr = arbeidsgivernotifikasjon.avtaleNr
         )
     }
+
+    fun findAll(): List<Arbeidsgivernotifikasjon> {
+        return dsl
+            .select()
+            .from(ARBEIDSGIVERNOTIFIKASJON)
+            .fetchInto(ArbeidsgivernotifikasjonRecord::class.java)
+            .map { mapToArbeidsgivernotifikasjon(it as ArbeidsgivernotifikasjonRecord) }
+    }
+
+    fun findAllbyAvtaleId(avtaleId: String): List<Arbeidsgivernotifikasjon> {
+        return dsl
+            .select()
+            .from(ARBEIDSGIVERNOTIFIKASJON)
+            .where(ARBEIDSGIVERNOTIFIKASJON.AVTALE_ID.eq(avtaleId))
+            .fetchInto(ArbeidsgivernotifikasjonRecord::class.java)
+            .map { mapToArbeidsgivernotifikasjon(it as ArbeidsgivernotifikasjonRecord) }
+    }
+
+    fun findSakByResponseId(responseId: String): Arbeidsgivernotifikasjon? {
+        return dsl
+            .select()
+            .from(ARBEIDSGIVERNOTIFIKASJON)
+            .where(ARBEIDSGIVERNOTIFIKASJON.RESPONSE_ID.eq(responseId))
+            .and(ARBEIDSGIVERNOTIFIKASJON.TYPE.eq(ArbeidsgivernotifikasjonType.Sak.name))
+            .fetchOneInto(ArbeidsgivernotifikasjonRecord::class.java)
+            ?.map { mapToArbeidsgivernotifikasjon(it as ArbeidsgivernotifikasjonRecord) }
+    }
+
+    fun findSakByAvtaleId(avtaleId: String): Arbeidsgivernotifikasjon? {
+        return dsl
+            .select()
+            .from(ARBEIDSGIVERNOTIFIKASJON)
+            .where(ARBEIDSGIVERNOTIFIKASJON.AVTALE_ID.eq(avtaleId))
+            .and(ARBEIDSGIVERNOTIFIKASJON.TYPE.eq(ArbeidsgivernotifikasjonType.Sak.name))
+            .fetchOneInto(ArbeidsgivernotifikasjonRecord::class.java)
+            ?.map { mapToArbeidsgivernotifikasjon(it as ArbeidsgivernotifikasjonRecord) }
+    }
+
 
 }

@@ -5,3 +5,24 @@ spring:
     password: password
 server:
   port: 8183
+
+wiremock:
+  port: 8184
+
+tiltak-notifikasjon:
+  produsent-api:
+    url: http://localhost:${wiremock.port}
+
+  altinn-tilgangstyring:
+    arbtreningServiceCode: 5332
+    arbtreningServiceEdition: 1
+    ltsMidlertidigServiceCode: 5516
+    ltsMidlertidigServiceEdition: 1
+    ltsVarigServiceCode: 5516
+    ltsVarigServiceEdition: 2
+    sommerjobbServiceCode: 5516
+    sommerjobbServiceEdition: 3
+    mentorServiceCode: 5516
+    mentorServiceEdition: 4
+    inkluderingstilskuddServiceCode: 5516
+    inkluderingstilskuddServiceEdition: 5

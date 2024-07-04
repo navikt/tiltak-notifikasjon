@@ -42,7 +42,7 @@ enum class Tiltakstype(val beskrivelse: String, val skalTilAktivitetsplan: Boole
         beskrivelse = "Sommerjobb",
         skalTilAktivitetsplan = false,
         arbeidsgiverNotifikasjonMerkelapp = "Sommerjobb",
-        serviceCode = AltinnProperties().sommerjobbServiceCode,
+        serviceCode = AltinnProperties().sommerjobbServiceCode, // TODO: Virket vel ikke. ta bort..
         serviceEdition = AltinnProperties().sommerjobbServiceEdition
     );
 }
