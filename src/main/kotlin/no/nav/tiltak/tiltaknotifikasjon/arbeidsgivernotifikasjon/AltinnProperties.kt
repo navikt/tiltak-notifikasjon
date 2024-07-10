@@ -18,6 +18,8 @@ data class AltinnProperties(
     var mentorServiceEdition:String = "",
     var inkluderingstilskuddServiceCode:String = "",
     var inkluderingstilskuddServiceEdition:String = "",
+    var vtaoServiceCode:String = "",
+    var vtaoServiceEdition:String = "",
     )
 
 
