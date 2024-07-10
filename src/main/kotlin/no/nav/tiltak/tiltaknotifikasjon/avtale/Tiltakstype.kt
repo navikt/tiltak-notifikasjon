@@ -48,7 +48,7 @@ enum class Tiltakstype(val beskrivelse: String, val skalTilAktivitetsplan: Boole
     VTAO(
         beskrivelse = "VTAO",
         skalTilAktivitetsplan = true,
-        arbeidsgiverNotifikasjonMerkelapp = "Vtao", // TODO: Må kanskje legge en merkelapp i fager
+        arbeidsgiverNotifikasjonMerkelapp = "Lønnstilskudd", // TODO: Må kanskje legge en merkelapp i fager
         serviceCode = AltinnProperties().vtaoServiceCode,
         serviceEdition = AltinnProperties().vtaoServiceEdition
     );
