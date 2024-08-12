@@ -177,6 +177,11 @@
             "matchesJsonPath": "$..[?(@.operationName=='softDeleteSakByGrupperingsid')]",
             "ignoreArrayOrder": true,
             "ignoreExtraElements": true
+          },
+          {
+            "matchesJsonPath": "$..[?(@.grupperingsid=='1b36183e-8799-44ef-8bff-14fe39517c79')]",
+            "ignoreArrayOrder": true,
+            "ignoreExtraElements": true
           }
         ]
       },
@@ -190,6 +195,34 @@
             "softDeleteSakByGrupperingsid": {
               "__typename": "SoftDeleteSakVellykket",
               "id": "aff3f892-a32e-4045-953d-251279d0d74e"
+            }
+          }
+        }
+      }
+    },
+    {
+      "priority": 6,
+      "request": {
+        "method": "POST",
+        "urlPattern": "/",
+        "bodyPatterns": [
+          {
+            "matchesJsonPath": "$..[?(@.operationName=='softDeleteSakByGrupperingsid')]",
+            "ignoreArrayOrder": true,
+            "ignoreExtraElements": true
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "data": {
+            "softDeleteSakByGrupperingsid": {
+              "__typename": "SakFinnesIkke",
+              "feilmelding": "Saken finnes ikke."
             }
           }
         }

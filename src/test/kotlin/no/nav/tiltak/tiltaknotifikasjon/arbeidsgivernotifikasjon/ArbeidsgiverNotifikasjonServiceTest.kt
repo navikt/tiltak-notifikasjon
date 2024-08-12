@@ -2,6 +2,7 @@ package no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.tiltak.tiltaknotifikasjon.*
+import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.SOFT_DELETE_NOTIFIKASJON
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleStatus
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
@@ -15,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.testcontainers.junit.jupiter.Testcontainers
 import java.time.LocalDate
+import java.util.*
 
 @SpringBootTest
 @ActiveProfiles("test-containers", "wiremock")
@@ -166,6 +168,19 @@ class ArbeidsgiverNotifikasjonServiceTest {
         assertThat(beskjed.status).isEqualTo(ArbeidsgivernotifikasjonStatus.SLETTET)
         val softDeleteOppgaverOgBeskjeder = arbeidsgivernotifikasjoner.filter { it.type == ArbeidsgivernotifikasjonType.SoftDeleteNotifikasjon }
         assertThat(softDeleteOppgaverOgBeskjeder).hasSize(0) // Softdelete går automatisk når vi softDeleter sak via cascade hos fager.
+    }
+
+    @Test
+    fun `Avtale annullert, finnes ingen sak, skal softdelete eventuelle oppgaver og beskjeder`() {
+        // Dette er casen hvor det er opprettet oppgaver og beskjeder før denne appen går live, så kommer det en annulleringsmelding.
+        val avtaleHendelseMeldingAnnullert: AvtaleHendelseMelding = jacksonMapper().readValue<AvtaleHendelseMelding>(jsonAvtaleAnnullertFeilregistreringMelding).copy(
+            avtaleId = UUID.randomUUID()
+        )
+        arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMeldingAnnullert)
+
+        val arbeidsgivernotifikasjoner = arbeidsgivernotifikasjonRepository.findAll()
+        assertThat(arbeidsgivernotifikasjoner).hasSize(2)
+        arbeidsgivernotifikasjoner.forEach { assertThat(it.type == ArbeidsgivernotifikasjonType.SoftDeleteNotifikasjon) }
     }
 
     @Test
