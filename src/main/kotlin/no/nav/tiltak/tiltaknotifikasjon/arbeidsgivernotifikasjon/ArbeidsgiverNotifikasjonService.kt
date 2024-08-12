@@ -6,6 +6,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import kotlinx.coroutines.runBlocking
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.*
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.enums.OppgaveTilstand
+import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.enums.SaksStatus
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.minenotifikasjoner.*
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.nybeskjed.NyBeskjedVellykket
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.nyoppgave.NyOppgaveVellykket
@@ -15,6 +16,7 @@ import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generat
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.softdeletesakbygrupperingsid.SakFinnesIkke
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.softdeletesakbygrupperingsid.SoftDeleteSakVellykket
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
+import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleStatus
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
 import no.nav.tiltak.tiltaknotifikasjon.avtale.grupperingsId
 import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
@@ -114,7 +116,7 @@ class ArbeidsgiverNotifikasjonService(
                             // Annuller Sak
                             val nySakStatusAnnullertQuery = nySakStatusAnnullertQuery(saken.responseId!!)
                             val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.NySakStatus, Varslingsformål.AVTALE_ANNULLERT, nySakStatusAnnullertQuery)
-                            nySakStatusAnnullert(nySakStatusAnnullertQuery, notifikasjon, saken)
+                            nySakStatus(nySakStatusAnnullertQuery, notifikasjon, saken, ArbeidsgivernotifikasjonStatus.SAK_ANNULLERT)
                         } else {
                             // Slett alle oppgaver og beskjeder
                             log.info("Annullert avtale har ingen sak. sletter oppgaver og beskjeder. avtaleId: ${avtaleHendelse.avtaleId}")
@@ -133,6 +135,21 @@ class ArbeidsgiverNotifikasjonService(
                     }
                 }
 
+                HendelseType.STATUSENDRING -> {
+                    // Statusendringer som oppstår som følge av at av dager går.
+                    log.info("Statusendring: sjekker om avtale er endret til avsluttet. avtaleId: ${avtaleHendelse.avtaleId}")
+                    if (avtaleHendelse.avtaleStatus == AvtaleStatus.AVSLUTTET) {
+                        // Avtalens sluttdato er passert. Sett sak til ferdig
+                        val saken = arbeidsgivernotifikasjonRepository.findSakByAvtaleId(avtaleHendelse.avtaleId.toString())
+                        if (saken != null) {
+                            log.info("Avtale er avsluttet. Setter sak til ferdig. avtaleId: ${avtaleHendelse.avtaleId}")
+                            val nySakStatusFerdigQuery = nySakStatusFerdigQuery(saken.responseId!!)
+                            val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.NySakStatus, Varslingsformål.INGEN_VARSLING, nySakStatusFerdigQuery)
+                            nySakStatus(nySakStatusFerdigQuery, notifikasjon, saken, ArbeidsgivernotifikasjonStatus.SAK_FERDIG)
+                        }
+                    }
+                }
+
                 // BESKJEDER
                 HendelseType.AVTALE_INNGÅTT -> {
                     log.info("Avtale inngått: lager beskjed. avtaleId: ${avtaleHendelse.avtaleId}")
@@ -147,6 +164,14 @@ class ArbeidsgiverNotifikasjonService(
                     val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Beskjed, Varslingsformål.AVTALE_FORLENGET, nyBeskjed)
                     arbeidsgivernotifikasjonRepository.save(notifikasjon)
                     opprettNyBeskjed(nyBeskjed, notifikasjon)
+                    // Endre status på sak tilbake til mottatt hvis den var avsluttet
+                    val saken = arbeidsgivernotifikasjonRepository.findSakByAvtaleId(avtaleHendelse.avtaleId.toString())
+                    if (saken != null && saken.status === ArbeidsgivernotifikasjonStatus.SAK_FERDIG && avtaleHendelse.avtaleStatus === AvtaleStatus.GJENNOMFØRES) {
+                        log.info("Avtale er forlenget. Sak/Avtale var avsluttet. Setter sak til mottatt igjen (gjennomføres). avtaleId: ${avtaleHendelse.avtaleId}")
+                        val nySakStatusMottattQuery = nySakStatusMottattQuery(saken.responseId!!)
+                        val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.NySakStatus, Varslingsformål.INGEN_VARSLING, nySakStatusMottattQuery)
+                        nySakStatus(nySakStatusMottattQuery, notifikasjon, saken, ArbeidsgivernotifikasjonStatus.SAK_MOTTATT)
+                    }
                 }
                 HendelseType.AVTALE_FORKORTET -> {
                     log.info("Avtale forkortet: lager beskjed. avtaleId: ${avtaleHendelse.avtaleId}")
@@ -154,6 +179,16 @@ class ArbeidsgiverNotifikasjonService(
                     val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Beskjed, Varslingsformål.AVTALE_FORKORTET, nyBeskjed)
                     arbeidsgivernotifikasjonRepository.save(notifikasjon)
                     opprettNyBeskjed(nyBeskjed, notifikasjon)
+                    // Endre status på sak hvis forkortet til før d.d
+                    if (avtaleHendelse.avtaleStatus === AvtaleStatus.AVSLUTTET) {
+                        val saken = arbeidsgivernotifikasjonRepository.findSakByAvtaleId(avtaleHendelse.avtaleId.toString())
+                        if (saken != null) {
+                            log.info("Avtale er avsluttet. Setter sak til ferdig. avtaleId: ${avtaleHendelse.avtaleId}")
+                            val nySakStatusFerdigQuery = nySakStatusFerdigQuery(saken.responseId!!)
+                            val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.NySakStatus, Varslingsformål.INGEN_VARSLING, nySakStatusFerdigQuery)
+                            nySakStatus(nySakStatusFerdigQuery, notifikasjon, saken, ArbeidsgivernotifikasjonStatus.SAK_FERDIG)
+                        }
+                    }
                 }
                 HendelseType.MÅL_ENDRET -> {
                     log.info("Mål endret: lager beskjed. avtaleId: ${avtaleHendelse.avtaleId}")
@@ -377,6 +412,7 @@ class ArbeidsgiverNotifikasjonService(
                 log.info("Sak opprettet vellykket. avtaleId: ${notifikasjon.avtaleId}")
                 notifikasjon.responseId = nySakResultat.id
                 notifikasjon.sendt = Instant.now()
+                notifikasjon.status = ArbeidsgivernotifikasjonStatus.SAK_MOTTATT
             } else {
                 // UgyldigMerkelapp | UgyldigMottaker | DuplikatGrupperingsid | DuplikatGrupperingsidEtterDelete| UkjentProdusent | UkjentRolle
                 log.error("opprett sak gikk ikke med resultatet: ${response.data?.nySak}")
@@ -389,12 +425,15 @@ class ArbeidsgiverNotifikasjonService(
         }
     }
 
-    fun nySakStatusAnnullert(nyStatusSakQuery: NyStatusSak, notifikasjon: Arbeidsgivernotifikasjon, opprinneligSak: Arbeidsgivernotifikasjon) {
+    fun nySakStatus(nySakStatusQuery: NyStatusSak, notifikasjon: Arbeidsgivernotifikasjon, opprinneligSak: Arbeidsgivernotifikasjon, saksStatus: ArbeidsgivernotifikasjonStatus) {
+        if (!listOf(ArbeidsgivernotifikasjonStatus.SAK_ANNULLERT, ArbeidsgivernotifikasjonStatus.SAK_FERDIG, ArbeidsgivernotifikasjonStatus.SAK_MOTTATT).contains(saksStatus)) {
+            throw IllegalArgumentException("Kan kun sette sak til annullert eller ferdig. Forsøkte å sette sak til status $saksStatus på notifikasjon med id ${notifikasjon.id} for avtaleId: ${notifikasjon.avtaleId}")
+        }
         runBlocking {
-            val response = notifikasjonGraphQlClient.execute(nyStatusSakQuery)
+            val response = notifikasjonGraphQlClient.execute(nySakStatusQuery)
 
             if (response.errors != null) {
-                log.error("GraphQl-kall for å sette sak til annullert feilet: ${response.errors}")
+                log.error("GraphQl-kall for å endre sakStatus til ${nySakStatusQuery.variables.nyStatus} feilet: ${response.errors}")
                 notifikasjon.status = ArbeidsgivernotifikasjonStatus.FEILET_VED_SENDING
                 notifikasjon.feilmelding = response.errors.toString()
                 arbeidsgivernotifikasjonRepository.save(notifikasjon)
@@ -403,13 +442,13 @@ class ArbeidsgiverNotifikasjonService(
 
             val nySakStatusResultat = response.data?.nyStatusSak
             if (nySakStatusResultat is NyStatusSakVellykket) {
-                log.info("Sak status oppdatert vellykket (annullert). NyStatus: ${nyStatusSakQuery.variables.nyStatus} overstyrtTekst: ${nyStatusSakQuery.variables.overstyrStatustekstMed}")
+                log.info("Sak status oppdatert vellykket. NyStatus: ${nySakStatusQuery.variables.nyStatus} overstyrtTekst: ${nySakStatusQuery.variables.overstyrStatustekstMed}")
                 notifikasjon.responseId = nySakStatusResultat.id
                 notifikasjon.sendt = Instant.now()
-                opprinneligSak.status = ArbeidsgivernotifikasjonStatus.SAK_ANNULLERT
+                opprinneligSak.status = saksStatus
                 arbeidsgivernotifikasjonRepository.save(opprinneligSak)
             } else {
-                log.error("Sett sak status til annullert gikk ikke med resultatet: ${response.data?.nyStatusSak}")
+                log.error("Sett sak status til ${nySakStatusQuery.variables.nyStatus} gikk ikke med resultatet: ${response.data?.nyStatusSak}")
                 val sakResultat = response.data?.nyStatusSak.toString() // TODO: JSON serialisere her, evt. hente ut kun feilmelding.
                 notifikasjon.feilmelding = sakResultat
                 notifikasjon.status = ArbeidsgivernotifikasjonStatus.FEILET_VED_OPPRETTELSE_HOS_FAGER
