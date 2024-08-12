@@ -18,12 +18,12 @@ data class Arbeidsgivernotifikasjon(
     val varslingsformål: Varslingsformål? = null,
     val avtaleId: String? = null,
     val avtaleNr: Int? = null,
-    var responseId: String? = null,
+    var responseId: String? = null, /** id'en som notifikasjonen har hos fager. Den blir generert av de ved opprettelse og returnert */
     // TODO: slettetTdispunkt el. og hardDeleteSkedulertTidspunkt
 )
 
 enum class ArbeidsgivernotifikasjonStatus {
-    BEHANDLET, FEILET_VED_BEHANDLING, FEILET_VED_SENDING, FEILET_VED_OPPRETTELSE_HOS_FAGER, SLETTET, OPPGAVE_FERDIGSTILT, SAK_ANNULLERT, SAK_MOTTATT
+    BEHANDLET, FEILET_VED_BEHANDLING, FEILET_VED_SENDING, FEILET_VED_OPPRETTELSE_HOS_FAGER, SLETTET, OPPGAVE_FERDIGSTILT, SAK_ANNULLERT, SAK_MOTTATT, SAK_FERDIG
 }
 
 enum class ArbeidsgivernotifikasjonType {

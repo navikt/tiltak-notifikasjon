@@ -127,11 +127,29 @@ fun nySakStatusAnnullertQuery(sakId: String): NyStatusSak {
     return nySakStatus
 }
 
-fun nySakStatusFerdig(sakId: String): NyStatusSak { // TODO: Implementere dette ved statusendring til avsluttet. Husk også hardDelete 12 uker.
-    val nySakStatusVariables = NyStatusSak.Variables(id = sakId, nyStatus = SaksStatus.FERDIG, tidspunkt = Instant.now().toString())
+fun nySakStatusFerdigQuery(sakId: String): NyStatusSak { // TODO: Implementere dette ved statusendring til avsluttet. Husk også hardDelete 12 uker.
+    val om12Uker = LocalDateTime.now().plusWeeks(12).toString()
+    val nySakStatusVariables = NyStatusSak.Variables(
+        id = sakId,
+        nyStatus = SaksStatus.FERDIG,
+        tidspunkt = Instant.now().toString(),
+        hardDelete = HardDeleteUpdateInput(nyTid = FutureTemporalInput(den = om12Uker), strategi = NyTidStrategi.OVERSKRIV)
+    )
     val nySakStatus = NyStatusSak(nySakStatusVariables)
     return nySakStatus
 }
+
+fun nySakStatusMottattQuery(sakId: String): NyStatusSak {
+    // Samme status som saker opprettes med. Brukes i de tilfeller en avsluttet avtale forlenges og går til gjennomføres igjen.
+    val nySakStatusVariables = NyStatusSak.Variables(
+        id = sakId,
+        nyStatus = SaksStatus.MOTTATT,
+        tidspunkt = Instant.now().toString()
+    )
+    val nySakStatus = NyStatusSak(nySakStatusVariables)
+    return nySakStatus
+}
+
 
 fun mineNotifikasjoner(merkelapp: String, grupperingsid: String): MineNotifikasjoner {
     val variables = MineNotifikasjoner.Variables(merkelapp = merkelapp, grupperingsid = grupperingsid)
