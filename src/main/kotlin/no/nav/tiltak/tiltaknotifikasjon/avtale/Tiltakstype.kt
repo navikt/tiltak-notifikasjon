@@ -44,6 +44,13 @@ enum class Tiltakstype(val beskrivelse: String, val skalTilAktivitetsplan: Boole
         arbeidsgiverNotifikasjonMerkelapp = "Sommerjobb",
         serviceCode = AltinnProperties().sommerjobbServiceCode, // TODO: Virket vel ikke. ta bort..
         serviceEdition = AltinnProperties().sommerjobbServiceEdition
+    ),
+    VTAO(
+        beskrivelse = "VTAO",
+        skalTilAktivitetsplan = true,
+        arbeidsgiverNotifikasjonMerkelapp = "Lønnstilskudd", // TODO: Må kanskje legge en merkelapp i fager
+        serviceCode = AltinnProperties().vtaoServiceCode,
+        serviceEdition = AltinnProperties().vtaoServiceEdition
     );
 }
 
@@ -55,6 +62,7 @@ fun Tiltakstype.serviceCode(altinnProperties: AltinnProperties): String {
         Tiltakstype.MENTOR -> altinnProperties.mentorServiceCode
         Tiltakstype.INKLUDERINGSTILSKUDD -> altinnProperties.inkluderingstilskuddServiceCode
         Tiltakstype.SOMMERJOBB -> altinnProperties.sommerjobbServiceCode
+        Tiltakstype.VTAO -> altinnProperties.vtaoServiceCode
     }
 }
 fun Tiltakstype.serviceEdition(altinnProperties: AltinnProperties): String {
@@ -65,5 +73,6 @@ fun Tiltakstype.serviceEdition(altinnProperties: AltinnProperties): String {
         Tiltakstype.MENTOR -> altinnProperties.mentorServiceEdition
         Tiltakstype.INKLUDERINGSTILSKUDD -> altinnProperties.inkluderingstilskuddServiceEdition
         Tiltakstype.SOMMERJOBB -> altinnProperties.sommerjobbServiceEdition
+        Tiltakstype.VTAO -> altinnProperties.vtaoServiceEdition
     }
 }

@@ -187,6 +187,7 @@ private fun serviceCode(tiltakstype: Tiltakstype): String {
         Tiltakstype.MENTOR -> altinnProperties.mentorServiceCode
         Tiltakstype.INKLUDERINGSTILSKUDD -> altinnProperties.inkluderingstilskuddServiceCode
         Tiltakstype.SOMMERJOBB -> altinnProperties.sommerjobbServiceCode
+        Tiltakstype.VTAO -> altinnProperties.vtaoServiceCode
     }
 }
 
@@ -199,5 +200,6 @@ private fun serviceEdition(tiltakstype: Tiltakstype): String {
         Tiltakstype.MENTOR -> altinnProperties.mentorServiceEdition
         Tiltakstype.INKLUDERINGSTILSKUDD -> altinnProperties.inkluderingstilskuddServiceEdition
         Tiltakstype.SOMMERJOBB -> altinnProperties.sommerjobbServiceEdition
+        Tiltakstype.VTAO -> altinnProperties.vtaoServiceEdition
     }
 }
