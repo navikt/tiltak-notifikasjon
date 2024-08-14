@@ -168,7 +168,7 @@ class ArbeidsgiverNotifikasjonService(
                     opprettNyBeskjed(nyBeskjed, notifikasjon)
                     // Endre status på sak tilbake til mottatt hvis den var avsluttet
                     val saken = arbeidsgivernotifikasjonRepository.findSakByAvtaleId(avtaleHendelse.avtaleId.toString())
-                    if (saken != null && saken.status === ArbeidsgivernotifikasjonStatus.SAK_FERDIG && avtaleHendelse.avtaleStatus === AvtaleStatus.GJENNOMFØRES) {
+                    if (saken?.status == ArbeidsgivernotifikasjonStatus.SAK_FERDIG && avtaleHendelse.avtaleStatus == AvtaleStatus.GJENNOMFØRES) {
                         log.info("Avtale er forlenget. Sak/Avtale var avsluttet. Setter sak til mottatt igjen (gjennomføres). avtaleId: ${avtaleHendelse.avtaleId}")
                         val nySakStatusMottattQuery = nySakStatusMottattQuery(saken.responseId!!)
                         val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.NySakStatus, Varslingsformål.INGEN_VARSLING, nySakStatusMottattQuery)
@@ -182,7 +182,7 @@ class ArbeidsgiverNotifikasjonService(
                     arbeidsgivernotifikasjonRepository.save(notifikasjon)
                     opprettNyBeskjed(nyBeskjed, notifikasjon)
                     // Endre status på sak hvis forkortet til før d.d
-                    if (avtaleHendelse.avtaleStatus === AvtaleStatus.AVSLUTTET) {
+                    if (avtaleHendelse.avtaleStatus == AvtaleStatus.AVSLUTTET) {
                         val saken = arbeidsgivernotifikasjonRepository.findSakByAvtaleId(avtaleHendelse.avtaleId.toString())
                         if (saken != null) {
                             log.info("Avtale er avsluttet. Setter sak til ferdig. avtaleId: ${avtaleHendelse.avtaleId}")

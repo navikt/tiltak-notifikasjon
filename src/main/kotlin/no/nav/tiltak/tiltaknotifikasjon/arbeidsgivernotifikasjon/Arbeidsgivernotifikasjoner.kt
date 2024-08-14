@@ -144,7 +144,8 @@ fun nySakStatusMottattQuery(sakId: String): NyStatusSak {
     val nySakStatusVariables = NyStatusSak.Variables(
         id = sakId,
         nyStatus = SaksStatus.MOTTATT,
-        tidspunkt = Instant.now().toString()
+        tidspunkt = Instant.now().toString(),
+        hardDelete = null // TODO: Dette virker angivelig ikke enda. Fager skal se på det.
     )
     val nySakStatus = NyStatusSak(nySakStatusVariables)
     return nySakStatus
