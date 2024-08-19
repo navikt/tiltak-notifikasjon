@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import java.time.Instant
+import java.time.LocalDateTime
 
 
 //@Profile("prod-gcp", "dev-gcp", "dockercompose")
@@ -372,10 +373,10 @@ class ArbeidsgiverNotifikasjonService(
                 notifikasjonSakSletting.sendt = Instant.now()
                 arbeidsgivernotifikasjonRepository.save(notifikasjonSakSletting)
                 // Oppdatere opprinnelig sak til slettet i DB:
-                val arbeidsgivernotifikasjonIDb = arbeidsgivernotifikasjonRepository.findNotifikasjonByResponseId(resultat.id)
-                if (arbeidsgivernotifikasjonIDb != null) {
-                    arbeidsgivernotifikasjonIDb.status = ArbeidsgivernotifikasjonStatus.SLETTET
-                    arbeidsgivernotifikasjonRepository.save(arbeidsgivernotifikasjonIDb)
+                val opprinneligSak = arbeidsgivernotifikasjonRepository.findNotifikasjonByResponseId(resultat.id)
+                if (opprinneligSak != null) {
+                    opprinneligSak.status = ArbeidsgivernotifikasjonStatus.SAK_ANNULLERT
+                    arbeidsgivernotifikasjonRepository.save(opprinneligSak)
                 } else {
                     log.error("Fant ikke SAK i DB for sletting. grupperingsId: ${softDeleteSakQuery.variables.grupperingsid}")
                 }
@@ -448,6 +449,12 @@ class ArbeidsgiverNotifikasjonService(
                 notifikasjon.responseId = nySakStatusResultat.id
                 notifikasjon.sendt = Instant.now()
                 opprinneligSak.status = saksStatus
+                if (nySakStatusQuery.variables.hardDelete?.nyTid?.den !== null) {
+                    opprinneligSak.hardDeleteSkedulertTidspunkt = LocalDateTime.parse(nySakStatusQuery.variables.hardDelete.nyTid.den)
+                } else {
+                    opprinneligSak.hardDeleteSkedulertTidspunkt = null
+                }
+
                 arbeidsgivernotifikasjonRepository.save(opprinneligSak)
             } else {
                 log.error("Sett sak status til ${nySakStatusQuery.variables.nyStatus} gikk ikke med resultatet: ${response.data?.nyStatusSak}")

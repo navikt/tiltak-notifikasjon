@@ -2,6 +2,7 @@ package no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon
 
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
 import java.time.Instant
+import java.time.LocalDateTime
 
 data class Arbeidsgivernotifikasjon(
     val id: String,
@@ -18,8 +19,11 @@ data class Arbeidsgivernotifikasjon(
     val varslingsformål: Varslingsformål? = null,
     val avtaleId: String? = null,
     val avtaleNr: Int? = null,
-    var responseId: String? = null, /** id'en som notifikasjonen har hos fager. Den blir generert av de ved opprettelse og returnert */
+    var responseId: String? = null,
+    /** id'en som notifikasjonen har hos fager. Den blir generert av de ved opprettelse og returnert */
     // TODO: slettetTdispunkt el. og hardDeleteSkedulertTidspunkt
+    var slettetTidspunkt: Instant? = null,
+    var hardDeleteSkedulertTidspunkt: LocalDateTime? = null
 )
 
 enum class ArbeidsgivernotifikasjonStatus {
