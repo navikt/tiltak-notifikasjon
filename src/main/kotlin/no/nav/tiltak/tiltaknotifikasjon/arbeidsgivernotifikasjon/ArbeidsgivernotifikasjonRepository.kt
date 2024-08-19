@@ -3,6 +3,7 @@ package no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.tables.Arbeidsgivernotifikasjon.Companion.ARBEIDSGIVERNOTIFIKASJON
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.tables.records.ArbeidsgivernotifikasjonRecord
+import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
 import org.jooq.DSLContext
 import org.springframework.stereotype.Component
 import java.time.ZoneOffset
@@ -71,7 +72,8 @@ class ArbeidsgivernotifikasjonRepository(val dsl: DSLContext) {
             varslingsformål = if (record.varslingsformål != null) Varslingsformål.valueOf(record.varslingsformål!!) else null,
             responseId = record.responseId,
             avtaleId = record.avtaleId,
-            avtaleNr = record.avtaleNr
+            avtaleNr = record.avtaleNr,
+            hardDeleteSkedulertTidspunkt = record.hardDeleteSkedulertTidspunkt
         )
     }
 
@@ -81,7 +83,7 @@ class ArbeidsgivernotifikasjonRepository(val dsl: DSLContext) {
             id = arbeidsgivernotifikasjon.id,
             varselId = arbeidsgivernotifikasjon.varselId,
             avtaleMeldingJson = arbeidsgivernotifikasjon.avtaleMeldingJson,
-            arbeidsgivernotifikasjonJson = arbeidsgivernotifikasjon.notifikasjonJson,
+            arbeidsgivernotifikasjonJson = arbeidsgivernotifikasjon.notifikasjonJson, // TODO: Bør hete det samme i entietet db
             type = arbeidsgivernotifikasjon.type?.name,
             status = arbeidsgivernotifikasjon.status.name,
             bedriftNr = arbeidsgivernotifikasjon.bedriftNr,
@@ -92,9 +94,12 @@ class ArbeidsgivernotifikasjonRepository(val dsl: DSLContext) {
             varslingsformål = arbeidsgivernotifikasjon.varslingsformål?.name,
             responseId = arbeidsgivernotifikasjon.responseId,
             avtaleId = arbeidsgivernotifikasjon.avtaleId,
-            avtaleNr = arbeidsgivernotifikasjon.avtaleNr
+            avtaleNr = arbeidsgivernotifikasjon.avtaleNr,
+            hardDeleteSkedulertTidspunkt = arbeidsgivernotifikasjon.hardDeleteSkedulertTidspunkt
         )
     }
+    //private fun mapToDatabaseRecord(arbeidsgivernotifikasjon: Arbeidsgivernotifikasjon) = jacksonMapper().convertValue<ArbeidsgivernotifikasjonRecord>(arbeidsgivernotifikasjon)
+    // TODO: Se på dette en dag
 
     fun findAll(): List<Arbeidsgivernotifikasjon> {
         return dsl

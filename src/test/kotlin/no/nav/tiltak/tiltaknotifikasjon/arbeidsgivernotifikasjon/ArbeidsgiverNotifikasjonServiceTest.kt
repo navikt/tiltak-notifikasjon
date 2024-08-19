@@ -2,7 +2,7 @@ package no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.tiltak.tiltaknotifikasjon.*
-import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.SOFT_DELETE_NOTIFIKASJON
+import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.NyStatusSak
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleStatus
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
@@ -93,16 +93,22 @@ class ArbeidsgiverNotifikasjonServiceTest {
             }
         }
 
-        val avtaleHendelseMeldingAnnullert: AvtaleHendelseMelding = jacksonMapper().readValue(jsonAvtaleAnnullertFeilregistreringMelding) // TODO: Samme avtaleid på json
+        val avtaleHendelseMeldingAnnullert: AvtaleHendelseMelding =
+            jacksonMapper().readValue(jsonAvtaleAnnullertFeilregistreringMelding) // TODO: Samme avtaleid på json
         arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMeldingAnnullert)
         val alleIDB = arbeidsgivernotifikasjonRepository.findAll()
         val sak = alleIDB.first { it.type == ArbeidsgivernotifikasjonType.Sak }
-        assertThat(sak.status).isEqualTo(ArbeidsgivernotifikasjonStatus.SLETTET)
+        assertThat(sak.status).isEqualTo(ArbeidsgivernotifikasjonStatus.SAK_ANNULLERT)
         // Hvis vi får satt sak til slettet, skal også alle andre notifikasjoner slettes på fager sin side. (cascalde)
         // dette bør vi da sette
-        alleIDB.filter { it.type == ArbeidsgivernotifikasjonType.Sak || it.type == ArbeidsgivernotifikasjonType.Beskjed || it.type == ArbeidsgivernotifikasjonType.Oppgave } .forEach {
-            assertThat(it.status).isEqualTo(ArbeidsgivernotifikasjonStatus.SLETTET)
-        }
+        alleIDB.filter { it.type == ArbeidsgivernotifikasjonType.Sak || it.type == ArbeidsgivernotifikasjonType.Beskjed || it.type == ArbeidsgivernotifikasjonType.Oppgave }
+            .forEach {
+                if (it.type == ArbeidsgivernotifikasjonType.Sak) {
+                    assertThat(it.status).isEqualTo(ArbeidsgivernotifikasjonStatus.SAK_ANNULLERT)
+                } else {
+                    assertThat(it.status).isEqualTo(ArbeidsgivernotifikasjonStatus.SLETTET)
+                }
+            }
     }
 
     @Test
@@ -129,6 +135,35 @@ class ArbeidsgiverNotifikasjonServiceTest {
         val annullertNotifikasjon =
             arbeidsgivernotifikasjoner.first { it.type == ArbeidsgivernotifikasjonType.Beskjed && it.varslingsformål == Varslingsformål.AVTALE_ANNULLERT }
         assertThat(annullertNotifikasjon).isNotNull()
+    }
+
+    @Test
+    fun `skal sette sak til annullert ved annullering av avtale og ikke årsak feilregistrering`() {
+        val avtaleHendelseMeldingOpprettet: AvtaleHendelseMelding = jacksonMapper().readValue(jsonAvtaleOpprettetMelding)
+        val avtaleHendelseMeldingAnnullert: AvtaleHendelseMelding = jacksonMapper().readValue(jsonAvtaleAnnullertMelding)
+        arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMeldingOpprettet) // Skal generere 1 sak og 1 oppgave
+        arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMeldingAnnullert) // Skal generere 1 nyStatusSak, 1 slettOppgaver og 1 beskjed
+
+        val arbeidsgivernotifikasjoner = arbeidsgivernotifikasjonRepository.findAll()
+
+        assertThat(arbeidsgivernotifikasjoner).hasSize(5)
+        val sak = arbeidsgivernotifikasjoner.firstOrNull { it.type == ArbeidsgivernotifikasjonType.Sak }
+        assertThat(sak).isNotNull()
+        assertThat(sak?.status).isEqualTo(ArbeidsgivernotifikasjonStatus.SAK_ANNULLERT)
+    }
+    @Test
+    fun `skal sette sak til annullert ved annullering av avtale og årsak feilregistrering`() {
+        val avtaleHendelseMeldingOpprettet: AvtaleHendelseMelding = jacksonMapper().readValue(jsonAvtaleOpprettetMelding)
+        val avtaleHendelseMeldingAnnullert: AvtaleHendelseMelding = jacksonMapper().readValue(jsonAvtaleAnnullertFeilregistreringMelding)
+        arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMeldingOpprettet) // Skal generere 1 sak og 1 oppgave
+        arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMeldingAnnullert) // Skal generere 1 softDeleteSak
+
+        val arbeidsgivernotifikasjoner = arbeidsgivernotifikasjonRepository.findAll()
+
+        assertThat(arbeidsgivernotifikasjoner).hasSize(3)
+        val sak = arbeidsgivernotifikasjoner.firstOrNull { it.type == ArbeidsgivernotifikasjonType.Sak }
+        assertThat(sak).isNotNull()
+        assertThat(sak?.status).isEqualTo(ArbeidsgivernotifikasjonStatus.SAK_ANNULLERT)
     }
 
     @Test
@@ -235,8 +270,6 @@ class ArbeidsgiverNotifikasjonServiceTest {
 
     }
 
-
-
     @Test
     fun `skal lage beskjed ved forlenget avtale`() {
         val avtaleHendelseMelding: AvtaleHendelseMelding = jacksonMapper().readValue(jsonAvtaleForlengetMelding)
@@ -248,6 +281,7 @@ class ArbeidsgiverNotifikasjonServiceTest {
         assertThat(arbeidsgivernotifikasjon.type).isEqualTo(ArbeidsgivernotifikasjonType.Beskjed)
         assertThat(arbeidsgivernotifikasjon.varslingsformål).isEqualTo(Varslingsformål.AVTALE_FORLENGET)
     }
+
     @Test
     fun `skal lage beskjed ved forkortet avtale`() {
         val avtaleHendelseMelding: AvtaleHendelseMelding = jacksonMapper().readValue(jsonAvtaleForkortetMelding)
@@ -260,4 +294,46 @@ class ArbeidsgiverNotifikasjonServiceTest {
         assertThat(arbeidsgivernotifikasjon.varslingsformål).isEqualTo(Varslingsformål.AVTALE_FORKORTET)
     }
 
-}
+    @Test
+    fun `skal sette hardDelete på nySakStatusQuery og NySakStatus Entitet ved statusendring til ferdig`() {
+        val opprettetMelding: AvtaleHendelseMelding = jacksonMapper().readValue(jsonAvtaleOpprettetMelding)
+        val statusEndringMelding: AvtaleHendelseMelding = jacksonMapper().readValue<AvtaleHendelseMelding>(jsonAvtaleForlengetMelding).copy(
+            startDato = LocalDate.now().minusDays(10),
+            sluttDato = LocalDate.now().minusDays(1),
+            avtaleStatus = AvtaleStatus.AVSLUTTET,
+            hendelseType = HendelseType.STATUSENDRING
+        )
+        arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(opprettetMelding) // Generer sak og oppgave
+        arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(statusEndringMelding) // Generer sakstatusEndret
+
+        val arbeidsgivernotifikasjoner = arbeidsgivernotifikasjonRepository.findAll()
+        assertThat(arbeidsgivernotifikasjoner).hasSize(3) // sak, oppgave, beskjed
+        val nySakStatus = arbeidsgivernotifikasjoner.find { it.type == ArbeidsgivernotifikasjonType.NySakStatus}
+        val sak = arbeidsgivernotifikasjoner.find { it.type == ArbeidsgivernotifikasjonType.Sak}
+
+        val query = jacksonMapper().readValue<NyStatusSak>(nySakStatus!!.notifikasjonJson!!) // Query
+        assertThat(query.variables.hardDelete).isNotNull()
+        assertThat(sak?.hardDeleteSkedulertTidspunkt).isNotNull() // entitet
+    }
+    @Test
+    fun `skal fjerne hardDelete på sak når den går fra ferdig til mottatt`() {  
+        val opprettetMelding: AvtaleHendelseMelding = jacksonMapper().readValue(jsonAvtaleOpprettetMelding)
+        val statusEndringMelding: AvtaleHendelseMelding = jacksonMapper().readValue<AvtaleHendelseMelding>(jsonAvtaleForlengetMelding).copy(
+            startDato = LocalDate.now().minusDays(10),
+            sluttDato = LocalDate.now().minusDays(1),
+            avtaleStatus = AvtaleStatus.AVSLUTTET,
+            hendelseType = HendelseType.STATUSENDRING
+        )
+        val forlengetMelding: AvtaleHendelseMelding = jacksonMapper().readValue(jsonAvtaleForlengetMelding)
+
+        arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(opprettetMelding) // Generer sak og oppgave
+        arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(statusEndringMelding) // Generer sakstatusEndret
+        val sak = arbeidsgivernotifikasjonRepository.findSakByAvtaleId(opprettetMelding.avtaleId.toString())
+        assertThat(sak?.hardDeleteSkedulertTidspunkt).isNotNull()
+        arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(forlengetMelding) // Generer sakstatusEndret
+        val sak2 = arbeidsgivernotifikasjonRepository.findSakByAvtaleId(opprettetMelding.avtaleId.toString())
+        assertThat(sak2?.hardDeleteSkedulertTidspunkt).isNull()
+    }
+
+
+    }
