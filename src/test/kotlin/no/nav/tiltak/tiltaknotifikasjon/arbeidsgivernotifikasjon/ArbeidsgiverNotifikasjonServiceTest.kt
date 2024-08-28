@@ -316,7 +316,7 @@ class ArbeidsgiverNotifikasjonServiceTest {
         assertThat(sak?.hardDeleteSkedulertTidspunkt).isNotNull() // entitet
     }
     @Test
-    fun `skal fjerne hardDelete på sak når den går fra ferdig til mottatt`() {  
+    fun `skal utvide hardDelete på sak når den går fra ferdig til mottatt`() {
         val opprettetMelding: AvtaleHendelseMelding = jacksonMapper().readValue(jsonAvtaleOpprettetMelding)
         val statusEndringMelding: AvtaleHendelseMelding = jacksonMapper().readValue<AvtaleHendelseMelding>(jsonAvtaleForlengetMelding).copy(
             startDato = LocalDate.now().minusDays(10),
@@ -332,8 +332,12 @@ class ArbeidsgiverNotifikasjonServiceTest {
         assertThat(sak?.hardDeleteSkedulertTidspunkt).isNotNull()
         arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(forlengetMelding) // Generer sakstatusEndret
         val sak2 = arbeidsgivernotifikasjonRepository.findSakByAvtaleId(opprettetMelding.avtaleId.toString())
-        assertThat(sak2?.hardDeleteSkedulertTidspunkt).isNull()
-    }
+        assertThat(sak2?.hardDeleteSkedulertTidspunkt).isNotNull()
+
+        assertThat(sak!!.hardDeleteSkedulertTidspunkt!!.isBefore(sak2!!.hardDeleteSkedulertTidspunkt)).isTrue()
 
 
     }
+
+
+}

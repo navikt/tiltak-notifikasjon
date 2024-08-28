@@ -171,7 +171,7 @@ class ArbeidsgiverNotifikasjonService(
                     val saken = arbeidsgivernotifikasjonRepository.findSakByAvtaleId(avtaleHendelse.avtaleId.toString())
                     if (saken?.status == ArbeidsgivernotifikasjonStatus.SAK_FERDIG && avtaleHendelse.avtaleStatus == AvtaleStatus.GJENNOMFØRES) {
                         log.info("Avtale er forlenget. Sak/Avtale var avsluttet. Setter sak til mottatt igjen (gjennomføres). avtaleId: ${avtaleHendelse.avtaleId}")
-                        val nySakStatusMottattQuery = nySakStatusMottattQuery(saken.responseId!!)
+                        val nySakStatusMottattQuery = nySakStatusMottattQuery(saken.responseId!!, avtaleHendelse)
                         val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.NySakStatus, Varslingsformål.INGEN_VARSLING, nySakStatusMottattQuery)
                         nySakStatus(nySakStatusMottattQuery, notifikasjon, saken, ArbeidsgivernotifikasjonStatus.SAK_MOTTATT)
                     }

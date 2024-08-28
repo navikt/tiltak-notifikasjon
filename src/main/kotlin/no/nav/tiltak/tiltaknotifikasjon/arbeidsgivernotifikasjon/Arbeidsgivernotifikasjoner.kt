@@ -139,13 +139,14 @@ fun nySakStatusFerdigQuery(sakId: String): NyStatusSak { // TODO: Implementere d
     return nySakStatus
 }
 
-fun nySakStatusMottattQuery(sakId: String): NyStatusSak {
+fun nySakStatusMottattQuery(sakId: String, avtaleHendelse: AvtaleHendelseMelding): NyStatusSak {
+    val sletteDato = avtaleHendelse.sluttDato?.plusWeeks(12)?.atStartOfDay().toString()
     // Samme status som saker opprettes med. Brukes i de tilfeller en avsluttet avtale forlenges og går til gjennomføres igjen.
     val nySakStatusVariables = NyStatusSak.Variables(
         id = sakId,
         nyStatus = SaksStatus.MOTTATT,
         tidspunkt = Instant.now().toString(),
-        hardDelete = null // TODO: Dette virker angivelig ikke enda. Fager skal se på det.
+        hardDelete = HardDeleteUpdateInput(nyTid = FutureTemporalInput(den = sletteDato), NyTidStrategi.OVERSKRIV) // Fager støttet ikke å fjerne harDDelete. Overskiriver bare med avtalens sluttdato pluss 12 uker.
     )
     val nySakStatus = NyStatusSak(nySakStatusVariables)
     return nySakStatus
