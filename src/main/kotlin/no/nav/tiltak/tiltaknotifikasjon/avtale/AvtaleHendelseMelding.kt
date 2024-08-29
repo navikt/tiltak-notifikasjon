@@ -52,7 +52,7 @@ fun AvtaleHendelseMelding.lagArbeidsgivernotifikasjonTekst(erSak: Boolean): Stri
         HendelseType.AVTALE_FORKORTET -> NotifikasjonTekst.TILTAK_AVTALE_FORKORTET.tekst(this.tiltakstype)
         HendelseType.AVTALE_FORLENGET -> NotifikasjonTekst.TILTAK_AVTALE_FORLENGET.tekst(this.tiltakstype)
         HendelseType.TILSKUDDSBEREGNING_ENDRET -> NotifikasjonTekst.TILTAK_TILSKUDDSBEREGNING_ENDRET.tekst(this.tiltakstype)
-        HendelseType.GODKJENNINGER_OPPHEVET_AV_VEILEDER -> NotifikasjonTekst.TILTAK_GODKJENNINGER_OPPHEVET_AV_VEILEDER.tekst(this.tiltakstype)
+        HendelseType.ARBEIDSGIVERS_GODKJENNING_OPPHEVET_AV_VEILEDER -> NotifikasjonTekst.TILTAK_GODKJENNINGER_OPPHEVET_AV_VEILEDER.tekst(this.tiltakstype)
         HendelseType.KONTAKTINFORMASJON_ENDRET -> NotifikasjonTekst.TILTAK_KONTAKTINFORMASJON_ENDRET.tekst(this.tiltakstype)
         HendelseType.ANNULLERT -> NotifikasjonTekst.TILTAK_AVTALE_ANNULLERT.tekst(this.tiltakstype)
         else -> {
