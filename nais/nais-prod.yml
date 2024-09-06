@@ -41,9 +41,16 @@ spec:
     sqlInstances:
       - type: POSTGRES_15
         tier: db-custom-1-3840
+        name: tiltak-notifikasjon
+        flags:
+          - name: cloudsql.logical_decoding # flagget som må settes for bigquery greier
+            value: "on" # flagget som må settes
         databases:
           - name: tiltak-notifikasjon
+            users:
+              - name: datastream
             envVarPrefix: DB
+        diskAutoresize: true # Datastream bruker en del lagringsplass
   accessPolicy:
     outbound:
       external:
