@@ -24,7 +24,7 @@ fun nySak(avtaleHendelseMelding: AvtaleHendelseMelding, altinnProperties: Altinn
                 )
             )
         ),
-        tittel = NotifikasjonTekst.TILTAK_AVTALE_OPPRETTET_SAK.tekst(avtaleHendelseMelding.tiltakstype),
+        tittel = avtaleHendelseMelding.lagArbeidsgivernotifikasjonTekst(true),
         lenke = lagLink(avtaleHendelseMelding.avtaleId.toString()),
         initiellStatus = SaksStatus.MOTTATT,
         tidspunkt = Instant.now().toString(),

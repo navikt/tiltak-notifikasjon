@@ -21,6 +21,8 @@ data class AvtaleHendelseMelding(
     val utførtAv: String,
     val utførtAvRolle: AvtaleHendelseUtførtAvRolle,
     val deltakerFnr: String,
+    val deltakerFornavn: String?,
+    val deltakerEtternavn: String?,
     val arbeidsgiverTlf: String?,
     val avtaleId: UUID,
     val avtaleNr: Int,
@@ -41,20 +43,20 @@ fun AvtaleHendelseMelding.eksternId(): String = "${avtaleNr}_${ulid()}"
 /** Lag tekst til notifikasjon for min side arbeidsgiver. Baserer seg på HendelsesType. Skiller på sak og oppgave. */
 fun AvtaleHendelseMelding.lagArbeidsgivernotifikasjonTekst(erSak: Boolean): String =
     when (this.hendelseType) {
-        HendelseType.OPPRETTET -> if (erSak) NotifikasjonTekst.TILTAK_AVTALE_OPPRETTET_SAK.tekst(this.tiltakstype)
-            else NotifikasjonTekst.TILTAK_AVTALE_OPPRETTET.tekst(this.tiltakstype)
-        HendelseType.AVTALE_INNGÅTT -> NotifikasjonTekst.TILTAK_AVTALE_INNGATT.tekst(this.tiltakstype)
-        HendelseType.STILLINGSBESKRIVELSE_ENDRET -> NotifikasjonTekst.TILTAK_STILLINGSBESKRIVELSE_ENDRET.tekst(this.tiltakstype)
-        HendelseType.MÅL_ENDRET -> NotifikasjonTekst.TILTAK_MÅL_ENDRET.tekst(this.tiltakstype)
-        HendelseType.INKLUDERINGSTILSKUDD_ENDRET -> NotifikasjonTekst.TILTAK_INKLUDERINGSTILSKUDD_ENDRET.tekst(this.tiltakstype)
-        HendelseType.OM_MENTOR_ENDRET -> NotifikasjonTekst.TILTAK_OM_MENTOR_ENDRET.tekst(this.tiltakstype)
-        HendelseType.OPPFØLGING_OG_TILRETTELEGGING_ENDRET -> NotifikasjonTekst.TILTAK_OPPFØLGING_OG_TILRETTELEGGING_ENDRET.tekst(this.tiltakstype)
-        HendelseType.AVTALE_FORKORTET -> NotifikasjonTekst.TILTAK_AVTALE_FORKORTET.tekst(this.tiltakstype)
-        HendelseType.AVTALE_FORLENGET -> NotifikasjonTekst.TILTAK_AVTALE_FORLENGET.tekst(this.tiltakstype)
-        HendelseType.TILSKUDDSBEREGNING_ENDRET -> NotifikasjonTekst.TILTAK_TILSKUDDSBEREGNING_ENDRET.tekst(this.tiltakstype)
-        HendelseType.ARBEIDSGIVERS_GODKJENNING_OPPHEVET_AV_VEILEDER -> NotifikasjonTekst.TILTAK_GODKJENNINGER_OPPHEVET_AV_VEILEDER.tekst(this.tiltakstype)
-        HendelseType.KONTAKTINFORMASJON_ENDRET -> NotifikasjonTekst.TILTAK_KONTAKTINFORMASJON_ENDRET.tekst(this.tiltakstype)
-        HendelseType.ANNULLERT -> NotifikasjonTekst.TILTAK_AVTALE_ANNULLERT.tekst(this.tiltakstype)
+        HendelseType.OPPRETTET -> if (erSak) NotifikasjonTekst.TILTAK_AVTALE_OPPRETTET_SAK.tekst(this)
+            else NotifikasjonTekst.TILTAK_AVTALE_OPPRETTET.tekst(this)
+        HendelseType.AVTALE_INNGÅTT -> NotifikasjonTekst.TILTAK_AVTALE_INNGATT.tekst(this)
+        HendelseType.STILLINGSBESKRIVELSE_ENDRET -> NotifikasjonTekst.TILTAK_STILLINGSBESKRIVELSE_ENDRET.tekst(this)
+        HendelseType.MÅL_ENDRET -> NotifikasjonTekst.TILTAK_MÅL_ENDRET.tekst(this)
+        HendelseType.INKLUDERINGSTILSKUDD_ENDRET -> NotifikasjonTekst.TILTAK_INKLUDERINGSTILSKUDD_ENDRET.tekst(this)
+        HendelseType.OM_MENTOR_ENDRET -> NotifikasjonTekst.TILTAK_OM_MENTOR_ENDRET.tekst(this)
+        HendelseType.OPPFØLGING_OG_TILRETTELEGGING_ENDRET -> NotifikasjonTekst.TILTAK_OPPFØLGING_OG_TILRETTELEGGING_ENDRET.tekst(this)
+        HendelseType.AVTALE_FORKORTET -> NotifikasjonTekst.TILTAK_AVTALE_FORKORTET.tekst(this)
+        HendelseType.AVTALE_FORLENGET -> NotifikasjonTekst.TILTAK_AVTALE_FORLENGET.tekst(this)
+        HendelseType.TILSKUDDSBEREGNING_ENDRET -> NotifikasjonTekst.TILTAK_TILSKUDDSBEREGNING_ENDRET.tekst(this)
+        HendelseType.ARBEIDSGIVERS_GODKJENNING_OPPHEVET_AV_VEILEDER -> NotifikasjonTekst.TILTAK_GODKJENNINGER_OPPHEVET_AV_VEILEDER.tekst(this)
+        HendelseType.KONTAKTINFORMASJON_ENDRET -> NotifikasjonTekst.TILTAK_KONTAKTINFORMASJON_ENDRET.tekst(this)
+        HendelseType.ANNULLERT -> NotifikasjonTekst.TILTAK_AVTALE_ANNULLERT.tekst(this)
         else -> {
             throw IllegalArgumentException("HendelseType $hendelseType har ikke definert notifikasjonstekst")
         }
