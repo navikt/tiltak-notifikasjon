@@ -311,7 +311,7 @@ class ArbeidsgiverNotifikasjonServiceTest {
         val nySakStatus = arbeidsgivernotifikasjoner.find { it.type == ArbeidsgivernotifikasjonType.NySakStatus}
         val sak = arbeidsgivernotifikasjoner.find { it.type == ArbeidsgivernotifikasjonType.Sak}
 
-        val query = jacksonMapper().readValue<NyStatusSak>(nySakStatus!!.notifikasjonJson!!) // Query
+        val query = jacksonMapper().readValue<NyStatusSak>(nySakStatus!!.arbeidsgivernotifikasjonJson!!) // Query
         assertThat(query.variables.hardDelete).isNotNull()
         assertThat(sak?.hardDeleteSkedulertTidspunkt).isNotNull() // entitet
     }

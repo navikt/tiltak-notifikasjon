@@ -529,7 +529,7 @@ class ArbeidsgiverNotifikasjonService(
             id = ulid(),
             varselId = null, // TODO: KAN VEL FJERNES TROR JEG.
             avtaleMeldingJson = jacksonMapper().writeValueAsString(avtaleHendelse),
-            notifikasjonJson = jacksonMapper().writeValueAsString(notifikasjonObject),
+            arbeidsgivernotifikasjonJson = jacksonMapper().writeValueAsString(notifikasjonObject),
             type = type,
             status = ArbeidsgivernotifikasjonStatus.BEHANDLET,
             bedriftNr = avtaleHendelse.bedriftNr,

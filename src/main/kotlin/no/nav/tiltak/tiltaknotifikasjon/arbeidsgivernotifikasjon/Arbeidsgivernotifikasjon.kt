@@ -8,7 +8,7 @@ data class Arbeidsgivernotifikasjon(
     val id: String,
     var varselId: String? = null,
     val avtaleMeldingJson: String,
-    var notifikasjonJson: String? = null,
+    var arbeidsgivernotifikasjonJson: String? = null,
     var type: ArbeidsgivernotifikasjonType? = null,
     var status: ArbeidsgivernotifikasjonStatus,
     val bedriftNr: String? = null,

@@ -3,7 +3,6 @@ package no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.tables.Arbeidsgivernotifikasjon.Companion.ARBEIDSGIVERNOTIFIKASJON
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.tables.records.ArbeidsgivernotifikasjonRecord
-import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
 import org.jooq.DSLContext
 import org.springframework.stereotype.Component
 import java.time.ZoneOffset
@@ -61,7 +60,7 @@ class ArbeidsgivernotifikasjonRepository(val dsl: DSLContext) {
             id = record.id,
             varselId = record.varselId,
             avtaleMeldingJson = record.avtaleMeldingJson,
-            notifikasjonJson = record.arbeidsgivernotifikasjonJson,
+            arbeidsgivernotifikasjonJson = record.arbeidsgivernotifikasjonJson,
             type = if (record.type != null) ArbeidsgivernotifikasjonType.valueOf(record.type!!) else null,
             status = enumValueOf<ArbeidsgivernotifikasjonStatus>(record.status),
             bedriftNr = record.bedriftNr,
@@ -83,7 +82,7 @@ class ArbeidsgivernotifikasjonRepository(val dsl: DSLContext) {
             id = arbeidsgivernotifikasjon.id,
             varselId = arbeidsgivernotifikasjon.varselId,
             avtaleMeldingJson = arbeidsgivernotifikasjon.avtaleMeldingJson,
-            arbeidsgivernotifikasjonJson = arbeidsgivernotifikasjon.notifikasjonJson, // TODO: Bør hete det samme i entietet db
+            arbeidsgivernotifikasjonJson = arbeidsgivernotifikasjon.arbeidsgivernotifikasjonJson, // TODO: Bør hete det samme i entietet db
             type = arbeidsgivernotifikasjon.type?.name,
             status = arbeidsgivernotifikasjon.status.name,
             bedriftNr = arbeidsgivernotifikasjon.bedriftNr,
