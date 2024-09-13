@@ -68,7 +68,7 @@ class ArbeidsgiverNotifikasjonService(
                 HendelseType.GODKJENT_PAA_VEGNE_AV_DELTAKER_OG_ARBEIDSGIVER -> {
                     log.info("Avtale godkjent: lukker oppgaver. avtaleId: ${avtaleHendelse.avtaleId}")
                     // Lukk alle oppgaver
-                    val mineNotifikasjonerQuery = mineNotifikasjoner(avtaleHendelse.tiltakstype.beskrivelse, avtaleHendelse.grupperingsId()) // TODO: tilse at grupperingsId blir laget likt overalt og explisitt.
+                    val mineNotifikasjonerQuery = mineNotifikasjoner(avtaleHendelse.tiltakstype.beskrivelse, avtaleHendelse.grupperingsId())
                     val response = notifikasjonGraphQlClient.execute(mineNotifikasjonerQuery)
                     val notifikasjoner = response.data?.mineNotifikasjoner
                     lukkÅpneOppgaverPåAvtale(notifikasjoner, avtaleHendelse)
@@ -85,7 +85,7 @@ class ArbeidsgiverNotifikasjonService(
 
                 HendelseType.ANNULLERT -> {
                     log.info("Avtale annullert: sletter saker, oppgaver og beskjeder. avtaleId: ${avtaleHendelse.avtaleId}")
-                    // TODO: Fager har "cascade" på softDeleteSak, den tar da med seg oppgaver og beskjeder også.
+                    // Fager har "cascade" på softDeleteSak, den tar da med seg oppgaver og beskjeder også.
                     // men det kan finnes oppgaver/beskjeder på avtalen uten at det er en sak der (fra gammelt oppsett) må uansett slette de.
                     if (avtaleHendelse.feilregistrert) {
                         // Ved annullering av avtale med årsak feilregistrert, skjules avtalen for alle. Dermed fjerner vi notifikasjoner også.
@@ -419,7 +419,7 @@ class ArbeidsgiverNotifikasjonService(
             } else {
                 // UgyldigMerkelapp | UgyldigMottaker | DuplikatGrupperingsid | DuplikatGrupperingsidEtterDelete| UkjentProdusent | UkjentRolle
                 log.error("opprett sak gikk ikke med resultatet: ${response.data?.nySak}")
-                val sakResultat = response.data?.nySak.toString() // TODO: JSON serialisere her, evt. hente ut kun feilmelding.
+                val sakResultat = response.data?.nySak.toString()
                 notifikasjon.feilmelding = sakResultat
                 notifikasjon.status = ArbeidsgivernotifikasjonStatus.FEILET_VED_OPPRETTELSE_HOS_FAGER
             }
@@ -458,7 +458,7 @@ class ArbeidsgiverNotifikasjonService(
                 arbeidsgivernotifikasjonRepository.save(opprinneligSak)
             } else {
                 log.error("Sett sak status til ${nySakStatusQuery.variables.nyStatus} gikk ikke med resultatet: ${response.data?.nyStatusSak}")
-                val sakResultat = response.data?.nyStatusSak.toString() // TODO: JSON serialisere her, evt. hente ut kun feilmelding.
+                val sakResultat = response.data?.nyStatusSak.toString()
                 notifikasjon.feilmelding = sakResultat
                 notifikasjon.status = ArbeidsgivernotifikasjonStatus.FEILET_VED_OPPRETTELSE_HOS_FAGER
             }
