@@ -82,7 +82,7 @@ class ArbeidsgivernotifikasjonRepository(val dsl: DSLContext) {
             id = arbeidsgivernotifikasjon.id,
             varselId = arbeidsgivernotifikasjon.varselId,
             avtaleMeldingJson = arbeidsgivernotifikasjon.avtaleMeldingJson,
-            arbeidsgivernotifikasjonJson = arbeidsgivernotifikasjon.arbeidsgivernotifikasjonJson, // TODO: Bør hete det samme i entietet db
+            arbeidsgivernotifikasjonJson = arbeidsgivernotifikasjon.arbeidsgivernotifikasjonJson,
             type = arbeidsgivernotifikasjon.type?.name,
             status = arbeidsgivernotifikasjon.status.name,
             bedriftNr = arbeidsgivernotifikasjon.bedriftNr,

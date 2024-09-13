@@ -69,7 +69,7 @@ class ArbeidsgiverNotifikasjonServiceTest {
         assertThat(oppgave).isNotNull()
         assertThat(oppgave.status).isEqualTo(ArbeidsgivernotifikasjonStatus.BEHANDLET)
 
-        val avtaleHendelseMeldingGodkjent: AvtaleHendelseMelding = jacksonMapper().readValue(jsonGodkjentAvArbeidsgiverMelding) // TODO: Samme avtaleid på json
+        val avtaleHendelseMeldingGodkjent: AvtaleHendelseMelding = jacksonMapper().readValue(jsonGodkjentAvArbeidsgiverMelding)
         arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMeldingGodkjent)
 
         val oppgaveEtterGodkjenning = arbeidsgivernotifikasjonRepository.findNotifikasjonByResponseId(oppgave.responseId!!)
@@ -93,8 +93,7 @@ class ArbeidsgiverNotifikasjonServiceTest {
             }
         }
 
-        val avtaleHendelseMeldingAnnullert: AvtaleHendelseMelding =
-            jacksonMapper().readValue(jsonAvtaleAnnullertFeilregistreringMelding) // TODO: Samme avtaleid på json
+        val avtaleHendelseMeldingAnnullert: AvtaleHendelseMelding = jacksonMapper().readValue(jsonAvtaleAnnullertFeilregistreringMelding)
         arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMeldingAnnullert)
         val alleIDB = arbeidsgivernotifikasjonRepository.findAll()
         val sak = alleIDB.first { it.type == ArbeidsgivernotifikasjonType.Sak }

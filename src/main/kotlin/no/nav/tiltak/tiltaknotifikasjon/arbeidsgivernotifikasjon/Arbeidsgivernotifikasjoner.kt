@@ -59,7 +59,7 @@ fun nyOppgave(avtaleHendelseMelding: AvtaleHendelseMelding, altinnProperties: Al
                         mottaker = SmsMottakerInput(
                             kontaktinfo = SmsKontaktInfoInput(tlf = avtaleHendelseMelding.arbeidsgiverTlf!!)
                         ),
-                        smsTekst = "Hei! Du har fått en ny oppgave om tiltak. Logg inn på Min side - arbeidsgiver hos NAV for å se hva det gjelder. Vennlig hilsen NAV", // TODO: Finne ut av hva som skal stå i sms
+                        smsTekst = "Hei! Du har fått en ny oppgave om tiltak. Logg inn på Min side - arbeidsgiver hos NAV for å se hva det gjelder. Vennlig hilsen NAV",
                         sendetidspunkt = SendetidspunktInput(Sendevindu.DAGTID_IKKE_SOENDAG)
                     )
                 )
@@ -102,7 +102,7 @@ fun nyBeskjed(avtaleHendelseMelding: AvtaleHendelseMelding, altinnProperties: Al
                         mottaker = SmsMottakerInput(
                             kontaktinfo = SmsKontaktInfoInput(tlf = avtaleHendelseMelding.arbeidsgiverTlf!!)
                         ),
-                        smsTekst = "Hei! Du har fått en ny beskjed om tiltak. Logg inn på Min side - arbeidsgiver hos NAV for å se hva det gjelder. Vennlig hilsen NAV", // TODO: Bestemme tekst i sms.
+                        smsTekst = "Hei! Du har fått en ny beskjed om tiltak. Logg inn på Min side - arbeidsgiver hos NAV for å se hva det gjelder. Vennlig hilsen NAV",
                         sendetidspunkt = SendetidspunktInput(Sendevindu.DAGTID_IKKE_SOENDAG)
                     )
                 )
@@ -127,7 +127,7 @@ fun nySakStatusAnnullertQuery(sakId: String): NyStatusSak {
     return nySakStatus
 }
 
-fun nySakStatusFerdigQuery(sakId: String): NyStatusSak { // TODO: Implementere dette ved statusendring til avsluttet. Husk også hardDelete 12 uker.
+fun nySakStatusFerdigQuery(sakId: String): NyStatusSak {
     val om12Uker = LocalDateTime.now().plusWeeks(12).toString()
     val nySakStatusVariables = NyStatusSak.Variables(
         id = sakId,
@@ -178,28 +178,4 @@ private fun lagLink(avtaleId: String): String {
         Cluster.LOKAL -> "https://tiltaksgjennomforing.ekstern.dev.nav.no/tiltaksgjennomforing/avtale/${avtaleId}?part=ARBEIDSGIVER"
     }
 
-}
-
-private fun serviceCode(tiltakstype: Tiltakstype): String {
-    val altinnProperties = AltinnProperties()
-    return when (tiltakstype) {
-        Tiltakstype.ARBEIDSTRENING -> altinnProperties.arbtreningServiceCode
-        Tiltakstype.MIDLERTIDIG_LONNSTILSKUDD -> altinnProperties.ltsMidlertidigServiceCode
-        Tiltakstype.VARIG_LONNSTILSKUDD -> altinnProperties.ltsVarigServiceCode
-        Tiltakstype.MENTOR -> altinnProperties.mentorServiceCode
-        Tiltakstype.INKLUDERINGSTILSKUDD -> altinnProperties.inkluderingstilskuddServiceCode
-        Tiltakstype.SOMMERJOBB -> altinnProperties.sommerjobbServiceCode
-    }
-}
-
-private fun serviceEdition(tiltakstype: Tiltakstype): String {
-    val altinnProperties = AltinnProperties()
-    return when (tiltakstype) {
-        Tiltakstype.ARBEIDSTRENING -> altinnProperties.arbtreningServiceEdition
-        Tiltakstype.MIDLERTIDIG_LONNSTILSKUDD -> altinnProperties.ltsMidlertidigServiceEdition
-        Tiltakstype.VARIG_LONNSTILSKUDD -> altinnProperties.ltsVarigServiceEdition
-        Tiltakstype.MENTOR -> altinnProperties.mentorServiceEdition
-        Tiltakstype.INKLUDERINGSTILSKUDD -> altinnProperties.inkluderingstilskuddServiceEdition
-        Tiltakstype.SOMMERJOBB -> altinnProperties.sommerjobbServiceEdition
-    }
 }
