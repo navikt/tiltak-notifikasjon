@@ -30,8 +30,6 @@ import org.springframework.web.reactive.function.client.WebClient
 import java.time.Instant
 import java.time.LocalDateTime
 
-
-//@Profile("prod-gcp", "dev-gcp", "dockercompose")
 @Component
 class ArbeidsgiverNotifikasjonService(
     arbeidsgivernotifikasjonProperties: ArbeidsgivernotifikasjonProperties,
@@ -164,32 +162,32 @@ class ArbeidsgiverNotifikasjonService(
                 HendelseType.AVTALE_FORLENGET -> {
                     log.info("Avtale forlenget: lager beskjed. avtaleId: ${avtaleHendelse.avtaleId}")
                     val nyBeskjed = nyBeskjed(avtaleHendelse, altinnProperties)
-                    val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Beskjed, Varslingsformål.AVTALE_FORLENGET, nyBeskjed)
-                    arbeidsgivernotifikasjonRepository.save(notifikasjon)
-                    opprettNyBeskjed(nyBeskjed, notifikasjon)
+                    val notifikasjonBeskjed = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Beskjed, Varslingsformål.AVTALE_FORLENGET, nyBeskjed)
+                    arbeidsgivernotifikasjonRepository.save(notifikasjonBeskjed)
+                    opprettNyBeskjed(nyBeskjed, notifikasjonBeskjed)
                     // Endre status på sak tilbake til mottatt hvis den var avsluttet
                     val saken = arbeidsgivernotifikasjonRepository.findSakByAvtaleId(avtaleHendelse.avtaleId.toString())
                     if (saken?.status == ArbeidsgivernotifikasjonStatus.SAK_FERDIG && avtaleHendelse.avtaleStatus == AvtaleStatus.GJENNOMFØRES) {
                         log.info("Avtale er forlenget. Sak/Avtale var avsluttet. Setter sak til mottatt igjen (gjennomføres). avtaleId: ${avtaleHendelse.avtaleId}")
                         val nySakStatusMottattQuery = nySakStatusMottattQuery(saken.responseId!!, avtaleHendelse)
-                        val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.NySakStatus, Varslingsformål.INGEN_VARSLING, nySakStatusMottattQuery)
-                        nySakStatus(nySakStatusMottattQuery, notifikasjon, saken, ArbeidsgivernotifikasjonStatus.SAK_MOTTATT)
+                        val notifikasjonNySakStatus = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.NySakStatus, Varslingsformål.INGEN_VARSLING, nySakStatusMottattQuery)
+                        nySakStatus(nySakStatusMottattQuery, notifikasjonNySakStatus, saken, ArbeidsgivernotifikasjonStatus.SAK_MOTTATT)
                     }
                 }
                 HendelseType.AVTALE_FORKORTET -> {
                     log.info("Avtale forkortet: lager beskjed. avtaleId: ${avtaleHendelse.avtaleId}")
                     val nyBeskjed = nyBeskjed(avtaleHendelse, altinnProperties)
-                    val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Beskjed, Varslingsformål.AVTALE_FORKORTET, nyBeskjed)
-                    arbeidsgivernotifikasjonRepository.save(notifikasjon)
-                    opprettNyBeskjed(nyBeskjed, notifikasjon)
+                    val notifikasjonNyBeskjed = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Beskjed, Varslingsformål.AVTALE_FORKORTET, nyBeskjed)
+                    arbeidsgivernotifikasjonRepository.save(notifikasjonNyBeskjed)
+                    opprettNyBeskjed(nyBeskjed, notifikasjonNyBeskjed)
                     // Endre status på sak hvis forkortet til før d.d
                     if (avtaleHendelse.avtaleStatus == AvtaleStatus.AVSLUTTET) {
                         val saken = arbeidsgivernotifikasjonRepository.findSakByAvtaleId(avtaleHendelse.avtaleId.toString())
                         if (saken != null) {
                             log.info("Avtale er avsluttet. Setter sak til ferdig. avtaleId: ${avtaleHendelse.avtaleId}")
                             val nySakStatusFerdigQuery = nySakStatusFerdigQuery(saken.responseId!!)
-                            val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.NySakStatus, Varslingsformål.INGEN_VARSLING, nySakStatusFerdigQuery)
-                            nySakStatus(nySakStatusFerdigQuery, notifikasjon, saken, ArbeidsgivernotifikasjonStatus.SAK_FERDIG)
+                            val notifikasjonNySakStatus = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.NySakStatus, Varslingsformål.INGEN_VARSLING, nySakStatusFerdigQuery)
+                            nySakStatus(nySakStatusFerdigQuery, notifikasjonNySakStatus, saken, ArbeidsgivernotifikasjonStatus.SAK_FERDIG)
                         }
                     }
                 }
