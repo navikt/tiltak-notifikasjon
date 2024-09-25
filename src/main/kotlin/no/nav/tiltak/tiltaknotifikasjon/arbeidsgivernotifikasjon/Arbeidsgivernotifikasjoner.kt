@@ -70,7 +70,6 @@ fun nyOppgave(avtaleHendelseMelding: AvtaleHendelseMelding, altinnProperties: Al
     return oppgave
 }
 
-// TODO: Sjekke om man kan lukke en sak og dermed alle oppgaver på saken.
 fun oppgaveUtført(id: String): OppgaveUtfoert = OppgaveUtfoert(OppgaveUtfoert.Variables(id))
 
 
@@ -98,7 +97,7 @@ fun nyBeskjed(avtaleHendelseMelding: AvtaleHendelseMelding, altinnProperties: Al
 
             eksterneVarsler = if (avtaleHendelseMelding.hendelseType.skalSendeSmsTilArbeidsgiver()) listOf(
                 EksterntVarselInput(
-                    sms = EksterntVarselSmsInput( // TODO: Hva skal varsles på i sms.
+                    sms = EksterntVarselSmsInput(
                         mottaker = SmsMottakerInput(
                             kontaktinfo = SmsKontaktInfoInput(tlf = avtaleHendelseMelding.arbeidsgiverTlf!!)
                         ),

@@ -19,10 +19,9 @@ data class Arbeidsgivernotifikasjon(
     val varslingsformål: Varslingsformål? = null,
     val avtaleId: String? = null,
     val avtaleNr: Int? = null,
-    var responseId: String? = null,
     /** id'en som notifikasjonen har hos fager. Den blir generert av de ved opprettelse og returnert */
-    // TODO: slettetTdispunkt el. og hardDeleteSkedulertTidspunkt
-    var slettetTidspunkt: Instant? = null,
+    var responseId: String? = null,
+    /** Tidspunktet notifikasjonen er skedulert til å slettes. api-et forventer LocalDateTime i Europe/Oslo tidssone */
     var hardDeleteSkedulertTidspunkt: LocalDateTime? = null
 )
 
