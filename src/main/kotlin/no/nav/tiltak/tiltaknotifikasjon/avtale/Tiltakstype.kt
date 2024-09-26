@@ -11,6 +11,8 @@ enum class Tiltakstype(val beskrivelse: String, val arbeidsgiverNotifikasjonMerk
     SOMMERJOBB(beskrivelse = "Sommerjobb", arbeidsgiverNotifikasjonMerkelapp = "Sommerjobb");
 }
 
+
+
 fun Tiltakstype.serviceCode(altinnProperties: AltinnProperties): String {
     return when (this) {
         Tiltakstype.ARBEIDSTRENING -> altinnProperties.arbtreningServiceCode

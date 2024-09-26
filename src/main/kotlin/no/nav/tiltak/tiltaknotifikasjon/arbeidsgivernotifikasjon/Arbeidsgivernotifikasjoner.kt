@@ -152,8 +152,8 @@ fun nySakStatusMottattQuery(sakId: String, avtaleHendelse: AvtaleHendelseMelding
 }
 
 
-fun mineNotifikasjoner(merkelapp: String, grupperingsid: String): MineNotifikasjoner {
-    val variables = MineNotifikasjoner.Variables(merkelapp = merkelapp, grupperingsid = grupperingsid)
+fun mineNotifikasjoner(tiltakstype: Tiltakstype, grupperingsid: String): MineNotifikasjoner {
+    val variables = MineNotifikasjoner.Variables(merkelapp = tiltakstype.arbeidsgiverNotifikasjonMerkelapp, grupperingsid = grupperingsid)
     val mineNotifikasjoner = MineNotifikasjoner(variables)
     return mineNotifikasjoner
 }
