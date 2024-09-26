@@ -17,10 +17,7 @@ import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generat
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.softdeletenotifikasjon.SoftDeleteNotifikasjonVellykket
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.softdeletesakbygrupperingsid.SakFinnesIkke
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.softdeletesakbygrupperingsid.SoftDeleteSakVellykket
-import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
-import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleStatus
-import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
-import no.nav.tiltak.tiltaknotifikasjon.avtale.grupperingsId
+import no.nav.tiltak.tiltaknotifikasjon.avtale.*
 import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
 import no.nav.tiltak.tiltaknotifikasjon.utils.ulid
 import org.slf4j.LoggerFactory
@@ -66,7 +63,7 @@ class ArbeidsgiverNotifikasjonService(
                 HendelseType.GODKJENT_PAA_VEGNE_AV_DELTAKER_OG_ARBEIDSGIVER -> {
                     log.info("Avtale godkjent: lukker oppgaver. avtaleId: ${avtaleHendelse.avtaleId}")
                     // Lukk alle oppgaver
-                    val mineNotifikasjonerQuery = mineNotifikasjoner(avtaleHendelse.tiltakstype.beskrivelse, avtaleHendelse.grupperingsId())
+                    val mineNotifikasjonerQuery = mineNotifikasjoner(tiltakstype = avtaleHendelse.tiltakstype, grupperingsid = avtaleHendelse.grupperingsId())
                     val response = notifikasjonGraphQlClient.execute(mineNotifikasjonerQuery)
                     val notifikasjoner = response.data?.mineNotifikasjoner
                     lukkÅpneOppgaverPåAvtale(notifikasjoner, avtaleHendelse)
@@ -93,7 +90,10 @@ class ArbeidsgiverNotifikasjonService(
                         val gikkSoftDeleteSakBra = softDeleteSak(softDeleteSakQuery, avtaleHendelse.avtaleId.toString(), notifikasjonSakSletting)
                         if (!gikkSoftDeleteSakBra) {
                             log.warn("Soft delete av sak gikk ikke/fant ikke sak, må slette notifikasjoner manuelt. avtaleId: ${avtaleHendelse.avtaleId}")
-                            val mineNotifikasjonerQuery = mineNotifikasjoner(avtaleHendelse.tiltakstype.beskrivelse, avtaleHendelse.grupperingsId())
+                            val mineNotifikasjonerQuery = mineNotifikasjoner(
+                                tiltakstype = avtaleHendelse.tiltakstype,
+                                grupperingsid = avtaleHendelse.grupperingsId()
+                            )
                             val response = notifikasjonGraphQlClient.execute(mineNotifikasjonerQuery)
                             val notifikasjoner = response.data?.mineNotifikasjoner
                             softDeleteOppgaverOgBeskjeder(notifikasjoner, avtaleHendelse)
@@ -106,7 +106,10 @@ class ArbeidsgiverNotifikasjonService(
                         if (saken != null) {
                             log.info("Annullert avtale har sak. sletter oppgaver og setter hardDelete på sak. avtaleId: ${avtaleHendelse.avtaleId}")
                             // slett oppgaver og sett hardDelete til 12 uker på sak.
-                            val mineNotifikasjonerQuery = mineNotifikasjoner(avtaleHendelse.tiltakstype.beskrivelse, avtaleHendelse.grupperingsId())
+                            val mineNotifikasjonerQuery = mineNotifikasjoner(
+                                tiltakstype = avtaleHendelse.tiltakstype,
+                                grupperingsid = avtaleHendelse.grupperingsId()
+                            )
                             val response = notifikasjonGraphQlClient.execute(mineNotifikasjonerQuery)
                             val notifikasjoner = response.data?.mineNotifikasjoner
                             if (notifikasjoner is NotifikasjonConnection) {
@@ -121,7 +124,10 @@ class ArbeidsgiverNotifikasjonService(
                         } else {
                             // Slett alle oppgaver og beskjeder
                             log.info("Annullert avtale har ingen sak. sletter oppgaver og beskjeder. avtaleId: ${avtaleHendelse.avtaleId}")
-                            val mineNotifikasjonerQuery = mineNotifikasjoner(avtaleHendelse.tiltakstype.beskrivelse, avtaleHendelse.grupperingsId())
+                            val mineNotifikasjonerQuery = mineNotifikasjoner(
+                                tiltakstype = avtaleHendelse.tiltakstype,
+                                grupperingsid = avtaleHendelse.grupperingsId()
+                            )
                             val response = notifikasjonGraphQlClient.execute(mineNotifikasjonerQuery)
                             val notifikasjoner = response.data?.mineNotifikasjoner
                             softDeleteOppgaverOgBeskjeder(notifikasjoner, avtaleHendelse)
@@ -139,16 +145,7 @@ class ArbeidsgiverNotifikasjonService(
                 HendelseType.STATUSENDRING -> {
                     // Statusendringer som oppstår som følge av at av dager går.
                     log.info("Statusendring: sjekker om avtale er endret til avsluttet. avtaleId: ${avtaleHendelse.avtaleId}")
-                    if (avtaleHendelse.avtaleStatus == AvtaleStatus.AVSLUTTET) {
-                        // Avtalens sluttdato er passert. Sett sak til ferdig
-                        val saken = arbeidsgivernotifikasjonRepository.findSakByAvtaleId(avtaleHendelse.avtaleId.toString())
-                        if (saken != null) {
-                            log.info("Avtale er avsluttet. Setter sak til ferdig. avtaleId: ${avtaleHendelse.avtaleId}")
-                            val nySakStatusFerdigQuery = nySakStatusFerdigQuery(saken.responseId!!)
-                            val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.NySakStatus, Varslingsformål.INGEN_VARSLING, nySakStatusFerdigQuery)
-                            nySakStatus(nySakStatusFerdigQuery, notifikasjon, saken, ArbeidsgivernotifikasjonStatus.SAK_FERDIG)
-                        }
-                    }
+                    settSakTilFerdigHvisAvtalestatusAvsluttet(avtaleHendelse)
                 }
 
                 // BESKJEDER
@@ -181,15 +178,7 @@ class ArbeidsgiverNotifikasjonService(
                     arbeidsgivernotifikasjonRepository.save(notifikasjonNyBeskjed)
                     opprettNyBeskjed(nyBeskjed, notifikasjonNyBeskjed)
                     // Endre status på sak hvis forkortet til før d.d
-                    if (avtaleHendelse.avtaleStatus == AvtaleStatus.AVSLUTTET) {
-                        val saken = arbeidsgivernotifikasjonRepository.findSakByAvtaleId(avtaleHendelse.avtaleId.toString())
-                        if (saken != null) {
-                            log.info("Avtale er avsluttet. Setter sak til ferdig. avtaleId: ${avtaleHendelse.avtaleId}")
-                            val nySakStatusFerdigQuery = nySakStatusFerdigQuery(saken.responseId!!)
-                            val notifikasjonNySakStatus = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.NySakStatus, Varslingsformål.INGEN_VARSLING, nySakStatusFerdigQuery)
-                            nySakStatus(nySakStatusFerdigQuery, notifikasjonNySakStatus, saken, ArbeidsgivernotifikasjonStatus.SAK_FERDIG)
-                        }
-                    }
+                    settSakTilFerdigHvisAvtalestatusAvsluttet(avtaleHendelse)
                 }
                 HendelseType.MÅL_ENDRET -> {
                     log.info("Mål endret: lager beskjed. avtaleId: ${avtaleHendelse.avtaleId}")
@@ -245,16 +234,23 @@ class ArbeidsgiverNotifikasjonService(
         }
     }
 
-
+    private fun settSakTilFerdigHvisAvtalestatusAvsluttet(avtaleHendelse: AvtaleHendelseMelding) {
+        if (avtaleHendelse.avtaleStatus == AvtaleStatus.AVSLUTTET) {
+            val saken = arbeidsgivernotifikasjonRepository.findSakByAvtaleId(avtaleHendelse.avtaleId.toString())
+            if (saken != null) {
+                log.info("Avtale er avsluttet. Setter sak til ferdig. avtaleId: ${avtaleHendelse.avtaleId}")
+                val nySakStatusFerdigQuery = nySakStatusFerdigQuery(saken.responseId!!)
+                val notifikasjonNySakStatus = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.NySakStatus, Varslingsformål.INGEN_VARSLING, nySakStatusFerdigQuery)
+                nySakStatus(nySakStatusFerdigQuery, notifikasjonNySakStatus, saken, ArbeidsgivernotifikasjonStatus.SAK_FERDIG)
+            }
+        }
+    }
 
 
     fun lukkÅpneOppgaverPåAvtale(notifikasjonerPåAvtale: MineNotifikasjonerResultat?, avtaleHendelse: AvtaleHendelseMelding) {
         runBlocking {
             if (notifikasjonerPåAvtale is NotifikasjonConnection) {
-                if (notifikasjonerPåAvtale.pageInfo.hasNextPage) {
-                    log.error("Det er flere sider med notifikasjoner på avtaleId: ${avtaleHendelse.avtaleId} enn det som er hentet (${notifikasjonerPåAvtale.edges.size}). Limit skal være 1k")
-                    return@runBlocking
-                }
+                if (sjekkAtIkkeFlereSider(notifikasjonerPåAvtale, avtaleHendelse)) return@runBlocking
 
                 log.info("Fant ${notifikasjonerPåAvtale.edges.size} notifikasjoner på avtaleId: ${avtaleHendelse.avtaleId} Lukker de som er åpne/ny.")
                 notifikasjonerPåAvtale.edges.forEach {
@@ -289,13 +285,18 @@ class ArbeidsgiverNotifikasjonService(
         }
     }
 
+    private fun sjekkAtIkkeFlereSider(notifikasjonerPåAvtale: NotifikasjonConnection, avtaleHendelse: AvtaleHendelseMelding): Boolean {
+        if (notifikasjonerPåAvtale.pageInfo.hasNextPage) {
+            log.error("Det er flere sider med notifikasjoner på avtaleId: ${avtaleHendelse.avtaleId} enn det som er hentet (${notifikasjonerPåAvtale.edges.size}). Limit skal være 1k")
+            return true
+        }
+        return false
+    }
+
     fun softDeleteOppgaverOgBeskjeder(notifikasjonerPåAvtale: MineNotifikasjonerResultat?, avtaleHendelse: AvtaleHendelseMelding) {
         runBlocking {
             if (notifikasjonerPåAvtale is NotifikasjonConnection) {
-                if (notifikasjonerPåAvtale.pageInfo.hasNextPage) {
-                    log.error("Det er flere sider med notifikasjoner på avtaleId: ${avtaleHendelse.avtaleId} enn det som er hentet (${notifikasjonerPåAvtale.edges.size}). Limit skal være 1k")
-                    return@runBlocking
-                }
+                if (sjekkAtIkkeFlereSider(notifikasjonerPåAvtale, avtaleHendelse)) return@runBlocking
                 log.info("Fant ${notifikasjonerPåAvtale.edges.size} notifikasjoner på avtaleId: ${avtaleHendelse.avtaleId} for softDelete.")
                 notifikasjonerPåAvtale.edges.forEach {
                     val notifikasjon = it.node
@@ -554,9 +555,9 @@ class ArbeidsgiverNotifikasjonService(
     }
 
 
-    fun hentMineSaker(avtaleId: String, merkelapp: String): GraphQLClientResponse<MineNotifikasjoner.Result> {
-        val mineNotifikasjonerQuery = mineNotifikasjoner(merkelapp, avtaleId)
-        log.info("laget request for mine saker på avtaleId $avtaleId og merkelapp $merkelapp")
+    fun hentMineSaker(avtaleId: String, tiltakstype: Tiltakstype): GraphQLClientResponse<MineNotifikasjoner.Result> {
+        val mineNotifikasjonerQuery = mineNotifikasjoner(tiltakstype, avtaleId)
+        log.info("laget request for mine saker på avtaleId $avtaleId og merkelapp ${tiltakstype.arbeidsgiverNotifikasjonMerkelapp}")
 
         return runBlocking {
             notifikasjonGraphQlClient.execute(mineNotifikasjonerQuery)
