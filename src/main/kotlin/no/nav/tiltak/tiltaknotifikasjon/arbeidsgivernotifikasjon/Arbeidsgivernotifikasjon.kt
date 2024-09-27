@@ -1,16 +1,21 @@
 package no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon
 
+import jakarta.persistence.Entity
+import jakarta.persistence.Id
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
+import no.nav.tiltak.tiltaknotifikasjon.utils.ulid
 import java.time.Instant
 import java.time.LocalDateTime
 
+@Entity
 data class Arbeidsgivernotifikasjon(
-    val id: String,
+    @Id
+    val id: String = ulid(),
     var varselId: String? = null,
-    val avtaleMeldingJson: String,
+    val avtaleMeldingJson: String = "",
     var arbeidsgivernotifikasjonJson: String? = null,
     var type: ArbeidsgivernotifikasjonType? = null,
-    var status: ArbeidsgivernotifikasjonStatus,
+    var status: ArbeidsgivernotifikasjonStatus = ArbeidsgivernotifikasjonStatus.BEHANDLET,
     val bedriftNr: String? = null,
     val avtaleHendelseType: HendelseType? = null,
     var feilmelding: String? = null,

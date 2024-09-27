@@ -525,7 +525,6 @@ class ArbeidsgiverNotifikasjonService(
     private fun nyArbeidsgivernotifikasjon(avtaleHendelse: AvtaleHendelseMelding, type: ArbeidsgivernotifikasjonType, varslingsformål: Varslingsformål, notifikasjonObject: Any
     ): Arbeidsgivernotifikasjon {
         return Arbeidsgivernotifikasjon(
-            id = ulid(),
             varselId = null, // TODO: KAN VEL FJERNES TROR JEG.
             avtaleMeldingJson = jacksonMapper().writeValueAsString(avtaleHendelse),
             arbeidsgivernotifikasjonJson = jacksonMapper().writeValueAsString(notifikasjonObject),
