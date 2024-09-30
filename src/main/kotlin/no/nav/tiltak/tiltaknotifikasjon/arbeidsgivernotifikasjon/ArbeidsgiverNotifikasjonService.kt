@@ -268,7 +268,7 @@ class ArbeidsgiverNotifikasjonService(
                             notifikasjonFerdigstillOppgave.status = ArbeidsgivernotifikasjonStatus.FEILET_VED_SENDING
                             notifikasjonFerdigstillOppgave.feilmelding = response.errors.toString()
                         } else {
-                            notifikasjonFerdigstillOppgave.sendt = Instant.now()
+                            notifikasjonFerdigstillOppgave.sendtTidspunkt = Instant.now()
                             val opprinneligOppgave = arbeidsgivernotifikasjonRepository.findOppgaveByResponseId(oppgaveId) //arbeidsgivernotifikasjonRepository.findAllByResponseId(oppgaveId).firstOrNull { oppgave -> oppgave.type == ArbeidsgivernotifikasjonType.Oppgave }
                             if (opprinneligOppgave != null) {
                                 opprinneligOppgave.status = ArbeidsgivernotifikasjonStatus.OPPGAVE_FERDIGSTILT
@@ -328,7 +328,7 @@ class ArbeidsgiverNotifikasjonService(
                 val resultat = response.data?.softDeleteNotifikasjon
                 if (resultat is SoftDeleteNotifikasjonVellykket) {
                     log.info("notifikasjon $notifikasjonId softDeletet vellykket. avtaleId: ${avtaleHendelse.avtaleId}")
-                    notifikasjonSoftDelete.sendt = Instant.now()
+                    notifikasjonSoftDelete.sendtTidspunkt = Instant.now()
                     notifikasjonSoftDelete.responseId = resultat.id
                     val arbeidsgivernotifikasjonIDb = arbeidsgivernotifikasjonRepository.findNotifikasjonByResponseId(notifikasjonId) //arbeidsgivernotifikasjonRepository.findAllByResponseId(notifikasjonId)
                     if (arbeidsgivernotifikasjonIDb != null) {
@@ -369,7 +369,7 @@ class ArbeidsgiverNotifikasjonService(
             if (resultat is SoftDeleteSakVellykket) {
                 log.info("Sak slettet vellykket. grupperingsId: ${softDeleteSakQuery.variables.grupperingsid}")
                 notifikasjonSakSletting.responseId = resultat.id
-                notifikasjonSakSletting.sendt = Instant.now()
+                notifikasjonSakSletting.sendtTidspunkt = Instant.now()
                 arbeidsgivernotifikasjonRepository.save(notifikasjonSakSletting)
                 // Oppdatere opprinnelig sak til slettet i DB:
                 val opprinneligSak = arbeidsgivernotifikasjonRepository.findNotifikasjonByResponseId(resultat.id)
@@ -413,7 +413,7 @@ class ArbeidsgiverNotifikasjonService(
             if (nySakResultat is NySakVellykket) {
                 log.info("Sak opprettet vellykket. avtaleId: ${notifikasjon.avtaleId}")
                 notifikasjon.responseId = nySakResultat.id
-                notifikasjon.sendt = Instant.now()
+                notifikasjon.sendtTidspunkt = Instant.now()
                 notifikasjon.status = ArbeidsgivernotifikasjonStatus.SAK_MOTTATT
             } else {
                 // UgyldigMerkelapp | UgyldigMottaker | DuplikatGrupperingsid | DuplikatGrupperingsidEtterDelete| UkjentProdusent | UkjentRolle
@@ -446,7 +446,7 @@ class ArbeidsgiverNotifikasjonService(
             if (nySakStatusResultat is NyStatusSakVellykket) {
                 log.info("Sak status oppdatert vellykket. NyStatus: ${nySakStatusQuery.variables.nyStatus} overstyrtTekst: ${nySakStatusQuery.variables.overstyrStatustekstMed}")
                 notifikasjon.responseId = nySakStatusResultat.id
-                notifikasjon.sendt = Instant.now()
+                notifikasjon.sendtTidspunkt = Instant.now()
                 opprinneligSak.status = saksStatus
                 if (nySakStatusQuery.variables.hardDelete?.nyTid?.den !== null) {
                     opprinneligSak.hardDeleteSkedulertTidspunkt = LocalDateTime.parse(nySakStatusQuery.variables.hardDelete.nyTid.den)
@@ -481,7 +481,7 @@ class ArbeidsgiverNotifikasjonService(
             if (nyOppgaveResultat is NyOppgaveVellykket) {
                 log.info("Oppgave opprettet vellykket. avtaleId: ${notifikasjon.avtaleId}")
                 notifikasjon.responseId = nyOppgaveResultat.id
-                notifikasjon.sendt = Instant.now()
+                notifikasjon.sendtTidspunkt = Instant.now()
             } else {
                 //  UgyldigMerkelapp | UgyldigMottaker | DuplikatGrupperingsid | DuplikatGrupperingsidEtterDelete| UkjentProdusent | UkjentRolle
                 log.error("opprett oppgave gikk ikke med resultatet: ${response.data?.nyOppgave}")
@@ -509,7 +509,7 @@ class ArbeidsgiverNotifikasjonService(
             if (nyBeskjedResultat is NyBeskjedVellykket) {
                 log.info("Beskjed opprettet vellykket. avtaleId: ${notifikasjon.avtaleId}")
                 notifikasjon.responseId = nyBeskjedResultat.id
-                notifikasjon.sendt = Instant.now()
+                notifikasjon.sendtTidspunkt = Instant.now()
             } else {
                 // NyBeskjedVellykket | UgyldigMerkelapp | UgyldigMottaker | DuplikatGrupperingsid | DuplikatGrupperingsidEtterDelete| UkjentProdusent | UkjentRolle
                 log.error("opprett beskjed gikk ikke med resultatet: ${response.data?.nyBeskjed}")
@@ -526,7 +526,6 @@ class ArbeidsgiverNotifikasjonService(
     ): Arbeidsgivernotifikasjon {
         return Arbeidsgivernotifikasjon(
             id = ulid(),
-            varselId = null, // TODO: KAN VEL FJERNES TROR JEG.
             avtaleMeldingJson = jacksonMapper().writeValueAsString(avtaleHendelse),
             arbeidsgivernotifikasjonJson = jacksonMapper().writeValueAsString(notifikasjonObject),
             type = type,
@@ -536,7 +535,7 @@ class ArbeidsgiverNotifikasjonService(
             varslingsformål = varslingsformål,
             avtaleId = avtaleHendelse.avtaleId.toString(),
             avtaleNr = avtaleHendelse.avtaleNr,
-            opprettet = Instant.now() // TODO: opprettetTidspunkt?
+            opprettetTidspunkt = Instant.now() // TODO: opprettetTidspunkt?
         )
     }
 

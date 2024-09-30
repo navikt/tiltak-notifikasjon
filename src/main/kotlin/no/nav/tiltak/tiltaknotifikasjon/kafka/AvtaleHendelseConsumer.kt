@@ -69,7 +69,7 @@ class AvtaleHendelseConsumer(
                 id = ulid(),
                 avtaleMeldingJson = avtaleHendelse,
                 status = ArbeidsgivernotifikasjonStatus.FEILET_VED_BEHANDLING,
-                opprettet = Instant.now(),
+                opprettetTidspunkt = Instant.now(),
                 feilmelding = e.message
             )
             arbeidsgivernotifikasjonRepository.save(arbeidsgivernotifikasjon)

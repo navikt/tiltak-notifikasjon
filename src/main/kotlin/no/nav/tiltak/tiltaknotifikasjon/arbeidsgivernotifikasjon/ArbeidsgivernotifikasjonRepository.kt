@@ -58,7 +58,6 @@ class ArbeidsgivernotifikasjonRepository(val dsl: DSLContext) {
     private fun mapToArbeidsgivernotifikasjon(record: ArbeidsgivernotifikasjonRecord): Arbeidsgivernotifikasjon {
         return Arbeidsgivernotifikasjon(
             id = record.id,
-            varselId = record.varselId,
             avtaleMeldingJson = record.avtaleMeldingJson,
             arbeidsgivernotifikasjonJson = record.arbeidsgivernotifikasjonJson,
             type = if (record.type != null) ArbeidsgivernotifikasjonType.valueOf(record.type!!) else null,
@@ -66,8 +65,8 @@ class ArbeidsgivernotifikasjonRepository(val dsl: DSLContext) {
             bedriftNr = record.bedriftNr,
             avtaleHendelseType = if (record.avtaleHendelseType != null) HendelseType.valueOf(record.avtaleHendelseType!!) else null,
             feilmelding = record.feilmelding,
-            sendt = record.sendt?.toInstant(),
-            opprettet = record.opprettet.toInstant(),
+            sendtTidspunkt = record.sendtTidspunkt?.toInstant(),
+            opprettetTidspunkt = record.opprettetTidspunkt.toInstant(),
             varslingsformål = if (record.varslingsformål != null) Varslingsformål.valueOf(record.varslingsformål!!) else null,
             responseId = record.responseId,
             avtaleId = record.avtaleId,
@@ -80,7 +79,6 @@ class ArbeidsgivernotifikasjonRepository(val dsl: DSLContext) {
     private fun mapToDatabaseRecord(arbeidsgivernotifikasjon: Arbeidsgivernotifikasjon): ArbeidsgivernotifikasjonRecord {
         return ArbeidsgivernotifikasjonRecord(
             id = arbeidsgivernotifikasjon.id,
-            varselId = arbeidsgivernotifikasjon.varselId,
             avtaleMeldingJson = arbeidsgivernotifikasjon.avtaleMeldingJson,
             arbeidsgivernotifikasjonJson = arbeidsgivernotifikasjon.arbeidsgivernotifikasjonJson,
             type = arbeidsgivernotifikasjon.type?.name,
@@ -88,8 +86,8 @@ class ArbeidsgivernotifikasjonRepository(val dsl: DSLContext) {
             bedriftNr = arbeidsgivernotifikasjon.bedriftNr,
             avtaleHendelseType = arbeidsgivernotifikasjon.avtaleHendelseType?.name,
             feilmelding = arbeidsgivernotifikasjon.feilmelding,
-            sendt = if (arbeidsgivernotifikasjon.sendt != null) arbeidsgivernotifikasjon.sendt?.atOffset(ZoneOffset.UTC) else null,
-            opprettet = arbeidsgivernotifikasjon.opprettet.atOffset(ZoneOffset.UTC),
+            sendtTidspunkt = if (arbeidsgivernotifikasjon.sendtTidspunkt != null) arbeidsgivernotifikasjon.sendtTidspunkt?.atOffset(ZoneOffset.UTC) else null,
+            opprettetTidspunkt = arbeidsgivernotifikasjon.opprettetTidspunkt.atOffset(ZoneOffset.UTC),
             varslingsformål = arbeidsgivernotifikasjon.varslingsformål?.name,
             responseId = arbeidsgivernotifikasjon.responseId,
             avtaleId = arbeidsgivernotifikasjon.avtaleId,

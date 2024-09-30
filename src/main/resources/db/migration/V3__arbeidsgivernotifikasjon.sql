@@ -12,7 +12,7 @@ create table arbeidsgivernotifikasjon
     avtale_id                     varchar,
     avtale_hendelse_type          varchar,
     sendt                         timestamp with time zone,
-    opprettet                     timestamp with time zone not null,
+    opprettet                    timestamp with time zone not null,
     varslingsformål               varchar,
     response_id                   varchar
 );
