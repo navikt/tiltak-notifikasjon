@@ -535,7 +535,7 @@ class ArbeidsgiverNotifikasjonService(
             varslingsformål = varslingsformål,
             avtaleId = avtaleHendelse.avtaleId.toString(),
             avtaleNr = avtaleHendelse.avtaleNr,
-            opprettetTidspunkt = Instant.now() // TODO: opprettetTidspunkt?
+            opprettetTidspunkt = Instant.now()
         )
     }
 
