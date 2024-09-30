@@ -6,7 +6,6 @@ import java.time.LocalDateTime
 
 data class Arbeidsgivernotifikasjon(
     val id: String,
-    var varselId: String? = null,
     val avtaleMeldingJson: String,
     var arbeidsgivernotifikasjonJson: String? = null,
     var type: ArbeidsgivernotifikasjonType? = null,
@@ -14,8 +13,8 @@ data class Arbeidsgivernotifikasjon(
     val bedriftNr: String? = null,
     val avtaleHendelseType: HendelseType? = null,
     var feilmelding: String? = null,
-    var sendt: Instant? = null,
-    var opprettet: Instant = Instant.now(),
+    var sendtTidspunkt: Instant? = null,
+    val opprettetTidspunkt: Instant = Instant.now(),
     val varslingsformål: Varslingsformål? = null,
     val avtaleId: String? = null,
     val avtaleNr: Int? = null,
