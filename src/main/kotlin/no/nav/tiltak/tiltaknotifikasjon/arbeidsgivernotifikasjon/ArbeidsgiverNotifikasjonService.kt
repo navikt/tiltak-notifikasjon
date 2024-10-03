@@ -18,6 +18,8 @@ import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generat
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.softdeletesakbygrupperingsid.SakFinnesIkke
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.softdeletesakbygrupperingsid.SoftDeleteSakVellykket
 import no.nav.tiltak.tiltaknotifikasjon.avtale.*
+import no.nav.tiltak.tiltaknotifikasjon.kafka.TiltakNotifikasjonKvitteringProdusent
+import no.nav.tiltak.tiltaknotifikasjon.kafka.kvitterinFraArbeidsgivernotifikasjon
 import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
 import no.nav.tiltak.tiltaknotifikasjon.utils.ulid
 import org.slf4j.LoggerFactory
@@ -33,6 +35,7 @@ class ArbeidsgiverNotifikasjonService(
     private val altinnProperties: AltinnProperties,
     @Qualifier("azureWebClientBuilder") azureWebClientBuilder: WebClient.Builder,
     val arbeidsgivernotifikasjonRepository: ArbeidsgivernotifikasjonRepository,
+    private val tiltakNotifikasjonKvitteringProdusent: TiltakNotifikasjonKvitteringProdusent,
 ) {
 
     private val log = LoggerFactory.getLogger(javaClass)
@@ -482,6 +485,9 @@ class ArbeidsgiverNotifikasjonService(
                 log.info("Oppgave opprettet vellykket. avtaleId: ${notifikasjon.avtaleId}")
                 notifikasjon.responseId = nyOppgaveResultat.id
                 notifikasjon.sendtTidspunkt = Instant.now()
+
+                val kvittering = kvitterinFraArbeidsgivernotifikasjon(notifikasjon)
+                tiltakNotifikasjonKvitteringProdusent.sendNotifikasjonKvittering(kvittering)
             } else {
                 //  UgyldigMerkelapp | UgyldigMottaker | DuplikatGrupperingsid | DuplikatGrupperingsidEtterDelete| UkjentProdusent | UkjentRolle
                 log.error("opprett oppgave gikk ikke med resultatet: ${response.data?.nyOppgave}")
@@ -510,6 +516,10 @@ class ArbeidsgiverNotifikasjonService(
                 log.info("Beskjed opprettet vellykket. avtaleId: ${notifikasjon.avtaleId}")
                 notifikasjon.responseId = nyBeskjedResultat.id
                 notifikasjon.sendtTidspunkt = Instant.now()
+
+                val kvittering = kvitterinFraArbeidsgivernotifikasjon(notifikasjon)
+                tiltakNotifikasjonKvitteringProdusent.sendNotifikasjonKvittering(kvittering)
+
             } else {
                 // NyBeskjedVellykket | UgyldigMerkelapp | UgyldigMottaker | DuplikatGrupperingsid | DuplikatGrupperingsidEtterDelete| UkjentProdusent | UkjentRolle
                 log.error("opprett beskjed gikk ikke med resultatet: ${response.data?.nyBeskjed}")

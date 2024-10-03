@@ -36,3 +36,7 @@ enum class Varslingsformål {
     AVTALE_ANNULLERT,
     AVTALE_INNGÅTT,
 }
+
+fun Brukernotifikasjon.sendtSms(): Boolean {
+    return minSideJson?.contains("SMS") ?: false
+}

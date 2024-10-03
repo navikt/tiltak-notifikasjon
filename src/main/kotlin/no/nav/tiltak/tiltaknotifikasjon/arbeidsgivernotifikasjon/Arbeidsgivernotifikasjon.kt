@@ -47,3 +47,7 @@ enum class Varslingsformål {
     TILSKUDDSBEREGNING_ENDRET,
     KONTAKTINFORMASJON_ENDRET,
 }
+
+fun Arbeidsgivernotifikasjon.sendtSms(): Boolean {
+    return arbeidsgivernotifikasjonJson?.contains("sms") ?: false
+}
