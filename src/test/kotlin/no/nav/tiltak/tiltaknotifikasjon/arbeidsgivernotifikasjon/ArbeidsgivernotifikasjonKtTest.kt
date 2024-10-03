@@ -21,7 +21,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
 @SpringBootTest
 @ActiveProfiles("test-containers", "wiremock")
 @Testcontainers
-class ArbeidsgivernotifikasjonKtTest{
+class ArbeidsgivernotifikasjonKtTest {
 
     @Autowired
     lateinit var arbeidsgiverNotifikasjonService: ArbeidsgiverNotifikasjonService
@@ -35,7 +35,7 @@ class ArbeidsgivernotifikasjonKtTest{
     }
 
     @Test
-    fun `nySak_skal_ikke_ha_sent_sms_true`(){
+    fun `nySak_skal_ikke_ha_sent_sms_true`() {
         val avtaleHendelseMelding: AvtaleHendelseMelding = jacksonMapper().readValue(jsonAvtaleOpprettetMelding)
         arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding)
 
@@ -44,7 +44,7 @@ class ArbeidsgivernotifikasjonKtTest{
     }
 
     @Test
-    fun `avtale_forlenget_og_forkortet_skal_ha_sendt_sms_true`(){
+    fun `avtale_forlenget_og_forkortet_skal_ha_sendt_sms_true`() {
         val avtaleHendelseMeldingForlenget: AvtaleHendelseMelding = jacksonMapper().readValue(jsonAvtaleForlengetMelding)
         val avtaleHendelseForkortet: AvtaleHendelseMelding = jacksonMapper().readValue(jsonAvtaleForkortetMelding)
         arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMeldingForlenget)
@@ -55,22 +55,5 @@ class ArbeidsgivernotifikasjonKtTest{
             assertTrue(it.sendtSms())
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }
