@@ -1,6 +1,5 @@
 package no.nav.tiltak.tiltaknotifikasjon.kafka
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.Arbeidsgivernotifikasjon
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.sendtSms
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
@@ -17,13 +16,13 @@ data class TiltakNotifikasjonKvitteringDto(
     val payload: String,
     var feilmelding: String? = null,
     var sendtTidspunkt: Instant? = null,
-//    val tiltakstype: Tiltakstype, trenger vel ikke det
     val avtaleHendelseType: HendelseType,
     val mottaker: String,
     val sendtSms: Boolean,
-    //  val notifikasjonTekst: String,
     val avtaleId: UUID,
     var json: String? = null
+//  val tiltakstype: Tiltakstype // Trenger vel ikke dette
+//  val notifikasjonTekst: String, // Trenger vel ikke dette
 ) {
     val id = ulid()
     val opprettetTidspunkt: Instant = Instant.now()
@@ -37,8 +36,6 @@ fun TiltakNotifikasjonKvitteringDto.toJson(): String {
     return jacksonMapper().writeValueAsString(this)
 }
 
-//fun TiltakNotifikasjonKvitteringDto.
-
 
 fun kvitterinFraArbeidsgivernotifikasjon(arbeidsgivernotifikasjon: Arbeidsgivernotifikasjon): TiltakNotifikasjonKvitteringDto {
     return TiltakNotifikasjonKvitteringDto(
@@ -50,6 +47,7 @@ fun kvitterinFraArbeidsgivernotifikasjon(arbeidsgivernotifikasjon: Arbeidsgivern
         sendtSms = arbeidsgivernotifikasjon.sendtSms()
     )
 }
+
 fun kvitteringFraBrukernoitfikasjon(brukernotifikasjon: Brukernotifikasjon): TiltakNotifikasjonKvitteringDto {
     return TiltakNotifikasjonKvitteringDto(
         notifikasjonstype = NotifikasjonsType.BRUKERNOTIFIKASJON,
