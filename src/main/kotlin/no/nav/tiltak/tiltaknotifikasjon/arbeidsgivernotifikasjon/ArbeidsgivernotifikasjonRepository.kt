@@ -95,7 +95,6 @@ class ArbeidsgivernotifikasjonRepository(val dsl: DSLContext) {
             hardDeleteSkedulertTidspunkt = arbeidsgivernotifikasjon.hardDeleteSkedulertTidspunkt
         )
     }
-
     //private fun mapToDatabaseRecord(arbeidsgivernotifikasjon: Arbeidsgivernotifikasjon) = jacksonMapper().convertValue<ArbeidsgivernotifikasjonRecord>(arbeidsgivernotifikasjon)
     // TODO: Se på dette en dag
 
