@@ -10,11 +10,7 @@ import org.springframework.stereotype.Component
 import java.time.Instant
 
 @Component
-class MinSideProdusent(
-    val minSideOppgaveKafkaTemplate: KafkaTemplate<String, String>,
-    val brukernotifikasjonRepository: BrukernotifikasjonRepository,
-    private val tiltakNotifikasjonKvitteringProdusent: TiltakNotifikasjonKvitteringProdusent
-) {
+class MinSideProdusent(val minSideOppgaveKafkaTemplate: KafkaTemplate<String, String>, val brukernotifikasjonRepository: BrukernotifikasjonRepository, private val tiltakNotifikasjonKvitteringProdusent: TiltakNotifikasjonKvitteringProdusent) {
     var log: Logger = LoggerFactory.getLogger(javaClass)
 
     val topic = Topics.BRUKERNOTIFIKASJON_BRUKERVARSEL
