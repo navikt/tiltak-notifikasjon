@@ -15,10 +15,8 @@ class TiltakNotifikasjonKvitteringProdusent(
 
     val topic = Topics.NOTIFIKASJON_KVITTERING
     fun sendNotifikasjonKvittering(tiltakNotifikasjonKvitteringDto: TiltakNotifikasjonKvitteringDto) {
-        tiltakNotifikasjonKvitteringDto.json = tiltakNotifikasjonKvitteringDto.toJson()
-        tiltakNotifikasjonKvitteringRepository.save(tiltakNotifikasjonKvitteringDto)
 
-        notifikasjonKvitteringKafkaTemplate.send(topic, tiltakNotifikasjonKvitteringDto.id, tiltakNotifikasjonKvitteringDto.json)
+        notifikasjonKvitteringKafkaTemplate.send(topic, tiltakNotifikasjonKvitteringDto.id, tiltakNotifikasjonKvitteringDto.toJson())
             .whenComplete { it, ex ->
                 if (ex != null) {
                     tiltakNotifikasjonKvitteringDto.feilmelding = ex.message

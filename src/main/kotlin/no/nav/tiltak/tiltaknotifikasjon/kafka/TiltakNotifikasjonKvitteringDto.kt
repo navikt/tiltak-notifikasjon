@@ -20,41 +20,43 @@ data class TiltakNotifikasjonKvitteringDto(
     val mottaker: String,
     val sendtSms: Boolean,
     val avtaleId: UUID,
-    var json: String? = null
+    val notifikasjonId: String
 //  val tiltakstype: Tiltakstype // Trenger vel ikke dette
 //  val notifikasjonTekst: String, // Trenger vel ikke dette
 ) {
     val id = ulid()
     val opprettetTidspunkt: Instant = Instant.now()
+    fun toJson(): String {
+        return jacksonMapper().writeValueAsString(this)
+    }
 }
 
 enum class NotifikasjonsType {
     BRUKERNOTIFIKASJON, ARBEIDSGIVERNOTIFIKASJON
 }
 
-fun TiltakNotifikasjonKvitteringDto.toJson(): String {
-    return jacksonMapper().writeValueAsString(this)
-}
 
 
-fun kvitterinFraArbeidsgivernotifikasjon(arbeidsgivernotifikasjon: Arbeidsgivernotifikasjon): TiltakNotifikasjonKvitteringDto {
+fun kvitteringFraArbeidsgivernotifikasjon(arbeidsgivernotifikasjon: Arbeidsgivernotifikasjon): TiltakNotifikasjonKvitteringDto {
     return TiltakNotifikasjonKvitteringDto(
         notifikasjonstype = NotifikasjonsType.ARBEIDSGIVERNOTIFIKASJON,
         payload = arbeidsgivernotifikasjon.arbeidsgivernotifikasjonJson!!,
         avtaleHendelseType = arbeidsgivernotifikasjon.avtaleHendelseType!!,
         mottaker = arbeidsgivernotifikasjon.bedriftNr!!,
         avtaleId = UUID.fromString(arbeidsgivernotifikasjon.avtaleId),
+        notifikasjonId = arbeidsgivernotifikasjon.id,
         sendtSms = arbeidsgivernotifikasjon.sendtSms()
     )
 }
 
-fun kvitteringFraBrukernoitfikasjon(brukernotifikasjon: Brukernotifikasjon): TiltakNotifikasjonKvitteringDto {
+fun kvitteringFraBrukernotifikasjon(brukernotifikasjon: Brukernotifikasjon): TiltakNotifikasjonKvitteringDto {
     return TiltakNotifikasjonKvitteringDto(
         notifikasjonstype = NotifikasjonsType.BRUKERNOTIFIKASJON,
         payload = brukernotifikasjon.minSideJson!!,
         avtaleHendelseType = brukernotifikasjon.avtaleHendelseType!!,
         mottaker = brukernotifikasjon.deltakerFnr!!,
         avtaleId = UUID.fromString(brukernotifikasjon.avtaleId),
+        notifikasjonId = brukernotifikasjon.id,
         sendtSms = brukernotifikasjon.sendtSms()
     )
 }

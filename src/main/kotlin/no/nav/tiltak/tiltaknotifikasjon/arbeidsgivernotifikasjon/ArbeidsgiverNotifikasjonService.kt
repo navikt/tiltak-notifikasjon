@@ -19,7 +19,7 @@ import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generat
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.softdeletesakbygrupperingsid.SoftDeleteSakVellykket
 import no.nav.tiltak.tiltaknotifikasjon.avtale.*
 import no.nav.tiltak.tiltaknotifikasjon.kafka.TiltakNotifikasjonKvitteringProdusent
-import no.nav.tiltak.tiltaknotifikasjon.kafka.kvitterinFraArbeidsgivernotifikasjon
+import no.nav.tiltak.tiltaknotifikasjon.kafka.kvitteringFraArbeidsgivernotifikasjon
 import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
 import no.nav.tiltak.tiltaknotifikasjon.utils.ulid
 import org.slf4j.LoggerFactory
@@ -486,7 +486,7 @@ class ArbeidsgiverNotifikasjonService(
                 notifikasjon.responseId = nyOppgaveResultat.id
                 notifikasjon.sendtTidspunkt = Instant.now()
 
-                val kvittering = kvitterinFraArbeidsgivernotifikasjon(notifikasjon)
+                val kvittering = kvitteringFraArbeidsgivernotifikasjon(notifikasjon)
                 tiltakNotifikasjonKvitteringProdusent.sendNotifikasjonKvittering(kvittering)
             } else {
                 //  UgyldigMerkelapp | UgyldigMottaker | DuplikatGrupperingsid | DuplikatGrupperingsidEtterDelete| UkjentProdusent | UkjentRolle
@@ -517,7 +517,7 @@ class ArbeidsgiverNotifikasjonService(
                 notifikasjon.responseId = nyBeskjedResultat.id
                 notifikasjon.sendtTidspunkt = Instant.now()
 
-                val kvittering = kvitterinFraArbeidsgivernotifikasjon(notifikasjon)
+                val kvittering = kvitteringFraArbeidsgivernotifikasjon(notifikasjon)
                 tiltakNotifikasjonKvitteringProdusent.sendNotifikasjonKvittering(kvittering)
 
             } else {
