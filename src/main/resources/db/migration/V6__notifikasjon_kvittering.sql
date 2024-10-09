@@ -1,5 +1,3 @@
-BEGIN;
-
 create table tiltak_notifikasjon_kvittering
 (
     id                   varchar primary key,
@@ -12,9 +10,7 @@ create table tiltak_notifikasjon_kvittering
     sendt_sms            boolean                  not null,
     avtale_id            uuid                     not null,
     opprettet_tidspunkt  timestamp with time zone not null,
-    notifikasjon_id      uuid                     not null
+    notifikasjon_id      varchar                  not null
 );
 
 create index idx_tiltak_notifikasjon_kvittering_notifikasjon_id on tiltak_notifikasjon_kvittering (notifikasjon_id);
-
-COMMIT;

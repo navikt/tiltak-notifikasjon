@@ -1,5 +1,6 @@
 package no.nav.tiltak.tiltaknotifikasjon.kafka
 
+import jakarta.persistence.Id
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.Arbeidsgivernotifikasjon
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.sendtSms
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
@@ -12,6 +13,8 @@ import java.util.*
 
 //TODO: Gå over flyway-script
 data class TiltakNotifikasjonKvitteringDto(
+    val id: String = ulid(),
+    val opprettetTidspunkt: Instant = Instant.now(),
     val notifikasjonstype: NotifikasjonsType,
     val payload: String,
     var feilmelding: String? = null,
@@ -22,11 +25,7 @@ data class TiltakNotifikasjonKvitteringDto(
     val sendtSms: Boolean,
     val avtaleId: UUID,
     val notifikasjonId: String
-//  val tiltakstype: Tiltakstype // Trenger vel ikke dette
-//  val notifikasjonTekst: String, // Trenger vel ikke dette
 ) {
-    val id = ulid()
-    val opprettetTidspunkt: Instant = Instant.now()
     fun toJson(): String = jacksonMapper().writeValueAsString(this)
 }
 

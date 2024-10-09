@@ -2,7 +2,6 @@ package no.nav.tiltak.tiltaknotifikasjon.kafka
 
 
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
-import no.nav.tiltak.tiltaknotifikasjon.avtale.Tiltakstype
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.tables.TiltakNotifikasjonKvittering.Companion.TILTAK_NOTIFIKASJON_KVITTERING
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.tables.records.TiltakNotifikasjonKvitteringRecord
 import org.jooq.DSLContext
@@ -28,25 +27,29 @@ class TiltakNotifikasjonKvitteringRepository(val dsl: DSLContext) {
             notifikasjonstype = tiltakNotifikasjonKvitteringDto.notifikasjonstype.name,
             payload = tiltakNotifikasjonKvitteringDto.payload,
             feilmelding = tiltakNotifikasjonKvitteringDto.feilmelding,
-            sendtTidspunkt = if (tiltakNotifikasjonKvitteringDto.sendtTidspunkt != null) tiltakNotifikasjonKvitteringDto.sendtTidspunkt?.atOffset(ZoneOffset.UTC) else null,
-            hendelseType = tiltakNotifikasjonKvitteringDto.avtaleHendelseType.name,
+            sendtTidspunkt = tiltakNotifikasjonKvitteringDto.sendtTidspunkt?.atOffset(ZoneOffset.UTC),
+            avtaleHendelseType = tiltakNotifikasjonKvitteringDto.avtaleHendelseType.name,
             mottaker = tiltakNotifikasjonKvitteringDto.mottaker,
             sendtSms = tiltakNotifikasjonKvitteringDto.sendtSms,
             avtaleId = tiltakNotifikasjonKvitteringDto.avtaleId,
-            opprettetTidspunkt = tiltakNotifikasjonKvitteringDto.opprettetTidspunkt.atOffset(ZoneOffset.UTC)
+            opprettetTidspunkt = tiltakNotifikasjonKvitteringDto.opprettetTidspunkt.atOffset(ZoneOffset.UTC),
+            notifikasjonId = tiltakNotifikasjonKvitteringDto.notifikasjonId,
         )
     }
 
     private fun mapToTiltakNotifikasjonKvittering(tiltakNotifikasjonKvitteringRecord: TiltakNotifikasjonKvitteringRecord): TiltakNotifikasjonKvitteringDto {
         return TiltakNotifikasjonKvitteringDto(
+            id = tiltakNotifikasjonKvitteringRecord.id,
             notifikasjonstype = NotifikasjonsType.valueOf(tiltakNotifikasjonKvitteringRecord.notifikasjonstype),
             payload = tiltakNotifikasjonKvitteringRecord.payload,
             feilmelding = tiltakNotifikasjonKvitteringRecord.feilmelding,
             sendtTidspunkt = tiltakNotifikasjonKvitteringRecord.sendtTidspunkt?.toInstant(),
-            avtaleHendelseType = HendelseType.valueOf(tiltakNotifikasjonKvitteringRecord.hendelseType),
+            avtaleHendelseType = HendelseType.valueOf(tiltakNotifikasjonKvitteringRecord.avtaleHendelseType),
             mottaker = tiltakNotifikasjonKvitteringRecord.mottaker,
             sendtSms = tiltakNotifikasjonKvitteringRecord.sendtSms,
-            avtaleId = tiltakNotifikasjonKvitteringRecord.avtaleId
+            avtaleId = tiltakNotifikasjonKvitteringRecord.avtaleId,
+            notifikasjonId = tiltakNotifikasjonKvitteringRecord.notifikasjonId,
+            opprettetTidspunkt = tiltakNotifikasjonKvitteringRecord.opprettetTidspunkt.toInstant(),
         )
     }
 
