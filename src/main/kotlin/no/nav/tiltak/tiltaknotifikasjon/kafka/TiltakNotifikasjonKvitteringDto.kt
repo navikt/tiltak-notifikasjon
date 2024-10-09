@@ -1,17 +1,15 @@
 package no.nav.tiltak.tiltaknotifikasjon.kafka
 
-import jakarta.persistence.Id
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.Arbeidsgivernotifikasjon
+import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.mottakerTlf
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.sendtSms
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.Brukernotifikasjon
-import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.sendtSms
 import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
 import no.nav.tiltak.tiltaknotifikasjon.utils.ulid
 import java.time.Instant
 import java.util.*
 
-//TODO: Gå over flyway-script
 data class TiltakNotifikasjonKvitteringDto(
     val id: String = ulid(),
     val opprettetTidspunkt: Instant = Instant.now(),
@@ -33,8 +31,6 @@ enum class NotifikasjonsType {
     BRUKERNOTIFIKASJON, ARBEIDSGIVERNOTIFIKASJON
 }
 
-
-
 fun kvitteringFra(arbeidsgivernotifikasjon: Arbeidsgivernotifikasjon): TiltakNotifikasjonKvitteringDto {
     return TiltakNotifikasjonKvitteringDto(
         notifikasjonstype = NotifikasjonsType.ARBEIDSGIVERNOTIFIKASJON,
@@ -44,7 +40,7 @@ fun kvitteringFra(arbeidsgivernotifikasjon: Arbeidsgivernotifikasjon): TiltakNot
         avtaleId = UUID.fromString(arbeidsgivernotifikasjon.avtaleId),
         notifikasjonId = arbeidsgivernotifikasjon.id,
         sendtSms = arbeidsgivernotifikasjon.sendtSms(),
-        mottakerTlf = null // TODO: Fiks dette
+        mottakerTlf = arbeidsgivernotifikasjon.mottakerTlf()
     )
 }
 
@@ -56,6 +52,7 @@ fun kvitteringFra(brukernotifikasjon: Brukernotifikasjon): TiltakNotifikasjonKvi
         mottaker = brukernotifikasjon.deltakerFnr!!,
         avtaleId = UUID.fromString(brukernotifikasjon.avtaleId),
         notifikasjonId = brukernotifikasjon.id,
-        sendtSms = brukernotifikasjon.sendtSms()
+        sendtSms = true, // Sender alltid SMS til personbruker,
+        mottakerTlf = "UKJENT" // Dette er det ikke vi som spesifiserer
     )
 }

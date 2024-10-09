@@ -1,6 +1,10 @@
 package no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon
 
+import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
+import no.nav.tiltak.tiltaknotifikasjon.avtale.skalSendeSmsTilArbeidsgiver
+import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
 import java.time.Instant
 import java.time.LocalDateTime
 
@@ -20,7 +24,7 @@ data class Arbeidsgivernotifikasjon(
     val avtaleNr: Int? = null,
     /** id'en som notifikasjonen har hos fager. Den blir generert av de ved opprettelse og returnert */
     var responseId: String? = null,
-    /** Tidspunktet notifikasjonen er skedulert til å slettes. api-et forventer LocalDateTime i Europe/Oslo tidssone */
+    /** Tidspunktet notifikasjonen er skedulert til å slettes. Api-et forventer LocalDateTime i Europe/Oslo tidssone */
     var hardDeleteSkedulertTidspunkt: LocalDateTime? = null
 )
 
@@ -49,5 +53,14 @@ enum class Varslingsformål {
 }
 
 fun Arbeidsgivernotifikasjon.sendtSms(): Boolean {
-    return arbeidsgivernotifikasjonJson?.contains("sms") ?: false
+     val avtaleHendelseMelding: AvtaleHendelseMelding = jacksonMapper().readValue(this.avtaleMeldingJson)
+     return avtaleHendelseMelding.hendelseType.skalSendeSmsTilArbeidsgiver()
+}
+fun Arbeidsgivernotifikasjon.mottakerTlf(): String? {
+    val avtaleHendelseMelding: AvtaleHendelseMelding = jacksonMapper().readValue(this.avtaleMeldingJson)
+    if (avtaleHendelseMelding.hendelseType.skalSendeSmsTilArbeidsgiver()) {
+        return avtaleHendelseMelding.arbeidsgiverTlf
+    } else {
+        return null
+    }
 }
