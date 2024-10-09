@@ -18,6 +18,7 @@ data class TiltakNotifikasjonKvitteringDto(
     var sendtTidspunkt: Instant? = null,
     val avtaleHendelseType: HendelseType,
     val mottaker: String,
+    val mottakerTlf: String? = null,
     val sendtSms: Boolean,
     val avtaleId: UUID,
     val notifikasjonId: String
@@ -37,7 +38,7 @@ enum class NotifikasjonsType {
 
 
 
-fun kvitteringFraArbeidsgivernotifikasjon(arbeidsgivernotifikasjon: Arbeidsgivernotifikasjon): TiltakNotifikasjonKvitteringDto {
+fun kvitteringFra(arbeidsgivernotifikasjon: Arbeidsgivernotifikasjon): TiltakNotifikasjonKvitteringDto {
     return TiltakNotifikasjonKvitteringDto(
         notifikasjonstype = NotifikasjonsType.ARBEIDSGIVERNOTIFIKASJON,
         payload = arbeidsgivernotifikasjon.arbeidsgivernotifikasjonJson!!,
@@ -45,11 +46,12 @@ fun kvitteringFraArbeidsgivernotifikasjon(arbeidsgivernotifikasjon: Arbeidsgiver
         mottaker = arbeidsgivernotifikasjon.bedriftNr!!,
         avtaleId = UUID.fromString(arbeidsgivernotifikasjon.avtaleId),
         notifikasjonId = arbeidsgivernotifikasjon.id,
-        sendtSms = arbeidsgivernotifikasjon.sendtSms()
+        sendtSms = arbeidsgivernotifikasjon.sendtSms(),
+        mottakerTlf = arbeidsgivernotifikasjon.
     )
 }
 
-fun kvitteringFraBrukernotifikasjon(brukernotifikasjon: Brukernotifikasjon): TiltakNotifikasjonKvitteringDto {
+fun kvitteringFra(brukernotifikasjon: Brukernotifikasjon): TiltakNotifikasjonKvitteringDto {
     return TiltakNotifikasjonKvitteringDto(
         notifikasjonstype = NotifikasjonsType.BRUKERNOTIFIKASJON,
         payload = brukernotifikasjon.minSideJson!!,
