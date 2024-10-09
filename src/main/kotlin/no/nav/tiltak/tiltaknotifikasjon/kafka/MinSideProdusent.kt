@@ -25,8 +25,7 @@ class MinSideProdusent(val minSideOppgaveKafkaTemplate: KafkaTemplate<String, St
                 } else {
                     brukernotifikasjon.sendt = Instant.now()
                     brukernotifikasjonRepository.save(brukernotifikasjon)
-                    val kvittering = kvitteringFra(brukernotifikasjon)
-                    tiltakNotifikasjonKvitteringProdusent.sendNotifikasjonKvittering(kvittering)
+                    tiltakNotifikasjonKvitteringProdusent.sendNotifikasjonKvittering(brukernotifikasjon)
                     log.info("Melding med id ${it.producerRecord.key()} sendt til Kafka topic $topic")
                 }
             }

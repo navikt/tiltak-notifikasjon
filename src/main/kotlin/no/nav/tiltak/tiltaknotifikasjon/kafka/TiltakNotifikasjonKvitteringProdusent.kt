@@ -1,5 +1,7 @@
 package no.nav.tiltak.tiltaknotifikasjon.kafka
 
+import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.Arbeidsgivernotifikasjon
+import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.Brukernotifikasjon
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.kafka.core.KafkaTemplate
@@ -13,8 +15,18 @@ class TiltakNotifikasjonKvitteringProdusent(
 ) {
     var log: Logger = LoggerFactory.getLogger(javaClass)
 
+    fun sendNotifikasjonKvittering(arbeidsgivernotifikasjon: Arbeidsgivernotifikasjon) {
+        val tiltakNotifikasjonKvitteringDto = kvitteringFra(arbeidsgivernotifikasjon)
+        sendNotifikasjonKvittering(tiltakNotifikasjonKvitteringDto)
+    }
+    fun sendNotifikasjonKvittering(brukernotifikasjon: Brukernotifikasjon) {
+        val tiltakNotifikasjonKvitteringDto = kvitteringFra(brukernotifikasjon)
+        sendNotifikasjonKvittering(tiltakNotifikasjonKvitteringDto)
+    }
+
+
     val topic = Topics.NOTIFIKASJON_KVITTERING
-    fun sendNotifikasjonKvittering(tiltakNotifikasjonKvitteringDto: TiltakNotifikasjonKvitteringDto) {
+    private fun sendNotifikasjonKvittering(tiltakNotifikasjonKvitteringDto: TiltakNotifikasjonKvitteringDto) {
 
         notifikasjonKvitteringKafkaTemplate.send(topic, tiltakNotifikasjonKvitteringDto.id, tiltakNotifikasjonKvitteringDto.toJson())
             .whenComplete { it, ex ->

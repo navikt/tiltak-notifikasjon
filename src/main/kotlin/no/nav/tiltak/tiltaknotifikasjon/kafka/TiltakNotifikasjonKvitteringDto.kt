@@ -27,9 +27,7 @@ data class TiltakNotifikasjonKvitteringDto(
 ) {
     val id = ulid()
     val opprettetTidspunkt: Instant = Instant.now()
-    fun toJson(): String {
-        return jacksonMapper().writeValueAsString(this)
-    }
+    fun toJson(): String = jacksonMapper().writeValueAsString(this)
 }
 
 enum class NotifikasjonsType {
@@ -47,7 +45,7 @@ fun kvitteringFra(arbeidsgivernotifikasjon: Arbeidsgivernotifikasjon): TiltakNot
         avtaleId = UUID.fromString(arbeidsgivernotifikasjon.avtaleId),
         notifikasjonId = arbeidsgivernotifikasjon.id,
         sendtSms = arbeidsgivernotifikasjon.sendtSms(),
-        mottakerTlf = arbeidsgivernotifikasjon.
+        mottakerTlf = null // TODO: Fiks dette
     )
 }
 

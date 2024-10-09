@@ -486,8 +486,7 @@ class ArbeidsgiverNotifikasjonService(
                 notifikasjon.responseId = nyOppgaveResultat.id
                 notifikasjon.sendtTidspunkt = Instant.now()
 
-                val kvittering = kvitteringFra(notifikasjon)
-                tiltakNotifikasjonKvitteringProdusent.sendNotifikasjonKvittering(kvittering)
+                tiltakNotifikasjonKvitteringProdusent.sendNotifikasjonKvittering(notifikasjon)
             } else {
                 //  UgyldigMerkelapp | UgyldigMottaker | DuplikatGrupperingsid | DuplikatGrupperingsidEtterDelete| UkjentProdusent | UkjentRolle
                 log.error("opprett oppgave gikk ikke med resultatet: ${response.data?.nyOppgave}")
@@ -517,8 +516,7 @@ class ArbeidsgiverNotifikasjonService(
                 notifikasjon.responseId = nyBeskjedResultat.id
                 notifikasjon.sendtTidspunkt = Instant.now()
 
-                val kvittering = kvitteringFra(notifikasjon)
-                tiltakNotifikasjonKvitteringProdusent.sendNotifikasjonKvittering(kvittering)
+                tiltakNotifikasjonKvitteringProdusent.sendNotifikasjonKvittering(notifikasjon)
 
             } else {
                 // NyBeskjedVellykket | UgyldigMerkelapp | UgyldigMottaker | DuplikatGrupperingsid | DuplikatGrupperingsidEtterDelete| UkjentProdusent | UkjentRolle
