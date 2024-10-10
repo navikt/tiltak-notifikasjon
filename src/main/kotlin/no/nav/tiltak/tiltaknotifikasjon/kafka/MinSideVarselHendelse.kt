@@ -4,10 +4,12 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.BrukernotifikasjonRepository
 import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
 import org.slf4j.LoggerFactory
+import org.springframework.context.annotation.Profile
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Component
 
 @Component
+@Profile("dev-gcp")
 class MinSideVarselHendelse(val brukernotifikasjonRepository: BrukernotifikasjonRepository) {
     private val log = LoggerFactory.getLogger(javaClass)
 
