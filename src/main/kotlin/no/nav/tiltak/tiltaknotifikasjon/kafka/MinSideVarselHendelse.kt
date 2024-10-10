@@ -22,9 +22,9 @@ class MinSideVarselHendelse(val brukernotifikasjonRepository: Brukernotifikasjon
             val brukernotifikasjon = brukernotifikasjonRepository.findById(melding.varselId)
             if (brukernotifikasjon !== null) {
                 //
-                log.info("Mottok hendelse for brukernotifikasjon med id ${melding.varselId}")
+                log.info("Mottok hendelse for brukernotifikasjon. Hendelse: $melding")
             } else {
-                log.error("Mottok hendelse for brukernoitifikasjon med id ${melding.varselId} som ikke finnes i DB")
+                log.error("Mottok hendelse for brukernoitifikasjon med id ${melding.varselId} som ikke finnes i DB. Hendelse: $melding")
             }
 
         } catch (e: Exception) {
