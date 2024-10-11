@@ -27,11 +27,13 @@ enum class EventName {
     INAKTIVERT,
     SLETTET,
     EKSTERN_STATUS_OPPDATERT
-}enum class EksternStatusOppdatertStatus {
+}
+enum class EksternStatusOppdatertStatus {
     BESTILT,
     SENDT,
     FEILET
-}enum class Varseltype {
+}
+enum class Varseltype {
     OPPGAVE,
     BESKJED,
     INNBOKS
