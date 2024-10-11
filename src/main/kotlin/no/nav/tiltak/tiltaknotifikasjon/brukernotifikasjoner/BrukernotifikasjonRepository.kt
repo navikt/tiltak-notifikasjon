@@ -21,6 +21,14 @@ class BrukernotifikasjonRepository(val dsl: DSLContext) {
 
     }
 
+    fun findByVarselId(varselId: String): Brukernotifikasjon? {
+        return dsl.select()
+            .from(BRUKERNOTIFIKASJON)
+            .where(BRUKERNOTIFIKASJON.VARSEL_ID.equal(varselId))
+            .fetchOneInto(BrukernotifikasjonRecord::class.java)
+            ?.map { mapToBrukernotifikasjon(it as BrukernotifikasjonRecord) }
+    }
+
     fun findAllbyAvtaleId(avtaleId: String): List<Brukernotifikasjon> {
         return dsl.select()
             .from(BRUKERNOTIFIKASJON)
