@@ -26,7 +26,7 @@ enum class EventName {
     OPPRETTET,
     INAKTIVERT,
     SLETTET,
-    EKSTERN_STATUS_OPPDATERT
+    EKSTERNSTATUSOPPDATERT
 }
 enum class EksternStatusOppdatertStatus {
     BESTILT,
