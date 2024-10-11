@@ -1,6 +1,11 @@
 package no.nav.tiltak.tiltaknotifikasjon.kafka
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.DeserializationContext
+import com.fasterxml.jackson.databind.JsonDeserializer
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import no.nav.tms.varsel.action.EksternKanal
 
 data class MinSideVarselHendelseKafkaMelding(
@@ -17,22 +22,17 @@ data class MinSideVarselHendelseKafkaMelding(
 )
 
 
-
 enum class EventName {
-    opprettet,
-    inaktivert,
-    slettet,
-    eksternStatusOppdatert
-}
-
-enum class EksternStatusOppdatertStatus {
-    bestilt,
-    sendt,
-    feilet
-}
-
-enum class Varseltype {
+    OPPRETTET,
+    INAKTIVERT,
+    SLETTET,
+    EKSTERN_STATUS_OPPDATERT
+}enum class EksternStatusOppdatertStatus {
+    BESTILT,
+    SENDT,
+    FEILET
+}enum class Varseltype {
     OPPGAVE,
     BESKJED,
-    INNBOKS,
+    INNBOKS
 }
