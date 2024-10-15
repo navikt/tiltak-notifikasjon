@@ -1,11 +1,13 @@
 package no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.ninjasquad.springmockk.MockkBean
 import no.nav.tiltak.tiltaknotifikasjon.*
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.NyStatusSak
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleStatus
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
+import no.nav.tiltak.tiltaknotifikasjon.kafka.TiltakNotifikasjonKvitteringProdusent
 import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -27,6 +29,8 @@ class ArbeidsgiverNotifikasjonServiceTest {
     lateinit var arbeidsgiverNotifikasjonService: ArbeidsgiverNotifikasjonService
     @Autowired
     lateinit var arbeidsgivernotifikasjonRepository: ArbeidsgivernotifikasjonRepository
+    @MockkBean(relaxed = true)
+    lateinit var tiltakNotifikasjonKvitteringProdusent: TiltakNotifikasjonKvitteringProdusent
     @BeforeEach
     fun setup() {
         arbeidsgivernotifikasjonRepository.deleteAll()
