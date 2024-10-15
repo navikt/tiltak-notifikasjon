@@ -11,7 +11,10 @@ import org.springframework.stereotype.Component
 
 @Component
 @Profile("dev-gcp")
-class MinSideVarselHendelseConsumer(val brukernotifikasjonRepository: BrukernotifikasjonRepository) {
+class MinSideVarselHendelseConsumer(
+    val brukernotifikasjonRepository: BrukernotifikasjonRepository,
+    private val tiltakNotifikasjonKvitteringProdusent: TiltakNotifikasjonKvitteringProdusent
+) {
     private val log = LoggerFactory.getLogger(javaClass)
 
     @KafkaListener(topics = [Topics.BRUKERNOTIFIKASJON_HENDELSE])
@@ -30,6 +33,7 @@ class MinSideVarselHendelseConsumer(val brukernotifikasjonRepository: Brukernoti
                     brukernotifikasjonRepository.save(brukernotifikasjon)
                     if (melding.status == EksternStatusOppdatertStatus.SENDT) {
                         //TODO: Send kvittering på kvittering-kafka-topic
+                        tiltakNotifikasjonKvitteringProdusent.sendNotifikasjonKvittering(brukernotifikasjon)
                     }
                 }
                 if (melding.feilmelding !== null) {
