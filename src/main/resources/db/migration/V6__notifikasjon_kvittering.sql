@@ -7,6 +7,7 @@ create table tiltak_notifikasjon_kvittering
     sendt_tidspunkt      timestamp with time zone,
     avtale_hendelse_type varchar                  not null,
     mottaker             varchar                  not null,
+    mottaker_tlf         varchar,
     sendt_sms            boolean                  not null,
     avtale_id            uuid                     not null,
     opprettet_tidspunkt  timestamp with time zone not null,

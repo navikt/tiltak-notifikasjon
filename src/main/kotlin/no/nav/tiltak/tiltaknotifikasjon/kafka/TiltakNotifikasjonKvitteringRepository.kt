@@ -24,15 +24,16 @@ class TiltakNotifikasjonKvitteringRepository(val dsl: DSLContext) {
     private fun mapToDatabaseRecord(tiltakNotifikasjonKvitteringDto: TiltakNotifikasjonKvitteringDto): TiltakNotifikasjonKvitteringRecord {
         return TiltakNotifikasjonKvitteringRecord(
             id = tiltakNotifikasjonKvitteringDto.id,
+            opprettetTidspunkt = tiltakNotifikasjonKvitteringDto.opprettetTidspunkt.atOffset(ZoneOffset.UTC),
             notifikasjonstype = tiltakNotifikasjonKvitteringDto.notifikasjonstype.name,
             payload = tiltakNotifikasjonKvitteringDto.payload,
             feilmelding = tiltakNotifikasjonKvitteringDto.feilmelding,
             sendtTidspunkt = tiltakNotifikasjonKvitteringDto.sendtTidspunkt?.atOffset(ZoneOffset.UTC),
             avtaleHendelseType = tiltakNotifikasjonKvitteringDto.avtaleHendelseType.name,
             mottaker = tiltakNotifikasjonKvitteringDto.mottaker,
+            mottakerTlf = tiltakNotifikasjonKvitteringDto.mottakerTlf,
             sendtSms = tiltakNotifikasjonKvitteringDto.sendtSms,
             avtaleId = tiltakNotifikasjonKvitteringDto.avtaleId,
-            opprettetTidspunkt = tiltakNotifikasjonKvitteringDto.opprettetTidspunkt.atOffset(ZoneOffset.UTC),
             notifikasjonId = tiltakNotifikasjonKvitteringDto.notifikasjonId,
         )
     }
@@ -46,6 +47,7 @@ class TiltakNotifikasjonKvitteringRepository(val dsl: DSLContext) {
             sendtTidspunkt = tiltakNotifikasjonKvitteringRecord.sendtTidspunkt?.toInstant(),
             avtaleHendelseType = HendelseType.valueOf(tiltakNotifikasjonKvitteringRecord.avtaleHendelseType),
             mottaker = tiltakNotifikasjonKvitteringRecord.mottaker,
+            mottakerTlf = tiltakNotifikasjonKvitteringRecord.mottakerTlf,
             sendtSms = tiltakNotifikasjonKvitteringRecord.sendtSms,
             avtaleId = tiltakNotifikasjonKvitteringRecord.avtaleId,
             notifikasjonId = tiltakNotifikasjonKvitteringRecord.notifikasjonId,
