@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component
 import java.time.Instant
 
 @Component
-class MinSideProdusent(val minSideOppgaveKafkaTemplate: KafkaTemplate<String, String>, val brukernotifikasjonRepository: BrukernotifikasjonRepository, private val tiltakNotifikasjonKvitteringProdusent: TiltakNotifikasjonKvitteringProdusent) {
+class MinSideProdusent(val minSideOppgaveKafkaTemplate: KafkaTemplate<String, String>, val brukernotifikasjonRepository: BrukernotifikasjonRepository) {
     var log: Logger = LoggerFactory.getLogger(javaClass)
 
     val topic = Topics.BRUKERNOTIFIKASJON_BRUKERVARSEL
@@ -25,7 +25,6 @@ class MinSideProdusent(val minSideOppgaveKafkaTemplate: KafkaTemplate<String, St
                 } else {
                     brukernotifikasjon.sendt = Instant.now()
                     brukernotifikasjonRepository.save(brukernotifikasjon)
-                    tiltakNotifikasjonKvitteringProdusent.sendNotifikasjonKvittering(brukernotifikasjon)
                     log.info("Melding med id ${it.producerRecord.key()} sendt til Kafka topic $topic")
                 }
             }
