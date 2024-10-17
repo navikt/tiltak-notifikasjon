@@ -22,7 +22,11 @@ fun norskDatoFormat(dato: LocalDate) = dato.format(DateTimeFormatter.ofPattern("
 
 
 
-fun jacksonMapper2(): ObjectMapper = jacksonMapperBuilder()
+/**
+ * Deserialisering av JSON uten å bry seg om casing på enum-verdier.
+ * Eksempelvis får vi noen enums i lowercased form fra MinSide. Da kan lage enums i kotlin med uppercase navn, og fortsatt deserialisere JSON.
+ */
+fun jacksonMapperSomIkkeBryrSegOmEnumCase(): ObjectMapper = jacksonMapperBuilder()
     .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
     .configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS, true)
     .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
