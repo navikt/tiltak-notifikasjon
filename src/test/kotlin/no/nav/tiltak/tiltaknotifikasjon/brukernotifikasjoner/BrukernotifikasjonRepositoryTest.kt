@@ -20,6 +20,7 @@ class BrukernotifikasjonRepositoryTest {
 
     @MockkBean(relaxed = true)
     lateinit var minSideProdusent: MinSideProdusent
+
     @Autowired
     lateinit var brukernotifikasjonRepository: BrukernotifikasjonRepository
 
@@ -28,23 +29,25 @@ class BrukernotifikasjonRepositoryTest {
         brukernotifikasjonRepository.deleteAll()
     }
 
-        @Test
-        fun `skal_kunne_lagre_og_finne_entitet_i_db`() {
-            val id = ulid()
-            val brukernotifikasjonEntitet = Brukernotifikasjon(
-                varselId = "varselId",
-                avtaleMeldingJson = "avtaleMeldingJson",
-                minSideJson = "minSideJson",
-                id = id,
-                type = BrukernotifikasjonType.Beskjed,
-                status = BrukernotifikasjonStatus.BEHANDLET,
-                deltakerFnr = "12345678910",
-                avtaleId = "12345678910",
-                avtaleNr = 123,
-                avtaleHendelseType = HendelseType.ENDRET
-            )
-            brukernotifikasjonRepository.save(brukernotifikasjonEntitet)
-            val brukernotifikasjon = brukernotifikasjonRepository.findById(id)
-            assertNotNull(brukernotifikasjon)
-        }
+    @Test
+    fun `skal_kunne_lagre_og_finne_entitet_i_db`() {
+        val id = ulid()
+        val brukernotifikasjonEntitet = Brukernotifikasjon(
+            varselId = "varselId",
+            avtaleMeldingJson = "avtaleMeldingJson",
+            minSideJson = "minSideJson",
+            id = id,
+            type = BrukernotifikasjonType.Beskjed,
+            status = BrukernotifikasjonStatus.BEHANDLET,
+            deltakerFnr = "12345678910",
+            avtaleId = "12345678910",
+            avtaleNr = 123,
+            avtaleHendelseType = HendelseType.ENDRET
+        )
+        brukernotifikasjonRepository.save(brukernotifikasjonEntitet)
+        val brukernotifikasjon = brukernotifikasjonRepository.findById(id)
+        assertNotNull(brukernotifikasjon)
+    }
+
+    // TODO: Sett alle feltene på en entitet, lagre i DB og hent opp igjen og sjekk at alle feltene er satt riktig
 }

@@ -3,6 +3,7 @@ package no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.tables.Brukernotifikasjon.Companion.BRUKERNOTIFIKASJON
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.tables.records.BrukernotifikasjonRecord
+import no.nav.tiltak.tiltaknotifikasjon.kafka.EksternStatusOppdatertStatus
 import org.jooq.DSLContext
 import org.springframework.stereotype.Component
 import java.time.Instant
@@ -19,6 +20,14 @@ class BrukernotifikasjonRepository(val dsl: DSLContext) {
             .fetchOneInto(BrukernotifikasjonRecord::class.java)
             ?.map { mapToBrukernotifikasjon(it as BrukernotifikasjonRecord) }
 
+    }
+
+    fun findByVarselId(varselId: String): Brukernotifikasjon? {
+        return dsl.select()
+            .from(BRUKERNOTIFIKASJON)
+            .where(BRUKERNOTIFIKASJON.VARSEL_ID.equal(varselId))
+            .fetchOneInto(BrukernotifikasjonRecord::class.java)
+            ?.map { mapToBrukernotifikasjon(it as BrukernotifikasjonRecord) }
     }
 
     fun findAllbyAvtaleId(avtaleId: String): List<Brukernotifikasjon> {
@@ -75,7 +84,9 @@ class BrukernotifikasjonRepository(val dsl: DSLContext) {
             varselId = record.varselId,
             sendt = record.sendt?.toInstant(),
             opprettet = record.opprettet.toInstant(),
-            varslingsformål = if (record.varslingsformål != null) enumValueOf<Varslingsformål>(record.varslingsformål!!) else null
+            varslingsformål = if (record.varslingsformål != null) enumValueOf<Varslingsformål>(record.varslingsformål!!) else null,
+            smsStatus = if (record.smsStatus != null) enumValueOf<EksternStatusOppdatertStatus>(record.smsStatus!!) else null,
+            smsFeilmelding = record.smsFeilmelding
         )
     }
 
@@ -94,7 +105,9 @@ class BrukernotifikasjonRepository(val dsl: DSLContext) {
             varselId = brukernotifikasjon.varselId,
             sendt = if (brukernotifikasjon.sendt != null) brukernotifikasjon.sendt?.atOffset(ZoneOffset.UTC) else null,
             opprettet = brukernotifikasjon.opprettet.atOffset(ZoneOffset.UTC),
-            varslingsformål = brukernotifikasjon.varslingsformål?.name
+            varslingsformål = brukernotifikasjon.varslingsformål?.name,
+            smsFeilmelding = brukernotifikasjon.smsFeilmelding,
+            smsStatus = brukernotifikasjon.smsStatus?.name
         )
     }
 

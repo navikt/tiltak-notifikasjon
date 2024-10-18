@@ -11,8 +11,8 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 
 
-val NAMESPACE = "team-tiltak"
-val APP_NAVN = "tiltak-notifikasjon"
+const val NAMESPACE = "team-tiltak"
+const val APP_NAVN = "tiltak-notifikasjon"
 
 val log =  LoggerFactory.getLogger("BeskjedOppgave")
 
@@ -85,5 +85,3 @@ private fun lagTekst(varslingsformål: Varslingsformål, avtaleHendelseMelding: 
         Varslingsformål.AVTALE_INNGÅTT -> "Din avtale om ${avtaleHendelseMelding.tiltakstype.beskrivelse} er inngått"
     }
 }
-
-

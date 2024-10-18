@@ -1,6 +1,7 @@
 package no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner
 
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
+import no.nav.tiltak.tiltaknotifikasjon.kafka.EksternStatusOppdatertStatus
 import java.time.Instant
 
 data class Brukernotifikasjon(
@@ -17,7 +18,9 @@ data class Brukernotifikasjon(
     var feilmelding: String? = null,
     var sendt: Instant? = null,
     var opprettet: Instant = Instant.now(),
-    val varslingsformål: Varslingsformål? = null
+    val varslingsformål: Varslingsformål? = null,
+    var smsStatus: EksternStatusOppdatertStatus? = null,
+    var smsFeilmelding: String? = null
 )
 
 enum class BrukernotifikasjonStatus {
