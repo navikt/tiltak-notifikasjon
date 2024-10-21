@@ -30,6 +30,16 @@ class BrukernotifikasjonRepository(val dsl: DSLContext) {
             ?.map { mapToBrukernotifikasjon(it as BrukernotifikasjonRecord) }
     }
 
+    /** Eksluderer inaktiveringer. Inaktiveringer kan ha samme varselId som en Beskjed/Oppgave og således returnere flere rader hvis inkludert. */
+    fun findNotifikasjonByVarselId(varselId: String): Brukernotifikasjon? {
+        return dsl.select()
+            .from(BRUKERNOTIFIKASJON)
+            .where(BRUKERNOTIFIKASJON.VARSEL_ID.equal(varselId))
+            .and(BRUKERNOTIFIKASJON.TYPE.notEqual(BrukernotifikasjonType.Inaktivering.name))
+            .fetchOneInto(BrukernotifikasjonRecord::class.java)
+            ?.map { mapToBrukernotifikasjon(it as BrukernotifikasjonRecord) }
+    }
+
     fun findAllbyAvtaleId(avtaleId: String): List<Brukernotifikasjon> {
         return dsl.select()
             .from(BRUKERNOTIFIKASJON)
