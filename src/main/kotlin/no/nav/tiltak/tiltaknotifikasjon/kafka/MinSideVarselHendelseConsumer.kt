@@ -10,7 +10,7 @@ import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Component
 
 @Component
-@Profile("dev-gcp")
+@Profile("dev-gcp", "prod-gcp", "dockercompose")
 class MinSideVarselHendelseConsumer(
     val brukernotifikasjonRepository: BrukernotifikasjonRepository,
     private val tiltakNotifikasjonKvitteringProdusent: TiltakNotifikasjonKvitteringProdusent
