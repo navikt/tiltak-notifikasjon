@@ -3,7 +3,7 @@ package no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
-import no.nav.tiltak.tiltaknotifikasjon.avtale.erArbeidsgiversTlfGyldig
+import no.nav.tiltak.tiltaknotifikasjon.avtale.erArbeidsgiversTlfGyldigNorskMobilnr
 import no.nav.tiltak.tiltaknotifikasjon.avtale.skalSendeSmsTilArbeidsgiver
 import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
 import java.time.Instant
@@ -55,7 +55,7 @@ enum class Varslingsformål {
 
 fun Arbeidsgivernotifikasjon.sendtSms(): Boolean {
      val avtaleHendelseMelding: AvtaleHendelseMelding = jacksonMapper().readValue(this.avtaleMeldingJson)
-     return avtaleHendelseMelding.hendelseType.skalSendeSmsTilArbeidsgiver() && avtaleHendelseMelding.erArbeidsgiversTlfGyldig()
+     return avtaleHendelseMelding.hendelseType.skalSendeSmsTilArbeidsgiver() && avtaleHendelseMelding.erArbeidsgiversTlfGyldigNorskMobilnr()
 }
 fun Arbeidsgivernotifikasjon.mottakerTlf(): String? {
     val avtaleHendelseMelding: AvtaleHendelseMelding = jacksonMapper().readValue(this.avtaleMeldingJson)

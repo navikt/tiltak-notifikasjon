@@ -53,7 +53,7 @@ fun nyOppgave(avtaleHendelseMelding: AvtaleHendelseMelding, altinnProperties: Al
                 opprettetTidspunkt = Instant.now().toString(),
                 grupperingsid = avtaleHendelseMelding.grupperingsId(),
                 hardDelete = null
-            ), eksterneVarsler = if (avtaleHendelseMelding.hendelseType.skalSendeSmsTilArbeidsgiver() && avtaleHendelseMelding.erArbeidsgiversTlfGyldig()) listOf(
+            ), eksterneVarsler = if (avtaleHendelseMelding.hendelseType.skalSendeSmsTilArbeidsgiver() && avtaleHendelseMelding.erArbeidsgiversTlfGyldigNorskMobilnr()) listOf(
                 EksterntVarselInput(
                     sms = EksterntVarselSmsInput(
                         mottaker = SmsMottakerInput(
@@ -95,7 +95,7 @@ fun nyBeskjed(avtaleHendelseMelding: AvtaleHendelseMelding, altinnProperties: Al
                 hardDelete = null
             ),
 
-            eksterneVarsler = if (avtaleHendelseMelding.hendelseType.skalSendeSmsTilArbeidsgiver() && avtaleHendelseMelding.erArbeidsgiversTlfGyldig()) listOf(
+            eksterneVarsler = if (avtaleHendelseMelding.hendelseType.skalSendeSmsTilArbeidsgiver() && avtaleHendelseMelding.erArbeidsgiversTlfGyldigNorskMobilnr()) listOf(
                 EksterntVarselInput(
                     sms = EksterntVarselSmsInput(
                         mottaker = SmsMottakerInput(
