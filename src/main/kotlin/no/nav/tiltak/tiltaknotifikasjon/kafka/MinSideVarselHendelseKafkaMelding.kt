@@ -31,7 +31,9 @@ enum class EventName {
 enum class EksternStatusOppdatertStatus {
     BESTILT,
     SENDT,
-    FEILET
+    FEILET,
+    VENTER,
+    KANSELLERT
 }
 enum class Varseltype {
     OPPGAVE,
