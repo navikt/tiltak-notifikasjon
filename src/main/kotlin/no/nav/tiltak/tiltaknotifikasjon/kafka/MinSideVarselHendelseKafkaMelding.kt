@@ -33,7 +33,8 @@ enum class EksternStatusOppdatertStatus {
     SENDT,
     FEILET,
     VENTER,
-    KANSELLERT
+    KANSELLERT,
+    FERDIGSTILT
 }
 enum class Varseltype {
     OPPGAVE,
