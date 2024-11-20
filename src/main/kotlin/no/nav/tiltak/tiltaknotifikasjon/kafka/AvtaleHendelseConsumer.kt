@@ -65,10 +65,7 @@ class AvtaleHendelseConsumer(
 
         try {
             val melding: AvtaleHendelseMelding = mapper.readValue(avtaleHendelse)
-            if  (melding.opphav == AvtaleOpphav.ARENA && melding.hendelseType !== HendelseType.AVTALE_INNGÅTT) {
-                log.info("AG: avtalehendelse med opphav ARENA skal kun behandles ved hendelse AVTALE_INNGÅTT")
-                return
-            }
+            if (!sjekkOmSkalBehandles(melding)) return
             arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(melding)
         } catch (e: Exception) {
             val arbeidsgivernotifikasjon = Arbeidsgivernotifikasjon(
@@ -81,6 +78,20 @@ class AvtaleHendelseConsumer(
             arbeidsgivernotifikasjonRepository.save(arbeidsgivernotifikasjon)
             log.error("Error parsing AvtaleHendelseMelding for arbeidsgivernotifikasjon: ${arbeidsgivernotifikasjon.id}", e)
         }
+    }
+
+    private fun sjekkOmSkalBehandles(avtaleHendelse: AvtaleHendelseMelding): Boolean {
+        if (avtaleHendelse.opphav !== AvtaleOpphav.ARENA) {
+            return true
+        }
+        if (avtaleHendelse.hendelseType == HendelseType.AVTALE_INNGÅTT) {
+            return true
+        }
+        if (avtaleHendelse.avtaleInngått != null) {
+            return true
+        }
+        log.info("AG: avtalehendelse med opphav ARENA skal kun behandles ved hendelse AVTALE_INNGÅTT og hendelser som kommer etter inngått")
+        return false
     }
 
     private fun sjekkToggle(toggle: String): Boolean {
