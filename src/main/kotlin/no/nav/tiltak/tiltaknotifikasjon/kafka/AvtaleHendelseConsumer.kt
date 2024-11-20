@@ -59,6 +59,7 @@ class AvtaleHendelseConsumer(
             log.error("Error parsing AvtaleHendelseMelding: ${brukernotifikasjon.id}", e)
         }
     }
+
     fun behandleArbeidsgivernotifikasjon(avtaleHendelse: String) {
         val togglePå = sjekkToggle("arbeidsgivernotifikasjon-med-sak-og-sms")
         if (!togglePå) return
@@ -81,17 +82,9 @@ class AvtaleHendelseConsumer(
     }
 
     private fun sjekkOmSkalBehandles(avtaleHendelse: AvtaleHendelseMelding): Boolean {
-        if (avtaleHendelse.opphav !== AvtaleOpphav.ARENA) {
-            return true
-        }
-        if (avtaleHendelse.hendelseType == HendelseType.AVTALE_INNGÅTT) {
-            return true
-        }
-        if (avtaleHendelse.avtaleInngått != null) {
-            return true
-        }
-        log.info("AG: avtalehendelse med opphav ARENA skal kun behandles ved hendelse AVTALE_INNGÅTT og hendelser som kommer etter inngått")
-        return false
+        if (avtaleHendelse.opphav !== AvtaleOpphav.ARENA) return true
+        if (avtaleHendelse.hendelseType === HendelseType.AVTALE_INNGÅTT) return false
+        return avtaleHendelse.avtaleInngått !== null
     }
 
     private fun sjekkToggle(toggle: String): Boolean {
