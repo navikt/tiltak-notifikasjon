@@ -7,6 +7,8 @@ import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.Arbeidsgivernot
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.ArbeidsgivernotifikasjonRepository
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.ArbeidsgivernotifikasjonStatus
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
+import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleOpphav
+import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.Brukernotifikasjon
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.BrukernotifikasjonRepository
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.BrukernotifikasjonService
@@ -57,12 +59,14 @@ class AvtaleHendelseConsumer(
             log.error("Error parsing AvtaleHendelseMelding: ${brukernotifikasjon.id}", e)
         }
     }
+
     fun behandleArbeidsgivernotifikasjon(avtaleHendelse: String) {
         val togglePå = sjekkToggle("arbeidsgivernotifikasjon-med-sak-og-sms")
         if (!togglePå) return
 
         try {
             val melding: AvtaleHendelseMelding = mapper.readValue(avtaleHendelse)
+            if (!sjekkOmSkalBehandles(melding)) return
             arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(melding)
         } catch (e: Exception) {
             val arbeidsgivernotifikasjon = Arbeidsgivernotifikasjon(
@@ -75,6 +79,12 @@ class AvtaleHendelseConsumer(
             arbeidsgivernotifikasjonRepository.save(arbeidsgivernotifikasjon)
             log.error("Error parsing AvtaleHendelseMelding for arbeidsgivernotifikasjon: ${arbeidsgivernotifikasjon.id}", e)
         }
+    }
+
+    private fun sjekkOmSkalBehandles(avtaleHendelse: AvtaleHendelseMelding): Boolean {
+        if (avtaleHendelse.opphav !== AvtaleOpphav.ARENA) return true
+        if (avtaleHendelse.hendelseType === HendelseType.AVTALE_INNGÅTT) return false
+        return avtaleHendelse.avtaleInngått !== null
     }
 
     private fun sjekkToggle(toggle: String): Boolean {

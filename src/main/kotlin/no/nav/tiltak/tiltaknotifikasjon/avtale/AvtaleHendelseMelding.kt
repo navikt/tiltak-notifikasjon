@@ -31,8 +31,15 @@ data class AvtaleHendelseMelding(
     val annullertGrunn: String?,
     val antallDagerPerUke: Int?,
     val godkjentAvDeltaker: LocalDateTime?,
-    val feilregistrert: Boolean
+    val feilregistrert: Boolean,
+    val opphav: AvtaleOpphav
 )
+
+enum class AvtaleOpphav {
+    ARBEIDSGIVER,
+    ARENA,
+    VEILEDER
+}
 
 /** grupperingsId for saker, beskjeder og oppgaver. Bruker avtaleId, alle notifikasjoner med denne grupperingsIden vil knyttes sammen */
 fun AvtaleHendelseMelding.grupperingsId(): String = avtaleId.toString()
