@@ -7,6 +7,8 @@ import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.Arbeidsgivernot
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.ArbeidsgivernotifikasjonRepository
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.ArbeidsgivernotifikasjonStatus
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
+import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleOpphav
+import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.Brukernotifikasjon
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.BrukernotifikasjonRepository
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.BrukernotifikasjonService
@@ -63,6 +65,10 @@ class AvtaleHendelseConsumer(
 
         try {
             val melding: AvtaleHendelseMelding = mapper.readValue(avtaleHendelse)
+            if  (melding.opphav == AvtaleOpphav.ARENA && melding.hendelseType !== HendelseType.AVTALE_INNGÅTT) {
+                log.info("AG: avtalehendelse med opphav ARENA skal kun behandles ved hendelse AVTALE_INNGÅTT")
+                return
+            }
             arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(melding)
         } catch (e: Exception) {
             val arbeidsgivernotifikasjon = Arbeidsgivernotifikasjon(
