@@ -82,7 +82,10 @@ class AvtaleHendelseConsumer(
     }
 
     private fun sjekkOmSkalBehandles(avtaleHendelse: AvtaleHendelseMelding): Boolean {
+        // Hvis avtalen er opprettet av Arena, send kun notifikasjoner etter at den er inngått (veileder har tatt tak i den og godkjent for alle parter).
         if (avtaleHendelse.opphav !== AvtaleOpphav.ARENA) return true
+        // Det er en melding som er opprettet av Arena. Ager kun om den er inngått og ikke på inngåelse hendelsen.
+        // Godkjenningshendelsene spiller ikke noen rolle, da det ikke sendes ut noen nye notifikasjoner på disse, kun lukking av ev. eksisterende notifikasjoner.
         if (avtaleHendelse.hendelseType === HendelseType.AVTALE_INNGÅTT) return false
         return avtaleHendelse.avtaleInngått !== null
     }
