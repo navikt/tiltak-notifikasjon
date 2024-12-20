@@ -32,7 +32,7 @@ data class AvtaleHendelseMelding(
     val antallDagerPerUke: Int?,
     val godkjentAvDeltaker: LocalDateTime?,
     val feilregistrert: Boolean,
-    val opphav: AvtaleOpphav
+    val opphav: AvtaleOpphav?
 )
 
 enum class AvtaleOpphav {

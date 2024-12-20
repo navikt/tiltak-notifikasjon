@@ -45,6 +45,7 @@ class AvtaleHendelseConsumer(
 
         try {
             val melding: AvtaleHendelseMelding = mapper.readValue(avtaleHendelse)
+            if (!sjekkOmAvtaleFraArenaSkalBehandles(melding)) return
             brukernotifikasjonService.behandleAvtaleHendelseMelding(melding)
 
         } catch (e: Exception) {
