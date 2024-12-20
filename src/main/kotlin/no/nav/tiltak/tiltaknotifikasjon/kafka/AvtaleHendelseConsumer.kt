@@ -7,6 +7,8 @@ import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.Arbeidsgivernot
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.ArbeidsgivernotifikasjonRepository
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.ArbeidsgivernotifikasjonStatus
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
+import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleOpphav
+import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.Brukernotifikasjon
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.BrukernotifikasjonRepository
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.BrukernotifikasjonService
@@ -43,6 +45,7 @@ class AvtaleHendelseConsumer(
 
         try {
             val melding: AvtaleHendelseMelding = mapper.readValue(avtaleHendelse)
+            if (!sjekkOmAvtaleFraArenaSkalBehandles(melding)) return
             brukernotifikasjonService.behandleAvtaleHendelseMelding(melding)
 
         } catch (e: Exception) {
@@ -57,12 +60,14 @@ class AvtaleHendelseConsumer(
             log.error("Error parsing AvtaleHendelseMelding: ${brukernotifikasjon.id}", e)
         }
     }
+
     fun behandleArbeidsgivernotifikasjon(avtaleHendelse: String) {
         val togglePå = sjekkToggle("arbeidsgivernotifikasjon-med-sak-og-sms")
         if (!togglePå) return
 
         try {
             val melding: AvtaleHendelseMelding = mapper.readValue(avtaleHendelse)
+            if (!sjekkOmAvtaleFraArenaSkalBehandles(melding)) return
             arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(melding)
         } catch (e: Exception) {
             val arbeidsgivernotifikasjon = Arbeidsgivernotifikasjon(
@@ -75,6 +80,15 @@ class AvtaleHendelseConsumer(
             arbeidsgivernotifikasjonRepository.save(arbeidsgivernotifikasjon)
             log.error("Error parsing AvtaleHendelseMelding for arbeidsgivernotifikasjon: ${arbeidsgivernotifikasjon.id}", e)
         }
+    }
+
+    private fun sjekkOmAvtaleFraArenaSkalBehandles(avtaleHendelse: AvtaleHendelseMelding): Boolean {
+        // Hvis avtalen er opprettet av Arena, send kun notifikasjoner etter at den er inngått (veileder har tatt tak i den og godkjent for alle parter).
+        if (avtaleHendelse.opphav !== AvtaleOpphav.ARENA) return true
+        // Det er en melding som er opprettet av Arena. Ager kun om den er inngått og ikke på inngåelse hendelsen.
+        // Godkjenningshendelsene spiller ikke noen rolle, da det ikke sendes ut noen nye notifikasjoner på disse, kun lukking av ev. eksisterende notifikasjoner.
+        if (avtaleHendelse.hendelseType === HendelseType.AVTALE_INNGÅTT) return false
+        return avtaleHendelse.avtaleInngått !== null
     }
 
     private fun sjekkToggle(toggle: String): Boolean {
