@@ -186,6 +186,7 @@ class ArbeidsgiverNotifikasjonService(
                     }
                 }
                 HendelseType.AVTALE_FORKORTET_AV_ARENA -> {
+                    log.info("AG: Avtale forkortet av Arena: Setter sak til ferdig hvis avsluttet. avtaleId: ${avtaleHendelse.avtaleId}")
                     settSakTilFerdigHvisAvtalestatusAvsluttet(avtaleHendelse)
                 }
                 HendelseType.AVTALE_FORKORTET -> {
