@@ -155,6 +155,7 @@ class ArbeidsgiverNotifikasjonService(
 
                 // BESKJEDER
                 HendelseType.AVTALE_INNGÅTT -> {
+                    //TODO: Sjekke om man kan se om det finnes en sak, opprett hvis ikke. Evt: Hvis opphav = Arena - lag sak
                     log.info("AG: Avtale inngått: lager beskjed. avtaleId: ${avtaleHendelse.avtaleId}")
                     val nyBeskjed = nyBeskjed(avtaleHendelse, altinnProperties)
                     val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Beskjed, Varslingsformål.AVTALE_INNGÅTT, nyBeskjed)

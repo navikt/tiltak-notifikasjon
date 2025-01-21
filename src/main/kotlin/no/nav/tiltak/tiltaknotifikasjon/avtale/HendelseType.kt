@@ -51,6 +51,7 @@ enum class HendelseType(val tekst: String) {
     ENDRET_AV_ARENA("Avtale synkronisert med fagsystem (Arena)"),
     OPPRETTET_AV_ARENA("Avtale er opprettet av fagsystem (Arena)"),
     AVTALE_FORKORTET_AV_ARENA("Avtale er forkortet av fagsystem (Arena)"),
+    AVTALE_FORLENGET_AV_ARENA("Avtale er forlenget av fagsystem (Arena)"),
 
 }
 
