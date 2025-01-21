@@ -6,6 +6,7 @@ import no.nav.tiltak.tiltaknotifikasjon.avtale.Tiltakstype
 
 enum class NotifikasjonTekst(val tekst: (AvtaleHendelseMelding) -> String) {
     TILTAK_AVTALE_OPPRETTET_SAK({ avtaleHendelseMelding ->  "Avtale om ${avtaleHendelseMelding.tiltakstype.beskrivelse} ${medNavn(avtaleHendelseMelding)}" }),
+    TILTAK_AVTALE_INNGATT_SAK({ avtaleHendelseMelding ->  "Avtale om ${avtaleHendelseMelding.tiltakstype.beskrivelse} ${medNavn(avtaleHendelseMelding)}" }),
     TILTAK_AVTALE_OPPRETTET({ avtaleHendelseMelding ->  "Ny avtale om ${avtaleHendelseMelding.tiltakstype.beskrivelse} opprettet. Åpne avtalen og fyll ut innholdet." }),
     TILTAK_AVTALE_INNGATT({ avtaleHendelseMelding ->  "Avtale om ${avtaleHendelseMelding.tiltakstype.beskrivelse} godkjent." }),
     TILTAK_AVTALE_KLAR_REFUSJON({ "Du kan nå søke om refusjon." }),

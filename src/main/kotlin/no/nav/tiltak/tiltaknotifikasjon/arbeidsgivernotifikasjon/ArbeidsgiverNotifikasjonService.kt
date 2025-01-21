@@ -155,7 +155,15 @@ class ArbeidsgiverNotifikasjonService(
 
                 // BESKJEDER
                 HendelseType.AVTALE_INNGÅTT -> {
-                    //TODO: Sjekke om man kan se om det finnes en sak, opprett hvis ikke. Evt: Hvis opphav = Arena - lag sak
+                    if (avtaleHendelse.opphav == AvtaleOpphav.ARENA) {
+                        // Sak
+                        log.info("AG: Avtale med opphav Arena inngått: lager sak. avtaleId: ${avtaleHendelse.avtaleId}")
+                        val nySak = nySak(avtaleHendelse, altinnProperties)
+                        val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Sak, Varslingsformål.GODKJENNING_AV_AVTALE, nySak)
+                        arbeidsgivernotifikasjonRepository.save(notifikasjon)
+                        opprettNySak(nySak, notifikasjon)
+                    }
+
                     log.info("AG: Avtale inngått: lager beskjed. avtaleId: ${avtaleHendelse.avtaleId}")
                     val nyBeskjed = nyBeskjed(avtaleHendelse, altinnProperties)
                     val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Beskjed, Varslingsformål.AVTALE_INNGÅTT, nyBeskjed)
