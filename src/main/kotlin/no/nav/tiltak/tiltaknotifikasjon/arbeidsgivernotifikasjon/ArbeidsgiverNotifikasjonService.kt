@@ -135,12 +135,15 @@ class ArbeidsgiverNotifikasjonService(
                             softDeleteOppgaverOgBeskjeder(notifikasjoner, avtaleHendelse)
                         }
 
-                        // Send beskjed om annullering
-                        log.info("AG: Avtale annullert. lager beskjed om annullering. avtaleId: ${avtaleHendelse.avtaleId}")
-                        val nyBeskjed = nyBeskjed(avtaleHendelse, altinnProperties)
-                        val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Beskjed, Varslingsformål.AVTALE_ANNULLERT, nyBeskjed)
-                        arbeidsgivernotifikasjonRepository.save(notifikasjon)
-                        opprettNyBeskjed(nyBeskjed, notifikasjon)
+                        if (avtaleHendelse.opphav != AvtaleOpphav.ARENA) {
+                            // Send beskjed om annullering
+                            log.info("AG: Avtale annullert. lager beskjed om annullering. avtaleId: ${avtaleHendelse.avtaleId}")
+                            val nyBeskjed = nyBeskjed(avtaleHendelse, altinnProperties)
+                            val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Beskjed, Varslingsformål.AVTALE_ANNULLERT, nyBeskjed)
+                            arbeidsgivernotifikasjonRepository.save(notifikasjon)
+                            opprettNyBeskjed(nyBeskjed, notifikasjon)
+                        }
+
                     }
                 }
 
