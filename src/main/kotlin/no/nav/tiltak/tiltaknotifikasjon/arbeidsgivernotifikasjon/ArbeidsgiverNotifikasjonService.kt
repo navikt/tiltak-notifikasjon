@@ -173,6 +173,9 @@ class ArbeidsgiverNotifikasjonService(
                         nySakStatus(nySakStatusMottattQuery, notifikasjonNySakStatus, saken, ArbeidsgivernotifikasjonStatus.SAK_MOTTATT)
                     }
                 }
+                HendelseType.AVTALE_FORKORTET_AV_ARENA -> {
+                    settSakTilFerdigHvisAvtalestatusAvsluttet(avtaleHendelse)
+                }
                 HendelseType.AVTALE_FORKORTET -> {
                     log.info("AG: Avtale forkortet: lager beskjed. avtaleId: ${avtaleHendelse.avtaleId}")
                     val nyBeskjed = nyBeskjed(avtaleHendelse, altinnProperties)

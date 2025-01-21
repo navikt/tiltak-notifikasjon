@@ -71,7 +71,7 @@ class BrukernotifikasjonService(val minSideProdusent: MinSideProdusent, val bruk
                 log.info("Avtale annullert, skal varsle deltaker om annullering via min side og inaktivere oppgave")
                 // Inaktivering av evt. oppgave om godkjenning
                 inaktiverEksisterendeOppgaverOmGodkjenning(avtaleHendelse)
-                if (avtaleHendelse.feilregistrert) {
+                if (avtaleHendelse.feilregistrert || avtaleHendelse.utførtAv == "Arena") {
                     log.info("Avtale er feilregistrert, skal ikke varsle deltaker om annullering via min side")
                     return
                 }

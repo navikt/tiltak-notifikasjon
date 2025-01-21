@@ -47,7 +47,10 @@ enum class HendelseType(val tekst: String) {
     FJERNET_ETTERREGISTRERING("Fjernet etterregistrering på avtale"),
     DELTAKERS_GODKJENNING_OPPHEVET_AV_VEILEDER("Deltakers godkjenning opphevet av veileder"),
     DELTAKERS_GODKJENNING_OPPHEVET_AV_ARBEIDSGIVER("Deltakers godkjenning opphevet av arbeidsgiver"),
-    ARBEIDSGIVERS_GODKJENNING_OPPHEVET_AV_VEILEDER("Arbeidsgivers godkjenning opphevet av veileder")
+    ARBEIDSGIVERS_GODKJENNING_OPPHEVET_AV_VEILEDER("Arbeidsgivers godkjenning opphevet av veileder"),
+    ENDRET_AV_ARENA("Avtale synkronisert med fagsystem (Arena)"),
+    OPPRETTET_AV_ARENA("Avtale er opprettet av fagsystem (Arena)"),
+    AVTALE_FORKORTET_AV_ARENA("Avtale er forkortet av fagsystem (Arena)"),
 
 }
 
