@@ -185,6 +185,21 @@ class ArbeidsgiverNotifikasjonService(
                         nySakStatus(nySakStatusMottattQuery, notifikasjonNySakStatus, saken, ArbeidsgivernotifikasjonStatus.SAK_MOTTATT)
                     }
                 }
+                HendelseType.AVTALE_FORLENGET_AV_ARENA -> {
+                    // Endre status på sak tilbake til mottatt hvis den var avsluttet eller annullert
+                    val saken = arbeidsgivernotifikasjonRepository.findSakByAvtaleId(avtaleHendelse.avtaleId.toString())
+                    if ((saken?.status == ArbeidsgivernotifikasjonStatus.SAK_FERDIG ||
+                                saken?.status == ArbeidsgivernotifikasjonStatus.SAK_ANNULLERT)
+                        && avtaleHendelse.avtaleStatus == AvtaleStatus.GJENNOMFØRES) {
+                        log.info("AG: Avtale er forlenget av arena. Sak/Avtale var avsluttet eller annullert. Setter sak til mottatt igjen (gjennomføres). avtaleId: ${avtaleHendelse.avtaleId}")
+                        val nySakStatusMottattQuery = nySakStatusMottattQuery(saken.responseId!!, avtaleHendelse)
+                        val notifikasjonNySakStatus = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.NySakStatus, Varslingsformål.INGEN_VARSLING, nySakStatusMottattQuery)
+                        nySakStatus(nySakStatusMottattQuery, notifikasjonNySakStatus, saken, ArbeidsgivernotifikasjonStatus.SAK_MOTTATT)
+                    }
+                }
+
+
+
                 HendelseType.AVTALE_FORKORTET_AV_ARENA -> {
                     log.info("AG: Avtale forkortet av Arena: Setter sak til ferdig hvis avsluttet. avtaleId: ${avtaleHendelse.avtaleId}")
                     settSakTilFerdigHvisAvtalestatusAvsluttet(avtaleHendelse)
