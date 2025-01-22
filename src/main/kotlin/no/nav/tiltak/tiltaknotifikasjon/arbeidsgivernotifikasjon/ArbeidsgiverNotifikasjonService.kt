@@ -135,12 +135,15 @@ class ArbeidsgiverNotifikasjonService(
                             softDeleteOppgaverOgBeskjeder(notifikasjoner, avtaleHendelse)
                         }
 
-                        // Send beskjed om annullering
-                        log.info("AG: Avtale annullert. lager beskjed om annullering. avtaleId: ${avtaleHendelse.avtaleId}")
-                        val nyBeskjed = nyBeskjed(avtaleHendelse, altinnProperties)
-                        val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Beskjed, Varslingsformål.AVTALE_ANNULLERT, nyBeskjed)
-                        arbeidsgivernotifikasjonRepository.save(notifikasjon)
-                        opprettNyBeskjed(nyBeskjed, notifikasjon)
+                        if (avtaleHendelse.opphav != AvtaleOpphav.ARENA) {
+                            // Send beskjed om annullering
+                            log.info("AG: Avtale annullert. lager beskjed om annullering. avtaleId: ${avtaleHendelse.avtaleId}")
+                            val nyBeskjed = nyBeskjed(avtaleHendelse, altinnProperties)
+                            val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Beskjed, Varslingsformål.AVTALE_ANNULLERT, nyBeskjed)
+                            arbeidsgivernotifikasjonRepository.save(notifikasjon)
+                            opprettNyBeskjed(nyBeskjed, notifikasjon)
+                        }
+
                     }
                 }
 
@@ -152,6 +155,15 @@ class ArbeidsgiverNotifikasjonService(
 
                 // BESKJEDER
                 HendelseType.AVTALE_INNGÅTT -> {
+                    if (avtaleHendelse.opphav == AvtaleOpphav.ARENA) {
+                        // Sak
+                        log.info("AG: Avtale med opphav Arena inngått: lager sak. avtaleId: ${avtaleHendelse.avtaleId}")
+                        val nySak = nySak(avtaleHendelse, altinnProperties)
+                        val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Sak, Varslingsformål.AVTALE_INNGÅTT, nySak)
+                        arbeidsgivernotifikasjonRepository.save(notifikasjon)
+                        opprettNySak(nySak, notifikasjon)
+                    }
+
                     log.info("AG: Avtale inngått: lager beskjed. avtaleId: ${avtaleHendelse.avtaleId}")
                     val nyBeskjed = nyBeskjed(avtaleHendelse, altinnProperties)
                     val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Beskjed, Varslingsformål.AVTALE_INNGÅTT, nyBeskjed)
@@ -172,6 +184,25 @@ class ArbeidsgiverNotifikasjonService(
                         val notifikasjonNySakStatus = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.NySakStatus, Varslingsformål.INGEN_VARSLING, nySakStatusMottattQuery)
                         nySakStatus(nySakStatusMottattQuery, notifikasjonNySakStatus, saken, ArbeidsgivernotifikasjonStatus.SAK_MOTTATT)
                     }
+                }
+                HendelseType.AVTALE_FORLENGET_AV_ARENA -> {
+                    // Endre status på sak tilbake til mottatt hvis den var avsluttet eller annullert
+                    val saken = arbeidsgivernotifikasjonRepository.findSakByAvtaleId(avtaleHendelse.avtaleId.toString())
+                    if ((saken?.status == ArbeidsgivernotifikasjonStatus.SAK_FERDIG ||
+                                saken?.status == ArbeidsgivernotifikasjonStatus.SAK_ANNULLERT)
+                        && avtaleHendelse.avtaleStatus == AvtaleStatus.GJENNOMFØRES) {
+                        log.info("AG: Avtale er forlenget av arena. Sak/Avtale var avsluttet eller annullert. Setter sak til mottatt igjen (gjennomføres). avtaleId: ${avtaleHendelse.avtaleId}")
+                        val nySakStatusMottattQuery = nySakStatusMottattQuery(saken.responseId!!, avtaleHendelse)
+                        val notifikasjonNySakStatus = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.NySakStatus, Varslingsformål.INGEN_VARSLING, nySakStatusMottattQuery)
+                        nySakStatus(nySakStatusMottattQuery, notifikasjonNySakStatus, saken, ArbeidsgivernotifikasjonStatus.SAK_MOTTATT)
+                    }
+                }
+
+
+
+                HendelseType.AVTALE_FORKORTET_AV_ARENA -> {
+                    log.info("AG: Avtale forkortet av Arena: Setter sak til ferdig hvis avsluttet. avtaleId: ${avtaleHendelse.avtaleId}")
+                    settSakTilFerdigHvisAvtalestatusAvsluttet(avtaleHendelse)
                 }
                 HendelseType.AVTALE_FORKORTET -> {
                     log.info("AG: Avtale forkortet: lager beskjed. avtaleId: ${avtaleHendelse.avtaleId}")

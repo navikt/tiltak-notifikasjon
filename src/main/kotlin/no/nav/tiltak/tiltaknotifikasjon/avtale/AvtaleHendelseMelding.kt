@@ -31,8 +31,15 @@ data class AvtaleHendelseMelding(
     val annullertGrunn: String?,
     val antallDagerPerUke: Int?,
     val godkjentAvDeltaker: LocalDateTime?,
-    val feilregistrert: Boolean
+    val feilregistrert: Boolean,
+    val opphav: AvtaleOpphav?
 )
+
+enum class AvtaleOpphav {
+    ARBEIDSGIVER,
+    ARENA,
+    VEILEDER
+}
 
 /** grupperingsId for saker, beskjeder og oppgaver. Bruker avtaleId, alle notifikasjoner med denne grupperingsIden vil knyttes sammen */
 fun AvtaleHendelseMelding.grupperingsId(): String = avtaleId.toString()
@@ -45,7 +52,7 @@ fun AvtaleHendelseMelding.lagArbeidsgivernotifikasjonTekst(erSak: Boolean): Stri
     when (this.hendelseType) {
         HendelseType.OPPRETTET -> if (erSak) NotifikasjonTekst.TILTAK_AVTALE_OPPRETTET_SAK.tekst(this)
             else NotifikasjonTekst.TILTAK_AVTALE_OPPRETTET.tekst(this)
-        HendelseType.AVTALE_INNGÅTT -> NotifikasjonTekst.TILTAK_AVTALE_INNGATT.tekst(this)
+        HendelseType.AVTALE_INNGÅTT -> if (erSak) NotifikasjonTekst.TILTAK_AVTALE_INNGATT_SAK.tekst(this) else NotifikasjonTekst.TILTAK_AVTALE_INNGATT.tekst(this)
         HendelseType.STILLINGSBESKRIVELSE_ENDRET -> NotifikasjonTekst.TILTAK_STILLINGSBESKRIVELSE_ENDRET.tekst(this)
         HendelseType.MÅL_ENDRET -> NotifikasjonTekst.TILTAK_MÅL_ENDRET.tekst(this)
         HendelseType.INKLUDERINGSTILSKUDD_ENDRET -> NotifikasjonTekst.TILTAK_INKLUDERINGSTILSKUDD_ENDRET.tekst(this)
