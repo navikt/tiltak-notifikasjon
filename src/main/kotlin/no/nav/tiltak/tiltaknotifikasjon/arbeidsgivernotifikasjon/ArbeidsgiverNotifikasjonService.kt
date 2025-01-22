@@ -159,7 +159,7 @@ class ArbeidsgiverNotifikasjonService(
                         // Sak
                         log.info("AG: Avtale med opphav Arena inngått: lager sak. avtaleId: ${avtaleHendelse.avtaleId}")
                         val nySak = nySak(avtaleHendelse, altinnProperties)
-                        val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Sak, Varslingsformål.GODKJENNING_AV_AVTALE, nySak)
+                        val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Sak, Varslingsformål.AVTALE_INNGÅTT, nySak)
                         arbeidsgivernotifikasjonRepository.save(notifikasjon)
                         opprettNySak(nySak, notifikasjon)
                     }
