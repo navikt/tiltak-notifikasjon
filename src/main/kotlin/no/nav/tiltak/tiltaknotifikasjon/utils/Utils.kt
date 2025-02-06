@@ -17,6 +17,7 @@ fun ulid(): String = ulidGenerator.nextULID()
 fun jacksonMapper(): ObjectMapper = jacksonObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
     .registerModule(JavaTimeModule())
     .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+    .configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL, true)
 
 fun norskDatoFormat(dato: LocalDate) = dato.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
 
@@ -29,5 +30,6 @@ fun norskDatoFormat(dato: LocalDate) = dato.format(DateTimeFormatter.ofPattern("
 fun jacksonMapperSomIkkeBryrSegOmEnumCase(): ObjectMapper = jacksonMapperBuilder()
     .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
     .configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS, true)
+    .configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL, true)
     .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
     .build()
