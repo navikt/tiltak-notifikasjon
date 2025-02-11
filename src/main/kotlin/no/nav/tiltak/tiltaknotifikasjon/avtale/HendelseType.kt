@@ -52,7 +52,7 @@ enum class HendelseType(val tekst: String) {
     OPPRETTET_AV_ARENA("Avtale er opprettet av fagsystem (Arena)"),
     AVTALE_FORKORTET_AV_ARENA("Avtale er forkortet av fagsystem (Arena)"),
     AVTALE_FORLENGET_AV_ARENA("Avtale er forlenget av fagsystem (Arena)"),
-
+    PATCH("Retting av feil i data på tidligere meldinger")
 }
 
 fun HendelseType.skalSendeSmsTilArbeidsgiver(): Boolean =
