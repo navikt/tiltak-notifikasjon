@@ -55,13 +55,21 @@ class ArbeidsgiverNotifikasjonServiceTest {
         val arbeidsgivernotifikasjoner = arbeidsgivernotifikasjonRepository.findAll()
         assertThat(arbeidsgivernotifikasjoner).hasSize(2)
 
-        assertThat(arbeidsgivernotifikasjoner[0].varslingsformål).isEqualTo(Varslingsformål.GODKJENNING_AV_AVTALE)
-        assertThat(arbeidsgivernotifikasjoner[0].type).isEqualTo(ArbeidsgivernotifikasjonType.Sak)
-        assertThat(arbeidsgivernotifikasjoner[0].status).isEqualTo(ArbeidsgivernotifikasjonStatus.SAK_MOTTATT)
+        println(arbeidsgivernotifikasjoner)
 
-        assertThat(arbeidsgivernotifikasjoner[1].varslingsformål).isEqualTo(Varslingsformål.GODKJENNING_AV_AVTALE)
-        assertThat(arbeidsgivernotifikasjoner[1].type).isEqualTo(ArbeidsgivernotifikasjonType.Oppgave)
-        assertThat(arbeidsgivernotifikasjoner[1].status).isEqualTo(ArbeidsgivernotifikasjonStatus.BEHANDLET)
+        // Finn minst 1 Sak
+        val sak = arbeidsgivernotifikasjoner.find { it.type == ArbeidsgivernotifikasjonType.Sak }
+        assertThat(sak).isNotNull()
+        assertThat(sak?.varslingsformål).isEqualTo(Varslingsformål.GODKJENNING_AV_AVTALE)
+        assertThat(sak?.type).isEqualTo(ArbeidsgivernotifikasjonType.Sak)
+        assertThat(sak?.status).isEqualTo(ArbeidsgivernotifikasjonStatus.SAK_MOTTATT)
+
+        // Finn minst 1 Oppgave
+        val oppgave = arbeidsgivernotifikasjoner.find { it.type == ArbeidsgivernotifikasjonType.Oppgave }
+        assertThat(oppgave).isNotNull()
+        assertThat(oppgave?.varslingsformål).isEqualTo(Varslingsformål.GODKJENNING_AV_AVTALE)
+        assertThat(oppgave?.type).isEqualTo(ArbeidsgivernotifikasjonType.Oppgave)
+        assertThat(oppgave?.status).isEqualTo(ArbeidsgivernotifikasjonStatus.BEHANDLET)
     }
 
     @Test
@@ -320,14 +328,18 @@ class ArbeidsgiverNotifikasjonServiceTest {
     }
     @Test
     fun `skal utvide hardDelete på sak når den går fra ferdig til mottatt`() {
+        val forlengetMelding = jacksonMapper().readValue<AvtaleHendelseMelding>(jsonAvtaleForlengetMelding).copy(
+            startDato = LocalDate.now().minusDays(10),
+            sluttDato = LocalDate.now().plusMonths(1),
+        )
+
         val opprettetMelding: AvtaleHendelseMelding = jacksonMapper().readValue(jsonAvtaleOpprettetMelding)
-        val statusEndringMelding: AvtaleHendelseMelding = jacksonMapper().readValue<AvtaleHendelseMelding>(jsonAvtaleForlengetMelding).copy(
+        val statusEndringMelding: AvtaleHendelseMelding = forlengetMelding.copy(
             startDato = LocalDate.now().minusDays(10),
             sluttDato = LocalDate.now().minusDays(1),
             avtaleStatus = AvtaleStatus.AVSLUTTET,
             hendelseType = HendelseType.STATUSENDRING
         )
-        val forlengetMelding: AvtaleHendelseMelding = jacksonMapper().readValue(jsonAvtaleForlengetMelding)
 
         arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(opprettetMelding) // Generer sak og oppgave
         arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(statusEndringMelding) // Generer sakstatusEndret
