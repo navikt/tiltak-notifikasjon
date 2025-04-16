@@ -14,6 +14,9 @@ tiltak-notifikasjon:
     inkluderingstilskuddServiceEdition: 5
     vtaoServiceCode: 5516
     vtaoServiceEdition: 6
+  pdl-api:
+    uri: https://pdl-api.dev.intern.nav.no/graphql
+    scope: api://prod-fss.pdl.pdl-api/.default
 
   produsent-api:
     url: http://notifikasjon-produsent-api.fager/api/graphql
@@ -28,3 +31,7 @@ no.nav.security.jwt:
           client-id: ${AZURE_APP_CLIENT_ID}
           client-secret: ${AZURE_APP_CLIENT_SECRET}
           client-auth-method: client_secret_basic
+      pdl-api:
+        token-endpoint-url: https://login.microsoftonline.com/${AZURE_APP_TENANT_ID}/oauth2/v2.0/token
+        grant-type: client_credentials
+        scope: ${tiltak-notifikasjon.pdl-api.scope}
