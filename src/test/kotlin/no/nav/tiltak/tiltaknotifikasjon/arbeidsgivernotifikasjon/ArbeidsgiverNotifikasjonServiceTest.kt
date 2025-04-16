@@ -8,7 +8,6 @@ import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleStatus
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
 import no.nav.tiltak.tiltaknotifikasjon.kafka.TiltakNotifikasjonKvitteringProdusent
-import no.nav.tiltak.tiltaknotifikasjon.persondata.PersondataService
 import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -344,7 +343,6 @@ class ArbeidsgiverNotifikasjonServiceTest {
         arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(statusEndringMelding) // Generer sakstatusEndret
         val sak = arbeidsgivernotifikasjonRepository.findSakByAvtaleId(opprettetMelding.avtaleId.toString())
         assertThat(sak?.hardDeleteSkedulertTidspunkt).isNotNull()
-
         arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(forlengetMelding) // Generer sakstatusEndret
         val sak2 = arbeidsgivernotifikasjonRepository.findSakByAvtaleId(opprettetMelding.avtaleId.toString())
         assertThat(sak2?.hardDeleteSkedulertTidspunkt).isNotNull()
