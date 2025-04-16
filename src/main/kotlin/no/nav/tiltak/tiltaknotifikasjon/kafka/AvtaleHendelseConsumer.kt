@@ -8,11 +8,11 @@ import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.Arbeidsgivernot
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.ArbeidsgivernotifikasjonStatus
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleOpphav
-import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.Brukernotifikasjon
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.BrukernotifikasjonRepository
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.BrukernotifikasjonService
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.BrukernotifikasjonStatus
+import no.nav.tiltak.tiltaknotifikasjon.persondata.PersondataService
 import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
 import no.nav.tiltak.tiltaknotifikasjon.utils.ulid
 import org.slf4j.LoggerFactory
@@ -28,7 +28,8 @@ class AvtaleHendelseConsumer(
     val arbeidsgiverNotifikasjonService: ArbeidsgiverNotifikasjonService,
     val brukernotifikasjonRepository: BrukernotifikasjonRepository,
     val arbeidsgivernotifikasjonRepository: ArbeidsgivernotifikasjonRepository,
-    val unleash: Unleash
+    val unleash: Unleash,
+    val persondataService: PersondataService
 ) {
     private val mapper = jacksonMapper()
     private val log = LoggerFactory.getLogger(javaClass)
@@ -68,6 +69,7 @@ class AvtaleHendelseConsumer(
         try {
             val melding: AvtaleHendelseMelding = mapper.readValue(avtaleHendelse)
             if (!sjekkOmAvtaleFraArenaSkalBehandles(melding)) return
+            if (persondataService.hentDiskresjonskode(melding.deltakerFnr).erKode6Eller7()) return
             arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(melding)
         } catch (e: Exception) {
             val arbeidsgivernotifikasjon = Arbeidsgivernotifikasjon(
