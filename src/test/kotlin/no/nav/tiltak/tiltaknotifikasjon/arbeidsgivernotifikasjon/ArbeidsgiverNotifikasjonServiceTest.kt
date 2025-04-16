@@ -55,8 +55,6 @@ class ArbeidsgiverNotifikasjonServiceTest {
         val arbeidsgivernotifikasjoner = arbeidsgivernotifikasjonRepository.findAll()
         assertThat(arbeidsgivernotifikasjoner).hasSize(2)
 
-        println(arbeidsgivernotifikasjoner)
-
         // Finn minst 1 Sak
         val sak = arbeidsgivernotifikasjoner.find { it.type == ArbeidsgivernotifikasjonType.Sak }
         assertThat(sak).isNotNull()
