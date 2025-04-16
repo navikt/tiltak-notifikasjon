@@ -23,13 +23,4 @@ class PersondataService(
         return persondataClient.hentDiskresjonskode(fnr).orElse(Diskresjonskode.UGRADERT)
     }
 
-    // TRENGER VEL IKKE DENNE
-    fun hentDiskresjonskoder(fnrSet: Set<String>): Map<String, Diskresjonskode> {
-        return persondataClient.hentDiskresjonskoderEllerDefault(
-            fnrSet.map { it }.toSet(),
-            { fnr: String -> fnr },
-            Diskresjonskode.UGRADERT
-        )
-    }
-
 }
