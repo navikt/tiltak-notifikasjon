@@ -59,7 +59,6 @@ spec:
       rules:
         - application: "notifikasjon-produsent-api"
           namespace: "fager"
-        - application: pdl-api
-          namespace: pdl
       external:
         - host: team-tiltak-unleash-api.nav.cloud.nais.io
+        - host: pdl-api.prod-fss-pub.nais.io
