@@ -15,7 +15,7 @@ tiltak-notifikasjon:
     vtaoServiceCode: 5516
     vtaoServiceEdition: 6
   pdl-api:
-    uri: https://pdl-api.dev.intern.nav.no/graphql
+    uri: https://pdl-api.dev-fss-pub.nais.io/graphql
     scope: api://dev-fss.pdl.pdl-api/.default
 
   produsent-api:
