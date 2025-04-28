@@ -9,7 +9,7 @@ enum class Tiltakstype(val beskrivelse: String, val arbeidsgiverNotifikasjonMerk
     MENTOR(beskrivelse = "Mentor", arbeidsgiverNotifikasjonMerkelapp = "Mentor"),
     INKLUDERINGSTILSKUDD(beskrivelse = "Inkluderingstilskudd", arbeidsgiverNotifikasjonMerkelapp = "Inkluderingstilskudd"),
     SOMMERJOBB(beskrivelse = "Sommerjobb", arbeidsgiverNotifikasjonMerkelapp = "Sommerjobb"),
-    VTAO(beskrivelse = "VTAO", arbeidsgiverNotifikasjonMerkelapp = "Vtao"); // TODO: Må kanskje legge en merkelapp i fager
+    VTAO(beskrivelse = "Varig tilrettelagt arbeid i ordniær virksomhet", arbeidsgiverNotifikasjonMerkelapp = "Varig tilrettelagt arbeid");
 }
 
 fun Tiltakstype.serviceCode(altinnProperties: AltinnProperties): String {
