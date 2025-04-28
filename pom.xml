@@ -167,6 +167,12 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>no.nav.team-tiltak</groupId>
+			<artifactId>tiltak-persondata</artifactId>
+			<version>2025.04.07_08.09-c5b0327d047a</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>
