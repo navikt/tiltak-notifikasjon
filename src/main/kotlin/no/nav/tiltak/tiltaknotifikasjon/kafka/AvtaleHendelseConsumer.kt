@@ -69,8 +69,7 @@ class AvtaleHendelseConsumer(
 
         try {
             val melding: AvtaleHendelseMelding = mapper.readValue(avtaleHendelse)
-            if (!sjekkOmAvtaleFraArenaSkalBehandles(melding)) return
-            if (erKode6Eller7OgSkalIkkeBehandles(melding)) return
+            if (!skalArbeidsgivernotifikasjonBehanldes(melding)) return
             arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(melding)
         } catch (e: Exception) {
             val arbeidsgivernotifikasjon = Arbeidsgivernotifikasjon(
@@ -85,16 +84,19 @@ class AvtaleHendelseConsumer(
         }
     }
 
-    private fun erKode6Eller7OgSkalIkkeBehandles(melding: AvtaleHendelseMelding): Boolean {
-        // Returnerer true på kode 6 og 7, unntatt de tilfellene hvor meldingstypen er STATUSENDRING eller ANNULLERT. Dette for å kunne lukke Saker.
-        val erKode6Eller7 = persondataService.hentDiskresjonskode(melding.deltakerFnr).erKode6Eller7()
-        if (!erKode6Eller7) return false
-        return !(melding.hendelseType == HendelseType.STATUSENDRING || melding.hendelseType == HendelseType.ANNULLERT)
-    }
-
     private fun sjekkOmAvtaleFraArenaSkalBehandles(avtaleHendelse: AvtaleHendelseMelding): Boolean {
         if (avtaleHendelse.opphav == AvtaleOpphav.ARENA && avtaleHendelse.avtaleInngått == null) return false
         return true
+    }
+
+    private fun skalArbeidsgivernotifikasjonBehanldes(avtaleHendelsemelding: AvtaleHendelseMelding): Boolean {
+        // Arena-sjekk - ikke behandle meldinger på migrerte avtaler fra arena før de er inngått.
+        if (avtaleHendelsemelding.opphav == AvtaleOpphav.ARENA && avtaleHendelsemelding.avtaleInngått == null) return false
+        // Diskresjonssjekk - Behandle kun kode 6/7 hvis det er statusendring eller annullert
+        val erKode6Eller7 = persondataService.hentDiskresjonskode(avtaleHendelsemelding.deltakerFnr).erKode6Eller7()
+        if (!erKode6Eller7) return true
+        if (avtaleHendelsemelding.hendelseType == HendelseType.STATUSENDRING || avtaleHendelsemelding.hendelseType == HendelseType.ANNULLERT) return true
+        return false
     }
 
     private fun sjekkToggle(toggle: String): Boolean {
