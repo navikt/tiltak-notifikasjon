@@ -13,6 +13,7 @@ import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.Brukernotifikasjon
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.BrukernotifikasjonRepository
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.BrukernotifikasjonService
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.BrukernotifikasjonStatus
+import no.nav.tiltak.tiltaknotifikasjon.persondata.PersondataService
 import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
 import no.nav.tiltak.tiltaknotifikasjon.utils.ulid
 import org.slf4j.LoggerFactory
@@ -28,7 +29,8 @@ class AvtaleHendelseConsumer(
     val arbeidsgiverNotifikasjonService: ArbeidsgiverNotifikasjonService,
     val brukernotifikasjonRepository: BrukernotifikasjonRepository,
     val arbeidsgivernotifikasjonRepository: ArbeidsgivernotifikasjonRepository,
-    val unleash: Unleash
+    val unleash: Unleash,
+    val persondataService: PersondataService
 ) {
     private val mapper = jacksonMapper()
     private val log = LoggerFactory.getLogger(javaClass)
@@ -67,7 +69,7 @@ class AvtaleHendelseConsumer(
 
         try {
             val melding: AvtaleHendelseMelding = mapper.readValue(avtaleHendelse)
-            if (!sjekkOmAvtaleFraArenaSkalBehandles(melding)) return
+            if (!skalArbeidsgivernotifikasjonBehanldes(melding)) return
             arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(melding)
         } catch (e: Exception) {
             val arbeidsgivernotifikasjon = Arbeidsgivernotifikasjon(
@@ -85,6 +87,16 @@ class AvtaleHendelseConsumer(
     private fun sjekkOmAvtaleFraArenaSkalBehandles(avtaleHendelse: AvtaleHendelseMelding): Boolean {
         if (avtaleHendelse.opphav == AvtaleOpphav.ARENA && avtaleHendelse.avtaleInngått == null) return false
         return true
+    }
+
+    private fun skalArbeidsgivernotifikasjonBehanldes(avtaleHendelsemelding: AvtaleHendelseMelding): Boolean {
+        // Arena-sjekk - ikke behandle meldinger på migrerte avtaler fra arena før de er inngått.
+        if (avtaleHendelsemelding.opphav == AvtaleOpphav.ARENA && avtaleHendelsemelding.avtaleInngått == null) return false
+        // Diskresjonssjekk - Behandle kun kode 6/7 hvis det er statusendring eller annullert
+        val erKode6Eller7 = persondataService.hentDiskresjonskode(avtaleHendelsemelding.deltakerFnr).erKode6Eller7()
+        if (!erKode6Eller7) return true
+        if (avtaleHendelsemelding.hendelseType == HendelseType.STATUSENDRING || avtaleHendelsemelding.hendelseType == HendelseType.ANNULLERT) return true
+        return false
     }
 
     private fun sjekkToggle(toggle: String): Boolean {
