@@ -8,6 +8,7 @@ import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.Arbeidsgivernot
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.ArbeidsgivernotifikasjonStatus
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleOpphav
+import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.Brukernotifikasjon
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.BrukernotifikasjonRepository
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.BrukernotifikasjonService
@@ -69,7 +70,7 @@ class AvtaleHendelseConsumer(
         try {
             val melding: AvtaleHendelseMelding = mapper.readValue(avtaleHendelse)
             if (!sjekkOmAvtaleFraArenaSkalBehandles(melding)) return
-            if (persondataService.hentDiskresjonskode(melding.deltakerFnr).erKode6Eller7()) return
+            if (erKode6Eller7OgSkalIkkeBehandles(melding)) return
             arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(melding)
         } catch (e: Exception) {
             val arbeidsgivernotifikasjon = Arbeidsgivernotifikasjon(
@@ -82,6 +83,13 @@ class AvtaleHendelseConsumer(
             arbeidsgivernotifikasjonRepository.save(arbeidsgivernotifikasjon)
             log.error("Error parsing AvtaleHendelseMelding for arbeidsgivernotifikasjon: ${arbeidsgivernotifikasjon.id}", e)
         }
+    }
+
+    private fun erKode6Eller7OgSkalIkkeBehandles(melding: AvtaleHendelseMelding): Boolean {
+        // Returnerer true på kode 6 og 7, unntatt de tilfellene hvor meldingstypen er STATUSENDRING eller ANNULLERT. Dette for å kunne lukke Saker.
+        val erKode6Eller7 = persondataService.hentDiskresjonskode(melding.deltakerFnr).erKode6Eller7()
+        if (!erKode6Eller7) return false
+        return !(melding.hendelseType == HendelseType.STATUSENDRING || melding.hendelseType == HendelseType.ANNULLERT)
     }
 
     private fun sjekkOmAvtaleFraArenaSkalBehandles(avtaleHendelse: AvtaleHendelseMelding): Boolean {
