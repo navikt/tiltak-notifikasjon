@@ -36,7 +36,7 @@ class AdminController(
     }
 
     @PostMapping("rekjor-feilede-notifikasjoner")
-    fun rekjorFeiledeNotifikasjoner(feilmeldingTilRekjoring: String) {
+    fun rekjorFeiledeNotifikasjoner(@RequestBody feilmeldingTilRekjoring: String) {
         log.info("Rekjører feilede notifikasjoner som feilet med feilmelding: $feilmeldingTilRekjoring")
         val feiledeNotifikasjoner = arbeidsgivernotifikasjonRepository.findAllByFeilmelding(feilmeldingTilRekjoring)
         if (feiledeNotifikasjoner.isEmpty()) {
