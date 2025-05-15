@@ -45,8 +45,18 @@ class AdminController(
         }
         log.info("Fant ${feiledeNotifikasjoner.size} feilede notifikasjoner med feilkode $feilmeldingTilRekjoring som skal rekjøres")
         feiledeNotifikasjoner.forEach { notifikasjon ->
-            val melding: AvtaleHendelseMelding = jacksonMapper().readValue(notifikasjon.avtaleMeldingJson)
-            arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(melding)
+            try {
+                val melding: AvtaleHendelseMelding = jacksonMapper().readValue(notifikasjon.avtaleMeldingJson)
+                arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(melding)
+                val opprinneligStatus = notifikasjon.status
+                notifikasjon.status = ArbeidsgivernotifikasjonStatus.REKJORT
+                arbeidsgivernotifikasjonRepository.save(notifikasjon)
+                log.info("Rekjørte notifikasjon med id ${notifikasjon.id} og status $opprinneligStatus")
+            } catch (e: Exception) {
+                log.error("Kunne ikke rekjøre notifikasjon med id ${notifikasjon.id} og feilmelding ${notifikasjon.feilmelding}", e)
+                notifikasjon.feilmelding = "Kunne ikke rekjøre notifikasjon med id ${notifikasjon.id} og feilmelding ${notifikasjon.feilmelding}"
+                arbeidsgivernotifikasjonRepository.save(notifikasjon)
+            }
         }
     }
 
