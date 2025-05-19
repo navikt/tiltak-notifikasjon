@@ -23,7 +23,14 @@ class PersondataService(
     fun hentDiskresjonskode(fnr: String): Diskresjonskode {
         repeat(3) {
             try {
-                return persondataClient.hentDiskresjonskode(fnr).orElseThrow { IllegalStateException("Fant ikke diskresjonskode") }
+                val diskresjonskoder = persondataClient.hentDiskresjonskoder(setOf(fnr))
+                val kode = diskresjonskoder[fnr]?.get()
+                if (kode != null) {
+                    return kode
+                } else {
+                    log.warn("Fant ingen diskresjonskoder")
+                    return Diskresjonskode.UGRADERT
+                }
             } catch (e: Exception) {
                 log.error("Fant ikke diskresjonskode på forsøk ${it + 1} av 3", e)
                 if (it == 2) throw e // Rethrow the exception on the last attempt
