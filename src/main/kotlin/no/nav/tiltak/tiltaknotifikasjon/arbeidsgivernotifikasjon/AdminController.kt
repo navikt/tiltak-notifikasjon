@@ -1,26 +1,27 @@
 package no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon
 
 import com.expediagroup.graphql.client.types.GraphQLClientResponse
-import no.nav.security.token.support.core.api.Unprotected
+import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.security.token.support.core.api.ProtectedWithClaims
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.MineNotifikasjoner
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.minenotifikasjoner.NotifikasjonConnection
+import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.avtale.Tiltakstype
+import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
 import org.slf4j.LoggerFactory
-import org.springframework.context.annotation.Profile
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 
-@Profile("dev-gcp")
-@Unprotected
+@ProtectedWithClaims(issuer = "azure-access-token", claimMap = ["groups=fb516b74-0f2e-4b62-bad8-d70b82c3ae0b"])
 @RestController
 @RequestMapping("/internal/admin")
-class AdminController(val arbeidsgiverNotifikasjonService: ArbeidsgiverNotifikasjonService) {
+class AdminController(
+    private val arbeidsgiverNotifikasjonService: ArbeidsgiverNotifikasjonService,
+    private val arbeidsgivernotifikasjonRepository: ArbeidsgivernotifikasjonRepository
+) {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    //@Unprotected
+
     @GetMapping("hent-mine-saker")
     fun hentMineSaker(@RequestBody mineSaker: MineSaker): GraphQLClientResponse<MineNotifikasjoner.Result> {
         log.info("Henter mine saker")
@@ -34,6 +35,30 @@ class AdminController(val arbeidsgiverNotifikasjonService: ArbeidsgiverNotifikas
         return mineSakerResponse
     }
 
+    @PostMapping("rekjor-feilede-notifikasjoner")
+    fun rekjorFeiledeNotifikasjoner(@RequestBody feilmeldingTilRekjoring: String) {
+        log.info("Rekjører feilede notifikasjoner som feilet med feilmelding: $feilmeldingTilRekjoring")
+        val feiledeNotifikasjoner = arbeidsgivernotifikasjonRepository.findAllByFeilmelding(feilmeldingTilRekjoring)
+        if (feiledeNotifikasjoner.isEmpty()) {
+            log.info("Ingen feilede notifikasjoner funnet for feilmelding: $feilmeldingTilRekjoring")
+            return
+        }
+        log.info("Fant ${feiledeNotifikasjoner.size} feilede notifikasjoner med feilkode $feilmeldingTilRekjoring som skal rekjøres")
+        feiledeNotifikasjoner.forEach { notifikasjon ->
+            try {
+                val melding: AvtaleHendelseMelding = jacksonMapper().readValue(notifikasjon.avtaleMeldingJson)
+                val opprinneligStatus = notifikasjon.status
+                arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(melding)
+                notifikasjon.status = ArbeidsgivernotifikasjonStatus.REKJORT
+                arbeidsgivernotifikasjonRepository.save(notifikasjon)
+                log.info("Rekjørte notifikasjon med id ${notifikasjon.id} og status $opprinneligStatus")
+            } catch (e: Exception) {
+                log.error("Kunne ikke rekjøre notifikasjon med id ${notifikasjon.id} og feilmelding ${notifikasjon.feilmelding}", e)
+                notifikasjon.feilmelding = "Kunne ikke rekjøre notifikasjon med id ${notifikasjon.id} og feilmelding ${notifikasjon.feilmelding}"
+                arbeidsgivernotifikasjonRepository.save(notifikasjon)
+            }
+        }
+    }
 
 }
 
