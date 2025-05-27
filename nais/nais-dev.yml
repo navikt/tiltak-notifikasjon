@@ -54,3 +54,6 @@ spec:
       external:
         - host: team-tiltak-unleash-api.nav.cloud.nais.io
         - host: pdl-api.dev-fss-pub.nais.io
+  prometheus:
+    enabled: true
+    path: /internal/actuator/prometheus
