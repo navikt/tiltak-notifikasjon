@@ -30,7 +30,7 @@ spec:
       memory: "2000Mi"
     requests:
       cpu: "200m"
-      memory: "512Mi"
+      memory: "1000Mi"
   env:
     - name: MILJO
       value: prod-gcp
