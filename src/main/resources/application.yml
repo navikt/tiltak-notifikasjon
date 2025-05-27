@@ -28,7 +28,7 @@ spring:
 management:
   endpoints:
     web:
-      base-path: /internal/
+      base-path: /internal/actuator
       exposure:
         include: info, health, metrics, prometheus
 
