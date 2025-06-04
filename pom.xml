@@ -283,6 +283,7 @@
 							<endpoint>https://notifikasjon-fake-produsent-api.ekstern.dev.nav.no</endpoint>
 							<packageName>no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated</packageName>
 <!--							<schemaFile>${project.build.directory}/schema.graphql</schemaFile>-->
+							<allowDeprecatedFields>true</allowDeprecatedFields>
 						</configuration>
 					</execution>
 				</executions>
