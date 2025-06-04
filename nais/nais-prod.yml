@@ -11,13 +11,13 @@ spec:
   image: {{image}}
   port: 8080
   liveness:
-    path: /internal/health/liveness
+    path: /internal/actuator/health/liveness
     initialDelay: 30
     timeout: 1
     periodSeconds: 30
     failureThreshold: 10
   readiness:
-    path: /internal/health/readiness
+    path: /internal/actuator/health/readiness
     initialDelay: 30
     timeout: 1
     periodSeconds: 30
