@@ -16,7 +16,7 @@ import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.BrukernotifikasjonS
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.BrukernotifikasjonStatus
 import no.nav.tiltak.tiltaknotifikasjon.persondata.PersondataService
 import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
-import no.nav.tiltak.tiltaknotifikasjon.utils.mentorAvtaleErKlarForVisningForEksterne
+import no.nav.tiltak.tiltaknotifikasjon.utils.erOpphavArenaOgErKlarforvisning
 import no.nav.tiltak.tiltaknotifikasjon.utils.ulid
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -87,13 +87,13 @@ class AvtaleHendelseConsumer(
     }
 
     private fun sjekkOmAvtaleFraArenaSkalBehandles(avtaleHendelse: AvtaleHendelseMelding): Boolean {
-        if (avtaleHendelse.opphav == AvtaleOpphav.ARENA && !mentorAvtaleErKlarForVisningForEksterne(avtaleHendelse, Avtalerolle.DELTAKER)) return false
+        if (!erOpphavArenaOgErKlarforvisning(avtaleHendelse, Avtalerolle.DELTAKER)) return false
         return true
     }
 
     private fun skalArbeidsgivernotifikasjonBehanldes(avtaleHendelsemelding: AvtaleHendelseMelding): Boolean {
         // Arena-sjekk - ikke behandle meldinger på migrerte avtaler fra arena før de er tilgjengelige for arbeidsgiver.
-        if (avtaleHendelsemelding.opphav == AvtaleOpphav.ARENA && !mentorAvtaleErKlarForVisningForEksterne(avtaleHendelsemelding, Avtalerolle.ARBEIDSGIVER)) return false
+        if (!erOpphavArenaOgErKlarforvisning(avtaleHendelsemelding, Avtalerolle.ARBEIDSGIVER)) return false
         // Diskresjonssjekk - Behandle kun kode 6/7 hvis det er statusendring eller annullert
         val erKode6Eller7 = persondataService.hentDiskresjonskode(avtaleHendelsemelding.deltakerFnr).erKode6Eller7()
         if (!erKode6Eller7) return true

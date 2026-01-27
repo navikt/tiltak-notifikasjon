@@ -20,7 +20,7 @@ import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generat
 import no.nav.tiltak.tiltaknotifikasjon.avtale.*
 import no.nav.tiltak.tiltaknotifikasjon.kafka.TiltakNotifikasjonKvitteringProdusent
 import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
-import no.nav.tiltak.tiltaknotifikasjon.utils.mentorAvtaleErKlarForVisningForEksterne
+import no.nav.tiltak.tiltaknotifikasjon.utils.erOpphavArenaOgErKlarforvisning
 import no.nav.tiltak.tiltaknotifikasjon.utils.ulid
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
@@ -62,7 +62,7 @@ class ArbeidsgiverNotifikasjonService(
                 }
 
                 HendelseType.ENDRET -> {
-                    if (avtaleHendelse.opphav == AvtaleOpphav.ARENA && mentorAvtaleErKlarForVisningForEksterne(avtaleHendelse, Avtalerolle.ARBEIDSGIVER)) {
+                    if (erOpphavArenaOgErKlarforvisning(avtaleHendelse, Avtalerolle.ARBEIDSGIVER)) {
                         // Vi skal gjøre det samme som ved opprettelse her, men kun 1 gang, og kun hvis den er klar for visning til eksterne
                         log.info("AG: Avtale endret fra Arena: sjekker om sak finnes, hvis ikke lager sak og oppgave. avtaleId: ${avtaleHendelse.avtaleId}")
                         val eksisterendeSak = arbeidsgivernotifikasjonRepository.findSakByAvtaleId(avtaleHendelse.avtaleId.toString())
@@ -158,7 +158,7 @@ class ArbeidsgiverNotifikasjonService(
                             softDeleteOppgaverOgBeskjeder(notifikasjoner, avtaleHendelse)
                         }
 
-                        if (avtaleHendelse.opphav != AvtaleOpphav.ARENA || mentorAvtaleErKlarForVisningForEksterne(avtaleHendelse, Avtalerolle.ARBEIDSGIVER)) {
+                        if (avtaleHendelse.opphav != AvtaleOpphav.ARENA || erOpphavArenaOgErKlarforvisning(avtaleHendelse, Avtalerolle.ARBEIDSGIVER)) {
                             // Vi sender ikke beskjed om annullering på opphav Arena avtaler. OBS: Kun de som ikke er inngått vil være utilgjengelige for arbeidsgiver.
                             // Send beskjed om annullering (ikke feilregistrert)
                             log.info("AG: Avtale annullert. lager beskjed om annullering. avtaleId: ${avtaleHendelse.avtaleId}")

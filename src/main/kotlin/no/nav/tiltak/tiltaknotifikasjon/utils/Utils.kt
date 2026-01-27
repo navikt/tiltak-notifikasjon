@@ -38,7 +38,9 @@ fun jacksonMapperSomIkkeBryrSegOmEnumCase(): ObjectMapper = jacksonMapperBuilder
     .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
     .build()
 
-fun mentorAvtaleErKlarForVisningForEksterne(avtaleHendelseMelding: AvtaleHendelseMelding, rolle: Avtalerolle): Boolean {
+fun erOpphavArenaOgErKlarforvisning(avtaleHendelseMelding: AvtaleHendelseMelding, rolle: Avtalerolle): Boolean {
+    if (avtaleHendelseMelding.opphav != AvtaleOpphav.ARENA) return true // Denne sjekken gjelder kun for opphav Arena (de skjules for arbeidsgiver)
+
     // DELTAKER
     if (rolle == Avtalerolle.DELTAKER) {
         // Avtalestatus Påbegynt betyr at ikke alle felter er fylt ut enda.
@@ -48,7 +50,6 @@ fun mentorAvtaleErKlarForVisningForEksterne(avtaleHendelseMelding: AvtaleHendels
         throw IllegalArgumentException("Skal ikke brukes for rolle: $rolle")
     }
     // ARBEIDSGIVER
-    if (avtaleHendelseMelding.opphav != AvtaleOpphav.ARENA) return true // Denne sjekken gjelder kun for opphav Arena (de skjules for arbeidsgiver)
 
     val påkrevdeFelter = mapOf(
         "deltakerFornavn" to avtaleHendelseMelding.deltakerFornavn,
