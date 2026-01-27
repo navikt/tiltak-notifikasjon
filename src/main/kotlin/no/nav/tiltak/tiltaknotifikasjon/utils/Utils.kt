@@ -39,7 +39,8 @@ fun jacksonMapperSomIkkeBryrSegOmEnumCase(): ObjectMapper = jacksonMapperBuilder
     .build()
 
 fun erOpphavArenaOgErKlarforvisning(avtaleHendelseMelding: AvtaleHendelseMelding, rolle: Avtalerolle): Boolean {
-    if (avtaleHendelseMelding.opphav != AvtaleOpphav.ARENA) return true // Denne sjekken gjelder kun for opphav Arena (de skjules for arbeidsgiver)
+    if (avtaleHendelseMelding.opphav != AvtaleOpphav.ARENA) return true // Denn e sjekken gjelder kun for opphav Arena (de skjules for arbeidsgiver)
+    if (avtaleHendelseMelding.avtaleInngått != null) return true // Avtale er inngått, vis uansett for alle roller
 
     // DELTAKER
     if (rolle == Avtalerolle.DELTAKER) {
@@ -51,7 +52,7 @@ fun erOpphavArenaOgErKlarforvisning(avtaleHendelseMelding: AvtaleHendelseMelding
     }
     // ARBEIDSGIVER
 
-    val påkrevdeFelter = mapOf(
+    val påkrevdeMentorFelter = mapOf(
         "deltakerFornavn" to avtaleHendelseMelding.deltakerFornavn,
         "deltakerEtternavn" to avtaleHendelseMelding.deltakerEtternavn,
         "deltakerTlf" to avtaleHendelseMelding.deltakerTlf,
@@ -84,7 +85,7 @@ fun erOpphavArenaOgErKlarforvisning(avtaleHendelseMelding: AvtaleHendelseMelding
         "familietilknytningForklaring" to avtaleHendelseMelding.familietilknytningForklaring,
     )
 
-    val tommefelter = påkrevdeFelter
+    val tommefelter = påkrevdeMentorFelter
         .filter { (key, value) -> erTom(value) }
         .keys
 
