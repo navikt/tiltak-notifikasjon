@@ -20,6 +20,7 @@ import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generat
 import no.nav.tiltak.tiltaknotifikasjon.avtale.*
 import no.nav.tiltak.tiltaknotifikasjon.kafka.TiltakNotifikasjonKvitteringProdusent
 import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
+import no.nav.tiltak.tiltaknotifikasjon.utils.erOpphavArenaOgErKlarforvisning
 import no.nav.tiltak.tiltaknotifikasjon.utils.ulid
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
@@ -58,6 +59,28 @@ class ArbeidsgiverNotifikasjonService(
                     val notifikasjonOppgave = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Oppgave, Varslingsformål.GODKJENNING_AV_AVTALE, nyOppgave)
                     arbeidsgivernotifikasjonRepository.save(notifikasjonOppgave)
                     opprettNyOppgave(nyOppgave, notifikasjonOppgave)
+                }
+
+                HendelseType.ENDRET -> {
+                    if (erOpphavArenaOgErKlarforvisning(avtaleHendelse, Avtalerolle.ARBEIDSGIVER)) {
+                        // Vi skal gjøre det samme som ved opprettelse her, men kun 1 gang, og kun hvis den er klar for visning til eksterne
+                        log.info("AG: Avtale endret fra Arena: sjekker om sak finnes, hvis ikke lager sak og oppgave. avtaleId: ${avtaleHendelse.avtaleId}")
+                        val eksisterendeSak = arbeidsgivernotifikasjonRepository.findSakByAvtaleId(avtaleHendelse.avtaleId.toString())
+                        if (eksisterendeSak == null) {
+                            // Sak
+                            val nySak = nySak(avtaleHendelse, altinnProperties)
+                            val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Sak, Varslingsformål.GODKJENNING_AV_AVTALE, nySak)
+                            arbeidsgivernotifikasjonRepository.save(notifikasjon)
+                            opprettNySak(nySak, notifikasjon)
+                            //Oppgave (på saken - via grupperingsId)
+                            val nyOppgave = nyOppgave(avtaleHendelse, altinnProperties)
+                            val notifikasjonOppgave = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Oppgave, Varslingsformål.GODKJENNING_AV_AVTALE, nyOppgave)
+                            arbeidsgivernotifikasjonRepository.save(notifikasjonOppgave)
+                            opprettNyOppgave(nyOppgave, notifikasjonOppgave)
+                        } else {
+                            log.info("AG: Avtale med opphav ARENA endret: sak finnes allerede, gjør ingenting. avtaleId: ${avtaleHendelse.avtaleId}")
+                        }
+                    }
                 }
 
                 HendelseType.GODKJENT_AV_ARBEIDSGIVER,
@@ -135,8 +158,9 @@ class ArbeidsgiverNotifikasjonService(
                             softDeleteOppgaverOgBeskjeder(notifikasjoner, avtaleHendelse)
                         }
 
-                        if (avtaleHendelse.opphav != AvtaleOpphav.ARENA) {
-                            // Send beskjed om annullering
+                        if (avtaleHendelse.opphav != AvtaleOpphav.ARENA || erOpphavArenaOgErKlarforvisning(avtaleHendelse, Avtalerolle.ARBEIDSGIVER)) {
+                            // Vi sender ikke beskjed om annullering på opphav Arena avtaler. OBS: Kun de som ikke er inngått vil være utilgjengelige for arbeidsgiver.
+                            // Send beskjed om annullering (ikke feilregistrert)
                             log.info("AG: Avtale annullert. lager beskjed om annullering. avtaleId: ${avtaleHendelse.avtaleId}")
                             val nyBeskjed = nyBeskjed(avtaleHendelse, altinnProperties)
                             val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Beskjed, Varslingsformål.AVTALE_ANNULLERT, nyBeskjed)
@@ -155,15 +179,6 @@ class ArbeidsgiverNotifikasjonService(
 
                 // BESKJEDER
                 HendelseType.AVTALE_INNGÅTT -> {
-                    if (avtaleHendelse.opphav == AvtaleOpphav.ARENA) {
-                        // Sak
-                        log.info("AG: Avtale med opphav Arena inngått: lager sak. avtaleId: ${avtaleHendelse.avtaleId}")
-                        val nySak = nySak(avtaleHendelse, altinnProperties)
-                        val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Sak, Varslingsformål.AVTALE_INNGÅTT, nySak)
-                        arbeidsgivernotifikasjonRepository.save(notifikasjon)
-                        opprettNySak(nySak, notifikasjon)
-                    }
-
                     log.info("AG: Avtale inngått: lager beskjed. avtaleId: ${avtaleHendelse.avtaleId}")
                     val nyBeskjed = nyBeskjed(avtaleHendelse, altinnProperties)
                     val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Beskjed, Varslingsformål.AVTALE_INNGÅTT, nyBeskjed)
