@@ -24,16 +24,41 @@ data class AvtaleHendelseMelding(
     val deltakerFnr: String,
     val deltakerFornavn: String?,
     val deltakerEtternavn: String?,
+    val deltakerTlf: String?,
+    val arbeidsgiverFornavn: String?,
+    val arbeidsgiverEtternavn: String?,
     val arbeidsgiverTlf: String?,
     val avtaleId: UUID,
     val avtaleNr: Int,
     val sistEndret: Instant,
     val veilederNavIdent: String?,
+    val veilederFornavn: String?,
+    val veilederEtternavn: String?,
+    val veilederTlf: String?,
+    val oppfolging: String?,
+    val tilrettelegging: String?,
     val annullertGrunn: String?,
     val antallDagerPerUke: BigDecimal?,
     val godkjentAvDeltaker: LocalDateTime?,
     val feilregistrert: Boolean,
-    val opphav: AvtaleOpphav?
+    val opphav: AvtaleOpphav?,
+    // Mentor-spesifikke felter
+    val mentorFornavn: String?,
+    val mentorEtternavn: String?,
+    val mentorOppgaver: String?,
+    val mentorAntallTimer: Double?,
+    val mentorTimelonn: Int?,
+    val mentorTlf: String?,
+    // Tilskuddsperiode-felter (mentor)
+    val arbeidsgiverKontonummer: String?,
+    val feriepengesats: BigDecimal?,
+    val otpSats: BigDecimal?,
+    val arbeidsgiveravgift: BigDecimal?,
+    val mentorValgtLonnstype: String?,
+    val mentorValgtLonnstypeBelop: Int?,
+    // Familietilknytning
+    val harFamilietilknytning: Boolean?,
+    val familietilknytningForklaring: String?,
 )
 
 enum class AvtaleOpphav {
