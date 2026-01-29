@@ -78,6 +78,8 @@ fun AvtaleHendelseMelding.lagArbeidsgivernotifikasjonTekst(erSak: Boolean): Stri
     when (this.hendelseType) {
         HendelseType.OPPRETTET -> if (erSak) NotifikasjonTekst.TILTAK_AVTALE_OPPRETTET_SAK.tekst(this)
             else NotifikasjonTekst.TILTAK_AVTALE_OPPRETTET.tekst(this)
+        HendelseType.ENDRET -> if (erSak) NotifikasjonTekst.TILTAK_AVTALE_ENDRET_SAK.tekst(this)
+            else NotifikasjonTekst.TILTAK_AVTALE_ENDRET.tekst(this)
         HendelseType.AVTALE_INNGÅTT -> if (erSak) NotifikasjonTekst.TILTAK_AVTALE_INNGATT_SAK.tekst(this) else NotifikasjonTekst.TILTAK_AVTALE_INNGATT.tekst(this)
         HendelseType.STILLINGSBESKRIVELSE_ENDRET -> NotifikasjonTekst.TILTAK_STILLINGSBESKRIVELSE_ENDRET.tekst(this)
         HendelseType.MÅL_ENDRET -> NotifikasjonTekst.TILTAK_MÅL_ENDRET.tekst(this)
