@@ -1,13 +1,11 @@
 package no.nav.tiltak.tiltaknotifikasjon.kafka
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import io.getunleash.Unleash
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.ArbeidsgiverNotifikasjonService
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.Arbeidsgivernotifikasjon
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.ArbeidsgivernotifikasjonRepository
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.ArbeidsgivernotifikasjonStatus
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
-import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleOpphav
 import no.nav.tiltak.tiltaknotifikasjon.avtale.Avtalerolle
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.Brukernotifikasjon
@@ -15,8 +13,8 @@ import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.BrukernotifikasjonR
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.BrukernotifikasjonService
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.BrukernotifikasjonStatus
 import no.nav.tiltak.tiltaknotifikasjon.persondata.PersondataService
-import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
 import no.nav.tiltak.tiltaknotifikasjon.utils.erOpphavArenaOgErKlarforvisning
+import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
 import no.nav.tiltak.tiltaknotifikasjon.utils.ulid
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -31,7 +29,6 @@ class AvtaleHendelseConsumer(
     val arbeidsgiverNotifikasjonService: ArbeidsgiverNotifikasjonService,
     val brukernotifikasjonRepository: BrukernotifikasjonRepository,
     val arbeidsgivernotifikasjonRepository: ArbeidsgivernotifikasjonRepository,
-    val unleash: Unleash,
     val persondataService: PersondataService
 ) {
     private val mapper = jacksonMapper()
@@ -44,9 +41,6 @@ class AvtaleHendelseConsumer(
     }
 
     fun behandleBrukernotifikasjon(avtaleHendelse: String) {
-        val togglePå = sjekkToggle("sms-min-side-deltaker")
-        if (!togglePå) return
-
         try {
             val melding: AvtaleHendelseMelding = mapper.readValue(avtaleHendelse)
             if (!sjekkOmAvtaleFraArenaSkalBehandles(melding)) return
@@ -66,9 +60,6 @@ class AvtaleHendelseConsumer(
     }
 
     fun behandleArbeidsgivernotifikasjon(avtaleHendelse: String) {
-        val togglePå = sjekkToggle("arbeidsgivernotifikasjon-med-sak-og-sms")
-        if (!togglePå) return
-
         try {
             val melding: AvtaleHendelseMelding = mapper.readValue(avtaleHendelse)
             if (!skalArbeidsgivernotifikasjonBehanldes(melding)) return
@@ -99,17 +90,6 @@ class AvtaleHendelseConsumer(
         if (!erKode6Eller7) return true
         if (avtaleHendelsemelding.hendelseType == HendelseType.STATUSENDRING || avtaleHendelsemelding.hendelseType == HendelseType.ANNULLERT) return true
         return false
-    }
-
-    private fun sjekkToggle(toggle: String): Boolean {
-        val erSkruddPå = unleash.isEnabled(toggle)
-        if (!erSkruddPå) {
-            log.info("Feature toggle $toggle er skrudd av. Prosesserer ikke melding")
-            return false
-        } else {
-            log.info("Feature toggle $toggle er skrudd på. Prosesserer melding")
-            return true
-        }
     }
 
 }
