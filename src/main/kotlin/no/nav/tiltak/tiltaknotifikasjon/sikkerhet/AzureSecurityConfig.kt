@@ -14,7 +14,7 @@ import org.springframework.web.reactive.function.client.WebClient
 @EnableOAuth2Client(cacheEnabled = true)
 @EnableJwtTokenValidation
 @Configuration
-@Profile("prod-gcp", "dev-gcp", "dockercompose")
+@Profile("prod-gcp", "dev-gcp")
 class AzureSecurityConfig {
     private val log = LoggerFactory.getLogger(javaClass)
 
