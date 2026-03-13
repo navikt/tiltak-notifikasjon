@@ -18,10 +18,13 @@ import java.time.format.DateTimeFormatter
 private val ulidGenerator = ULID()
 fun ulid(): String = ulidGenerator.nextULID()
 
-fun jacksonMapper(): ObjectMapper = jacksonObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+private val cachedJacksonMapper: ObjectMapper = jacksonObjectMapper()
+    .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
     .registerModule(JavaTimeModule())
     .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
     .configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL, true)
+
+fun jacksonMapper(): ObjectMapper = cachedJacksonMapper
 
 fun norskDatoFormat(dato: LocalDate) = dato.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
 

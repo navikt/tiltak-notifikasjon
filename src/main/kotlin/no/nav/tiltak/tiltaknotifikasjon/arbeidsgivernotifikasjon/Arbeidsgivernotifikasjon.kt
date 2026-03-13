@@ -53,15 +53,14 @@ enum class Varslingsformål {
     KONTAKTINFORMASJON_ENDRET,
 }
 
+private fun Arbeidsgivernotifikasjon.parsedAvtaleHendelse(): AvtaleHendelseMelding =
+    jacksonMapper().readValue(this.avtaleMeldingJson)
+
 fun Arbeidsgivernotifikasjon.sendtSms(): Boolean {
-     val avtaleHendelseMelding: AvtaleHendelseMelding = jacksonMapper().readValue(this.avtaleMeldingJson)
-     return avtaleHendelseMelding.hendelseType.skalSendeSmsTilArbeidsgiver() && avtaleHendelseMelding.erArbeidsgiversTlfGyldigNorskMobilnr()
+     val melding = parsedAvtaleHendelse()
+     return melding.hendelseType.skalSendeSmsTilArbeidsgiver() && melding.erArbeidsgiversTlfGyldigNorskMobilnr()
 }
 fun Arbeidsgivernotifikasjon.mottakerTlf(): String? {
-    val avtaleHendelseMelding: AvtaleHendelseMelding = jacksonMapper().readValue(this.avtaleMeldingJson)
-    if (avtaleHendelseMelding.hendelseType.skalSendeSmsTilArbeidsgiver()) {
-        return avtaleHendelseMelding.arbeidsgiverTlf
-    } else {
-        return null
-    }
+    val melding = parsedAvtaleHendelse()
+    return if (melding.hendelseType.skalSendeSmsTilArbeidsgiver()) melding.arbeidsgiverTlf else null
 }

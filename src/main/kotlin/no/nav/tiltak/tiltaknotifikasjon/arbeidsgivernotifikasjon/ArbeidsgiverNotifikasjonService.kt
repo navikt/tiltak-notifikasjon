@@ -2,7 +2,6 @@ package no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon
 
 import com.expediagroup.graphql.client.spring.GraphQLWebClient
 import com.expediagroup.graphql.client.types.GraphQLClientResponse
-import com.fasterxml.jackson.module.kotlin.readValue
 import kotlinx.coroutines.runBlocking
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.*
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.enums.OppgaveTilstand
@@ -428,10 +427,7 @@ class ArbeidsgiverNotifikasjonService(
                     log.error("AG: Fant ikke SAK i DB for sletting. grupperingsId: ${softDeleteSakQuery.variables.grupperingsid}")
                 }
                 // Sett andre notifikasjoner også til slettet. Fager skal ha cascade på soft-delete av sak.
-                arbeidsgivernotifikasjonRepository.findAllbyAvtaleId(avtaleId).filter { it.type == ArbeidsgivernotifikasjonType.Beskjed || it.type == ArbeidsgivernotifikasjonType.Oppgave }.forEach {
-                    it.status = ArbeidsgivernotifikasjonStatus.SLETTET
-                    arbeidsgivernotifikasjonRepository.save(it)
-                }
+                arbeidsgivernotifikasjonRepository.settBeskjederOgOppgaverTilSlettet(avtaleId)
                 return@runBlocking true
 
             } else if (resultat is SakFinnesIkke) {
@@ -593,17 +589,16 @@ class ArbeidsgiverNotifikasjonService(
     }
 
     fun finnesDuplikatMelding(avtaleHendelse: AvtaleHendelseMelding): Boolean {
-        // Sjekker om det finnes behandlede avtaleHendelser i basen som har likt endret tildspunt som den som kommer inn. IDEMPOTENCE-SJEKK
-        arbeidsgivernotifikasjonRepository.findAllbyAvtaleId(avtaleHendelse.avtaleId.toString()).forEach {
-            if (it.status != ArbeidsgivernotifikasjonStatus.SLETTET) {
-                val melding: AvtaleHendelseMelding = jacksonMapper().readValue(it.avtaleMeldingJson)
-                if (melding.sistEndret == avtaleHendelse.sistEndret && melding.hendelseType == avtaleHendelse.hendelseType) {
-                    log.warn("AG: Fant en brukernotifikasjon med samme hendelsetype og sistEndret tidspunkt som allerede er behandlet, avtaleId: ${avtaleHendelse.avtaleId}")
-                    return true
-                }
-            }
+        // Sjekker om det finnes behandlede avtaleHendelser i basen som har likt endret tidspunkt som den som kommer inn. IDEMPOTENCE-SJEKK
+        val erDuplikat = arbeidsgivernotifikasjonRepository.finnesDuplikatMelding(
+            avtaleId = avtaleHendelse.avtaleId.toString(),
+            sistEndret = avtaleHendelse.sistEndret.toString(),
+            hendelseType = avtaleHendelse.hendelseType.name
+        )
+        if (erDuplikat) {
+            log.warn("AG: Fant en brukernotifikasjon med samme hendelsetype og sistEndret tidspunkt som allerede er behandlet, avtaleId: ${avtaleHendelse.avtaleId}")
         }
-        return false
+        return erDuplikat
     }
 
 

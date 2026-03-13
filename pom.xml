@@ -262,6 +262,10 @@
 									<key>defaultNameCase</key>
 									<value>lower</value>
 								</property>
+								<property>
+									<key>parseDialect</key>
+									<value>POSTGRES</value>
+								</property>
 							</properties>
 						</database>
 						<target>
