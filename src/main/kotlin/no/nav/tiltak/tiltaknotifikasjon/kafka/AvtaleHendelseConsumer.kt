@@ -16,7 +16,9 @@ import no.nav.tiltak.tiltaknotifikasjon.persondata.PersondataService
 import no.nav.tiltak.tiltaknotifikasjon.utils.erOpphavArenaOgErKlarforvisning
 import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
 import no.nav.tiltak.tiltaknotifikasjon.utils.ulid
+import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
+import org.slf4j.MDC
 import org.springframework.context.annotation.Profile
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Component
@@ -35,9 +37,23 @@ class AvtaleHendelseConsumer(
     private val log = LoggerFactory.getLogger(javaClass)
 
     @KafkaListener(topics = [Topics.AVTALE_HENDELSE_COMPACT])
-    fun nyAvtaleHendelse(avtaleHendelse: String) {
-        behandleBrukernotifikasjon(avtaleHendelse)
-        behandleArbeidsgivernotifikasjon(avtaleHendelse)
+    fun nyAvtaleHendelse(melding: ConsumerRecord<String, String>) {
+        try {
+            val startTidspunkt = System.currentTimeMillis()
+            MDC.put("avtaleId", melding.key())
+            MDC.put("kafkaOffset", melding.offset().toString())
+
+            val avtaleHendelsemelding = melding.value()
+            behandleBrukernotifikasjon(avtaleHendelsemelding)
+            behandleArbeidsgivernotifikasjon(avtaleHendelsemelding)
+            val sluttTidspunkt = System.currentTimeMillis()
+            log.atInfo()
+                .addKeyValue("behandlingstidMs", sluttTidspunkt - startTidspunkt)
+                .log("Behandlet kafkamelding ${melding.offset()} på ${sluttTidspunkt - startTidspunkt} ms");
+        } finally {
+            MDC.remove("avtaleId")
+            MDC.remove("kafkaOffset")
+        }
     }
 
     fun behandleBrukernotifikasjon(avtaleHendelse: String) {
@@ -45,7 +61,6 @@ class AvtaleHendelseConsumer(
             val melding: AvtaleHendelseMelding = mapper.readValue(avtaleHendelse)
             if (!sjekkOmAvtaleFraArenaSkalBehandles(melding)) return
             brukernotifikasjonService.behandleAvtaleHendelseMelding(melding)
-
         } catch (e: Exception) {
             val brukernotifikasjon = Brukernotifikasjon(
                 id = ulid(),
@@ -78,8 +93,7 @@ class AvtaleHendelseConsumer(
     }
 
     private fun sjekkOmAvtaleFraArenaSkalBehandles(avtaleHendelse: AvtaleHendelseMelding): Boolean {
-        if (!erOpphavArenaOgErKlarforvisning(avtaleHendelse, Avtalerolle.DELTAKER)) return false
-        return true
+        return erOpphavArenaOgErKlarforvisning(avtaleHendelse, Avtalerolle.DELTAKER)
     }
 
     private fun skalArbeidsgivernotifikasjonBehanldes(avtaleHendelsemelding: AvtaleHendelseMelding): Boolean {
