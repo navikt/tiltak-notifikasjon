@@ -59,6 +59,8 @@ class AvtaleHendelseConsumer(
     fun behandleBrukernotifikasjon(avtaleHendelse: String) {
         try {
             val melding: AvtaleHendelseMelding = mapper.readValue(avtaleHendelse)
+            MDC.put("avtaleHendelseType", melding.hendelseType.toString())
+            MDC.put("avtaleStatus", melding.avtaleStatus.toString())
             if (!sjekkOmAvtaleFraArenaSkalBehandles(melding)) return
             brukernotifikasjonService.behandleAvtaleHendelseMelding(melding)
         } catch (e: Exception) {
@@ -71,12 +73,17 @@ class AvtaleHendelseConsumer(
             )
             brukernotifikasjonRepository.save(brukernotifikasjon)
             log.error("Error parsing AvtaleHendelseMelding: ${brukernotifikasjon.id}", e)
+        } finally {
+            MDC.remove("avtaleHendelseType")
+            MDC.remove("avtaleStatus")
         }
     }
 
     fun behandleArbeidsgivernotifikasjon(avtaleHendelse: String) {
         try {
             val melding: AvtaleHendelseMelding = mapper.readValue(avtaleHendelse)
+            MDC.put("avtaleHendelseType", melding.hendelseType.toString())
+            MDC.put("avtaleStatus", melding.avtaleStatus.toString())
             if (!skalArbeidsgivernotifikasjonBehanldes(melding)) return
             arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(melding)
         } catch (e: Exception) {
@@ -89,6 +96,9 @@ class AvtaleHendelseConsumer(
             )
             arbeidsgivernotifikasjonRepository.save(arbeidsgivernotifikasjon)
             log.error("Error parsing AvtaleHendelseMelding for arbeidsgivernotifikasjon: ${arbeidsgivernotifikasjon.id}", e)
+        } finally {
+            MDC.remove("avtaleHendelseType")
+            MDC.remove("avtaleStatus")
         }
     }
 
