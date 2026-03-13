@@ -20,6 +20,9 @@ spring:
       group-id: "tiltak-notifikasjon-1"
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        max.poll.records: 10
+        max.poll.interval.ms: 600000
   datasource:
     url: "jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_DATABASE}?user=${DB_USERNAME}&password=${DB_PASSWORD}"
     hikari:
