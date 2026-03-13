@@ -43,9 +43,13 @@ class AvtaleHendelseConsumer(
             MDC.put("avtaleId", melding.key())
             MDC.put("kafkaOffset", melding.offset().toString())
 
-            val avtaleHendelsemelding = melding.value()
-            behandleBrukernotifikasjon(avtaleHendelsemelding)
-            behandleArbeidsgivernotifikasjon(avtaleHendelsemelding)
+            val avtaleHendelseJson = melding.value()
+            val avtaleHendelseMelding: AvtaleHendelseMelding = mapper.readValue(avtaleHendelseJson)
+            MDC.put("avtaleHendelseType", avtaleHendelseMelding.hendelseType.toString())
+            MDC.put("avtaleStatus", avtaleHendelseMelding.avtaleStatus.toString())
+
+            behandleBrukernotifikasjon(avtaleHendelseJson, avtaleHendelseMelding)
+            behandleArbeidsgivernotifikasjon(avtaleHendelseJson, avtaleHendelseMelding)
             val sluttTidspunkt = System.currentTimeMillis()
             log.atInfo()
                 .addKeyValue("behandlingstidMs", sluttTidspunkt - startTidspunkt)
@@ -53,52 +57,42 @@ class AvtaleHendelseConsumer(
         } finally {
             MDC.remove("avtaleId")
             MDC.remove("kafkaOffset")
+            MDC.remove("avtaleHendelseType")
+            MDC.remove("avtaleStatus")
         }
     }
 
-    fun behandleBrukernotifikasjon(avtaleHendelse: String) {
+    fun behandleBrukernotifikasjon(avtaleHendelseJson: String, melding: AvtaleHendelseMelding) {
         try {
-            val melding: AvtaleHendelseMelding = mapper.readValue(avtaleHendelse)
-            MDC.put("avtaleHendelseType", melding.hendelseType.toString())
-            MDC.put("avtaleStatus", melding.avtaleStatus.toString())
             if (!sjekkOmAvtaleFraArenaSkalBehandles(melding)) return
             brukernotifikasjonService.behandleAvtaleHendelseMelding(melding)
         } catch (e: Exception) {
             val brukernotifikasjon = Brukernotifikasjon(
                 id = ulid(),
-                avtaleMeldingJson = avtaleHendelse,
+                avtaleMeldingJson = avtaleHendelseJson,
                 status = BrukernotifikasjonStatus.FEILET_VED_BEHANDLING,
                 opprettet = Instant.now(),
                 feilmelding = e.message
             )
             brukernotifikasjonRepository.save(brukernotifikasjon)
             log.error("Error parsing AvtaleHendelseMelding: ${brukernotifikasjon.id}", e)
-        } finally {
-            MDC.remove("avtaleHendelseType")
-            MDC.remove("avtaleStatus")
         }
     }
 
-    fun behandleArbeidsgivernotifikasjon(avtaleHendelse: String) {
+    fun behandleArbeidsgivernotifikasjon(avtaleHendelseJson: String, melding: AvtaleHendelseMelding) {
         try {
-            val melding: AvtaleHendelseMelding = mapper.readValue(avtaleHendelse)
-            MDC.put("avtaleHendelseType", melding.hendelseType.toString())
-            MDC.put("avtaleStatus", melding.avtaleStatus.toString())
             if (!skalArbeidsgivernotifikasjonBehanldes(melding)) return
             arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(melding)
         } catch (e: Exception) {
             val arbeidsgivernotifikasjon = Arbeidsgivernotifikasjon(
                 id = ulid(),
-                avtaleMeldingJson = avtaleHendelse,
+                avtaleMeldingJson = avtaleHendelseJson,
                 status = ArbeidsgivernotifikasjonStatus.FEILET_VED_BEHANDLING,
                 opprettetTidspunkt = Instant.now(),
                 feilmelding = e.message
             )
             arbeidsgivernotifikasjonRepository.save(arbeidsgivernotifikasjon)
             log.error("Error parsing AvtaleHendelseMelding for arbeidsgivernotifikasjon: ${arbeidsgivernotifikasjon.id}", e)
-        } finally {
-            MDC.remove("avtaleHendelseType")
-            MDC.remove("avtaleStatus")
         }
     }
 

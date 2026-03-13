@@ -5,9 +5,9 @@ import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.tables.Brukernotifi
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.tables.records.BrukernotifikasjonRecord
 import no.nav.tiltak.tiltaknotifikasjon.kafka.EksternStatusOppdatertStatus
 import org.jooq.DSLContext
+import org.jooq.JSON
+import org.jooq.impl.DSL
 import org.springframework.stereotype.Component
-import java.time.Instant
-import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
 @Component
@@ -78,12 +78,33 @@ class BrukernotifikasjonRepository(val dsl: DSLContext) {
         dsl.deleteFrom(BRUKERNOTIFIKASJON).execute()
     }
 
+    fun finnesAktivOppgaveMedFormål(avtaleId: String, varslingsformål: Varslingsformål): Boolean {
+        return dsl.fetchExists(
+            dsl.selectOne()
+                .from(BRUKERNOTIFIKASJON)
+                .where(BRUKERNOTIFIKASJON.AVTALE_ID.eq(avtaleId))
+                .and(BRUKERNOTIFIKASJON.TYPE.eq(BrukernotifikasjonType.Oppgave.name))
+                .and(BRUKERNOTIFIKASJON.VARSLINGSFORMÅL.eq(varslingsformål.name))
+                .and(BRUKERNOTIFIKASJON.STATUS.ne(BrukernotifikasjonStatus.INAKTIVERT.name))
+        )
+    }
+
+    fun finnesDuplikatMelding(avtaleId: String, sistEndret: String, hendelseType: String): Boolean {
+        return dsl.fetchExists(
+            dsl.selectOne()
+                .from(BRUKERNOTIFIKASJON)
+                .where(BRUKERNOTIFIKASJON.AVTALE_ID.eq(avtaleId))
+                .and(BRUKERNOTIFIKASJON.STATUS.ne(BrukernotifikasjonStatus.INAKTIVERT.name))
+                .and(DSL.field("avtale_melding_json->>'sistEndret'", String::class.java).eq(sistEndret))
+                .and(DSL.field("avtale_melding_json->>'hendelseType'", String::class.java).eq(hendelseType))
+        )
+    }
 
     fun mapToBrukernotifikasjon(record: BrukernotifikasjonRecord): Brukernotifikasjon {
         return Brukernotifikasjon(
             id = record.id,
-            avtaleMeldingJson = record.avtaleMeldingJson,
-            minSideJson = record.minSideJson,
+            avtaleMeldingJson = record.avtaleMeldingJson.data(),
+            minSideJson = record.minSideJson?.data(),
             type = if (record.type != null) enumValueOf<BrukernotifikasjonType>(record.type!!) else null,
             status = enumValueOf<BrukernotifikasjonStatus>(record.status),
             feilmelding = record.feilmelding,
@@ -103,8 +124,8 @@ class BrukernotifikasjonRepository(val dsl: DSLContext) {
     private fun mapToRecord(brukernotifikasjon: Brukernotifikasjon): BrukernotifikasjonRecord {
         return BrukernotifikasjonRecord(
             id = brukernotifikasjon.id,
-            avtaleMeldingJson = brukernotifikasjon.avtaleMeldingJson,
-            minSideJson = brukernotifikasjon.minSideJson,
+            avtaleMeldingJson = JSON.json(brukernotifikasjon.avtaleMeldingJson),
+            minSideJson = brukernotifikasjon.minSideJson?.let { JSON.json(it) },
             type = brukernotifikasjon.type?.name,
             status = brukernotifikasjon.status.name,
             feilmelding = brukernotifikasjon.feilmelding,
