@@ -66,3 +66,5 @@ spec:
   prometheus:
     enabled: true
     path: /internal/actuator/prometheus
+  strategy:
+    type: Recreate
