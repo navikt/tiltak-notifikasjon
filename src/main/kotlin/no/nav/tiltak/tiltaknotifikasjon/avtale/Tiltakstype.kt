@@ -9,7 +9,9 @@ enum class Tiltakstype(val beskrivelse: String, val arbeidsgiverNotifikasjonMerk
     MENTOR(beskrivelse = "Mentor", arbeidsgiverNotifikasjonMerkelapp = "Mentor"),
     INKLUDERINGSTILSKUDD(beskrivelse = "Inkluderingstilskudd", arbeidsgiverNotifikasjonMerkelapp = "Inkluderingstilskudd"),
     SOMMERJOBB(beskrivelse = "Sommerjobb", arbeidsgiverNotifikasjonMerkelapp = "Sommerjobb"),
-    VTAO(beskrivelse = "Varig tilrettelagt arbeid i ordinær virksomhet", arbeidsgiverNotifikasjonMerkelapp = "Varig tilrettelagt arbeid");
+    VTAO(beskrivelse = "Varig tilrettelagt arbeid i ordinær virksomhet", arbeidsgiverNotifikasjonMerkelapp = "Varig tilrettelagt arbeid"),
+    FIREARIG_LONNSTILSKUDD(beskrivelse = "Fireårig lønnstilskudd for unge", arbeidsgiverNotifikasjonMerkelapp = "Fireårig lønnstilskudd");
+
 }
 
 fun Tiltakstype.serviceCode(altinnProperties: AltinnProperties): String {
@@ -21,6 +23,7 @@ fun Tiltakstype.serviceCode(altinnProperties: AltinnProperties): String {
         Tiltakstype.INKLUDERINGSTILSKUDD -> altinnProperties.inkluderingstilskuddServiceCode
         Tiltakstype.SOMMERJOBB -> altinnProperties.sommerjobbServiceCode
         Tiltakstype.VTAO -> altinnProperties.vtaoServiceCode
+        Tiltakstype.FIREARIG_LONNSTILSKUDD -> altinnProperties.ltsMidlertidigServiceCode
     }
 }
 
@@ -33,5 +36,6 @@ fun Tiltakstype.serviceEdition(altinnProperties: AltinnProperties): String {
         Tiltakstype.INKLUDERINGSTILSKUDD -> altinnProperties.inkluderingstilskuddServiceEdition
         Tiltakstype.SOMMERJOBB -> altinnProperties.sommerjobbServiceEdition
         Tiltakstype.VTAO -> altinnProperties.vtaoServiceEdition
+        Tiltakstype.FIREARIG_LONNSTILSKUDD -> altinnProperties.ltsMidlertidigServiceEdition
     }
 }
