@@ -496,12 +496,13 @@ class ArbeidsgiverNotifikasjonService(
                 notifikasjon.responseId = nySakStatusResultat.id
                 notifikasjon.sendtTidspunkt = Instant.now()
                 opprinneligSak.status = saksStatus
-                if (nySakStatusQuery.variables.hardDelete?.nyTid?.den !== null) {
-                    opprinneligSak.hardDeleteSkedulertTidspunkt = LocalDateTime.parse(nySakStatusQuery.variables.hardDelete.nyTid.den)
+
+                val hardDeleteDato = nySakStatusQuery.variables.hardDelete?.nyTid?.den
+                if (hardDeleteDato != null) {
+                    opprinneligSak.hardDeleteSkedulertTidspunkt = LocalDateTime.parse(hardDeleteDato)
                 } else {
                     opprinneligSak.hardDeleteSkedulertTidspunkt = null
                 }
-
                 arbeidsgivernotifikasjonRepository.save(opprinneligSak)
             } else {
                 log.error("AG: Sett sak status til ${nySakStatusQuery.variables.nyStatus} gikk ikke med resultatet: ${response.data?.nyStatusSak}")

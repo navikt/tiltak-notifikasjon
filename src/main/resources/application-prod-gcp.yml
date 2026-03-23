@@ -1,19 +1,13 @@
 tiltak-notifikasjon:
   altinn-tilgangstyring:
-    arbtreningServiceCode: 5332
-    arbtreningServiceEdition: 2
-    ltsMidlertidigServiceCode: 5516
-    ltsMidlertidigServiceEdition: 1
-    ltsVarigServiceCode: 5516
-    ltsVarigServiceEdition: 2
-    sommerjobbServiceCode: 5516
-    sommerjobbServiceEdition: 3
-    mentorServiceCode: 5516
-    mentorServiceEdition: 4
-    inkluderingstilskuddServiceCode: 5516
-    inkluderingstilskuddServiceEdition: 5
-    vtaoServiceCode: 5516
-    vtaoServiceEdition: 6
+    arbeidstrening: nav_tiltak_arbeidstrening
+    midlertidigLonnstilskudd: nav_tiltak_midlertidig-lonnstilskudd
+    varigLonnstilskudd: nav_tiltak_varig-lonnstilskudd
+    sommerjobb: nav_tiltak_sommerjobb
+    mentor: nav_tiltak_mentor
+    inkluderingstilskudd: nav_tiltak_inkluderingstilskudd
+    vtao: nav_tiltak_varig-tilrettelagt-arbeid-ordinaer
+    firearigLonnstilskudd: nav_tiltak_firearig-lonnstilskudd-for-unge
   pdl-api:
     uri: https://pdl-api.prod-fss-pub.nais.io/graphql
     scope: api://prod-fss.pdl.pdl-api/.default

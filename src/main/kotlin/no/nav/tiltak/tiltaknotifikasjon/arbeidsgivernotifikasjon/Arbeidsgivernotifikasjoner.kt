@@ -18,9 +18,8 @@ fun nySak(avtaleHendelseMelding: AvtaleHendelseMelding, altinnProperties: Altinn
         virksomhetsnummer = avtaleHendelseMelding.bedriftNr,
         mottakere = listOf(
             MottakerInput(
-                AltinnMottakerInput(
-                    avtaleHendelseMelding.tiltakstype.serviceCode(altinnProperties),
-                    avtaleHendelseMelding.tiltakstype.serviceEdition(altinnProperties)
+                altinnRessurs = AltinnRessursMottakerInput(
+                    ressursId = avtaleHendelseMelding.tiltakstype.ressurser(altinnProperties)
                 )
             )
         ),
@@ -38,9 +37,8 @@ fun nyOppgave(avtaleHendelseMelding: AvtaleHendelseMelding, altinnProperties: Al
         NyOppgaveInput(
             mottakere = listOf(
                 MottakerInput(
-                    AltinnMottakerInput(
-                        avtaleHendelseMelding.tiltakstype.serviceCode(altinnProperties),
-                        avtaleHendelseMelding.tiltakstype.serviceEdition(altinnProperties)
+                    altinnRessurs = AltinnRessursMottakerInput(
+                        ressursId = avtaleHendelseMelding.tiltakstype.ressurser(altinnProperties)
                     )
                 )
             ), notifikasjon = NotifikasjonInput(
@@ -78,9 +76,8 @@ fun nyBeskjed(avtaleHendelseMelding: AvtaleHendelseMelding, altinnProperties: Al
         NyBeskjedInput(
             mottakere = listOf(
                 MottakerInput(
-                    AltinnMottakerInput(
-                        avtaleHendelseMelding.tiltakstype.serviceCode(altinnProperties),
-                        avtaleHendelseMelding.tiltakstype.serviceEdition(altinnProperties)
+                    altinnRessurs = AltinnRessursMottakerInput(
+                        ressursId = avtaleHendelseMelding.tiltakstype.ressurser(altinnProperties)
                     )
                 )
             ), notifikasjon = NotifikasjonInput(

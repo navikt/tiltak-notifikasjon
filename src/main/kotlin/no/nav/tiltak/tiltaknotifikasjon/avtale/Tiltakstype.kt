@@ -9,29 +9,21 @@ enum class Tiltakstype(val beskrivelse: String, val arbeidsgiverNotifikasjonMerk
     MENTOR(beskrivelse = "Mentor", arbeidsgiverNotifikasjonMerkelapp = "Mentor"),
     INKLUDERINGSTILSKUDD(beskrivelse = "Inkluderingstilskudd", arbeidsgiverNotifikasjonMerkelapp = "Inkluderingstilskudd"),
     SOMMERJOBB(beskrivelse = "Sommerjobb", arbeidsgiverNotifikasjonMerkelapp = "Sommerjobb"),
-    VTAO(beskrivelse = "Varig tilrettelagt arbeid i ordinær virksomhet", arbeidsgiverNotifikasjonMerkelapp = "Varig tilrettelagt arbeid");
+    VTAO(beskrivelse = "Varig tilrettelagt arbeid i ordinær virksomhet", arbeidsgiverNotifikasjonMerkelapp = "Varig tilrettelagt arbeid"),
+    FIREARIG_LONNSTILSKUDD(beskrivelse ="Fireårig lønnstilskudd for unge", arbeidsgiverNotifikasjonMerkelapp = "Lønnstilskudd");
 }
 
-fun Tiltakstype.serviceCode(altinnProperties: AltinnProperties): String {
+fun Tiltakstype.ressurser(altinnProperties: AltinnProperties): String {
     return when (this) {
-        Tiltakstype.ARBEIDSTRENING -> altinnProperties.arbtreningServiceCode
-        Tiltakstype.MIDLERTIDIG_LONNSTILSKUDD -> altinnProperties.ltsMidlertidigServiceCode
-        Tiltakstype.VARIG_LONNSTILSKUDD -> altinnProperties.ltsVarigServiceCode
-        Tiltakstype.MENTOR -> altinnProperties.mentorServiceCode
-        Tiltakstype.INKLUDERINGSTILSKUDD -> altinnProperties.inkluderingstilskuddServiceCode
-        Tiltakstype.SOMMERJOBB -> altinnProperties.sommerjobbServiceCode
-        Tiltakstype.VTAO -> altinnProperties.vtaoServiceCode
+        Tiltakstype.ARBEIDSTRENING -> altinnProperties.arbeidstrening
+        Tiltakstype.MIDLERTIDIG_LONNSTILSKUDD -> altinnProperties.midlertidigLonnstilskudd
+        Tiltakstype.VARIG_LONNSTILSKUDD -> altinnProperties.varigLonnstilskudd
+        Tiltakstype.SOMMERJOBB -> altinnProperties.sommerjobb
+        Tiltakstype.MENTOR -> altinnProperties.mentor
+        Tiltakstype.INKLUDERINGSTILSKUDD -> altinnProperties.inkluderingstilskudd
+        Tiltakstype.VTAO -> altinnProperties.vtao
+        Tiltakstype.FIREARIG_LONNSTILSKUDD -> altinnProperties.firearigLonnstilskudd
     }
 }
 
-fun Tiltakstype.serviceEdition(altinnProperties: AltinnProperties): String {
-    return when (this) {
-        Tiltakstype.ARBEIDSTRENING -> altinnProperties.arbtreningServiceEdition
-        Tiltakstype.MIDLERTIDIG_LONNSTILSKUDD -> altinnProperties.ltsMidlertidigServiceEdition
-        Tiltakstype.VARIG_LONNSTILSKUDD -> altinnProperties.ltsVarigServiceEdition
-        Tiltakstype.MENTOR -> altinnProperties.mentorServiceEdition
-        Tiltakstype.INKLUDERINGSTILSKUDD -> altinnProperties.inkluderingstilskuddServiceEdition
-        Tiltakstype.SOMMERJOBB -> altinnProperties.sommerjobbServiceEdition
-        Tiltakstype.VTAO -> altinnProperties.vtaoServiceEdition
-    }
-}
+
