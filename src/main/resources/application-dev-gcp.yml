@@ -1,13 +1,4 @@
 tiltak-notifikasjon:
-  altinn-tilgangstyring:
-    arbeidstrening: nav_tiltak_arbeidstrening
-    midlertidigLonnstilskudd: nav_tiltak_midlertidig-lonnstilskudd
-    varigLonnstilskudd: nav_tiltak_varig-lonnstilskudd
-    sommerjobb: nav_tiltak_sommerjobb
-    mentor: nav_tiltak_mentor
-    inkluderingstilskudd: nav_tiltak_inkluderingstilskudd
-    vtao: nav_tiltak_varig-tilrettelagt-arbeid-ordinaer
-    firearigLonnstilskudd: nav_tiltak_firearig-lonnstilskudd-for-unge
   pdl-api:
     uri: https://pdl-api.dev-fss-pub.nais.io/graphql
     scope: api://dev-fss.pdl.pdl-api/.default

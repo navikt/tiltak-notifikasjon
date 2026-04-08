@@ -1,7 +1,5 @@
 package no.nav.tiltak.tiltaknotifikasjon.avtale
 
-import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.AltinnProperties
-
 enum class Tiltakstype(val beskrivelse: String, val arbeidsgiverNotifikasjonMerkelapp: String) {
     ARBEIDSTRENING(beskrivelse = "Arbeidstrening", arbeidsgiverNotifikasjonMerkelapp = "Arbeidstrening"),
     MIDLERTIDIG_LONNSTILSKUDD(beskrivelse = "Midlertidig lønnstilskudd", arbeidsgiverNotifikasjonMerkelapp = "Lønnstilskudd"),
@@ -13,16 +11,16 @@ enum class Tiltakstype(val beskrivelse: String, val arbeidsgiverNotifikasjonMerk
     FIREARIG_LONNSTILSKUDD(beskrivelse ="Fireårig lønnstilskudd for unge", arbeidsgiverNotifikasjonMerkelapp = "Lønnstilskudd");
 }
 
-fun Tiltakstype.ressurser(altinnProperties: AltinnProperties): String {
+fun Tiltakstype.ressurser(): String {
     return when (this) {
-        Tiltakstype.ARBEIDSTRENING -> altinnProperties.arbeidstrening
-        Tiltakstype.MIDLERTIDIG_LONNSTILSKUDD -> altinnProperties.midlertidigLonnstilskudd
-        Tiltakstype.VARIG_LONNSTILSKUDD -> altinnProperties.varigLonnstilskudd
-        Tiltakstype.SOMMERJOBB -> altinnProperties.sommerjobb
-        Tiltakstype.MENTOR -> altinnProperties.mentor
-        Tiltakstype.INKLUDERINGSTILSKUDD -> altinnProperties.inkluderingstilskudd
-        Tiltakstype.VTAO -> altinnProperties.vtao
-        Tiltakstype.FIREARIG_LONNSTILSKUDD -> altinnProperties.firearigLonnstilskudd
+        Tiltakstype.ARBEIDSTRENING -> "nav_tiltak_arbeidstrening"
+        Tiltakstype.MIDLERTIDIG_LONNSTILSKUDD -> "nav_tiltak_midlertidig-lonnstilskudd"
+        Tiltakstype.VARIG_LONNSTILSKUDD -> "nav_tiltak_varig-lonnstilskudd"
+        Tiltakstype.SOMMERJOBB -> "nav_tiltak_sommerjobb"
+        Tiltakstype.MENTOR -> "nav_tiltak_mentor"
+        Tiltakstype.INKLUDERINGSTILSKUDD -> "nav_tiltak_inkluderingstilskudd"
+        Tiltakstype.VTAO -> "nav_tiltak_varig-tilrettelagt-arbeid-ordinaer"
+        Tiltakstype.FIREARIG_LONNSTILSKUDD -> "nav_tiltak_firearig-lonnstilskudd-for-unge"
     }
 }
 
