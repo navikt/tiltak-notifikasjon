@@ -11,7 +11,7 @@ enum class Tiltakstype(val beskrivelse: String, val arbeidsgiverNotifikasjonMerk
     FIREARIG_LONNSTILSKUDD(beskrivelse ="Fireårig lønnstilskudd for unge", arbeidsgiverNotifikasjonMerkelapp = "Lønnstilskudd");
 }
 
-fun Tiltakstype.ressurser(): String {
+fun Tiltakstype.altinnRessursId(): String {
     return when (this) {
         Tiltakstype.ARBEIDSTRENING -> "nav_tiltak_arbeidstrening"
         Tiltakstype.MIDLERTIDIG_LONNSTILSKUDD -> "nav_tiltak_midlertidig-lonnstilskudd"
