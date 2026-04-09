@@ -49,7 +49,7 @@ class ArbeidsgiverNotifikasjonService(
                 HendelseType.OPPRETTET -> {
                     log.info("AG: Avtale opprettet: lager sak og oppgave. avtaleId: ${avtaleHendelse.avtaleId}")
                     // Sak
-                    sak(avtaleHendelse)
+                    opprettelseAvNySakogOppgave(avtaleHendelse)
                 }
 
                 HendelseType.ENDRET -> {
@@ -59,7 +59,7 @@ class ArbeidsgiverNotifikasjonService(
                         val eksisterendeSak = arbeidsgivernotifikasjonRepository.findSakByAvtaleId(avtaleHendelse.avtaleId.toString())
                         if (eksisterendeSak == null) {
                             // Sak
-                            sak(avtaleHendelse)
+                            opprettelseAvNySakogOppgave(avtaleHendelse)
                         } else {
                             log.info("AG: Avtale med opphav ARENA endret: sak finnes allerede, gjør ingenting. avtaleId: ${avtaleHendelse.avtaleId}")
                         }
@@ -427,7 +427,7 @@ class ArbeidsgiverNotifikasjonService(
         }
     }
 
-    private fun sak(avtaleHendelse: AvtaleHendelseMelding) {
+    private fun opprettelseAvNySakogOppgave(avtaleHendelse: AvtaleHendelseMelding) {
         val nySak = nySak(avtaleHendelse)
         val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Sak, Varslingsformål.GODKJENNING_AV_AVTALE, nySak)
         arbeidsgivernotifikasjonRepository.save(notifikasjon)
