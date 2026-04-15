@@ -51,6 +51,7 @@ enum class Varslingsformål {
     OPPFØLGING_OG_TILRETTELEGGING_ENDRET,
     TILSKUDDSBEREGNING_ENDRET,
     KONTAKTINFORMASJON_ENDRET,
+    REFUSJON_KLAR,
 }
 
 fun Arbeidsgivernotifikasjon.sendtSms(): Boolean {

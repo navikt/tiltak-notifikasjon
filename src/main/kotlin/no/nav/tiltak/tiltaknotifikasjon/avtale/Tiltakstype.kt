@@ -10,6 +10,13 @@ enum class Tiltakstype(val beskrivelse: String, val arbeidsgiverNotifikasjonMerk
     INKLUDERINGSTILSKUDD(beskrivelse = "Inkluderingstilskudd", arbeidsgiverNotifikasjonMerkelapp = "Inkluderingstilskudd"),
     SOMMERJOBB(beskrivelse = "Sommerjobb", arbeidsgiverNotifikasjonMerkelapp = "Sommerjobb"),
     VTAO(beskrivelse = "Varig tilrettelagt arbeid i ordinær virksomhet", arbeidsgiverNotifikasjonMerkelapp = "Varig tilrettelagt arbeid");
+
+    fun skalVarslesOmRefusjon(): Boolean {
+        return when (this) {
+            SOMMERJOBB, MIDLERTIDIG_LONNSTILSKUDD, VARIG_LONNSTILSKUDD -> true
+            ARBEIDSTRENING, INKLUDERINGSTILSKUDD, VTAO, MENTOR -> false
+        }
+    }
 }
 
 fun Tiltakstype.serviceCode(altinnProperties: AltinnProperties): String {
