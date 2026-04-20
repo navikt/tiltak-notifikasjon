@@ -1,6 +1,5 @@
 package no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
 import no.nav.tiltak.tiltaknotifikasjon.kafka.MinSideProdusent
@@ -117,27 +116,23 @@ class BrukernotifikasjonService(val minSideProdusent: MinSideProdusent, val bruk
     }
 
     fun sjekkOmDetFinnesAktiveOppgaverPåAvtaleMedFormål(avtaleHendelse: AvtaleHendelseMelding, varslingsformål: Varslingsformål): Boolean {
-        brukernotifikasjonRepository.findAllByAvtaleIdAndType(avtaleHendelse.avtaleId.toString(), BrukernotifikasjonType.Oppgave).filter { it.varslingsformål == varslingsformål }.forEach {
-            if (it.status != BrukernotifikasjonStatus.INAKTIVERT) {
-                // Finnes en oppgave på avtalen som ikke er inaktivert
-                log.info("Fant allerede en aktiv brukernotifikasjon oppgave ${it.id} på avtaleId: ${avtaleHendelse.avtaleId} med formål: $varslingsformål")
-                return true
-            }
+        val finnes = brukernotifikasjonRepository.finnesAktivOppgaveMedFormål(avtaleHendelse.avtaleId.toString(), varslingsformål)
+        if (finnes) {
+            log.info("Fant allerede en aktiv brukernotifikasjon oppgave på avtaleId: ${avtaleHendelse.avtaleId} med formål: $varslingsformål")
         }
-        return false
+        return finnes
     }
     fun finnesDuplikatMelding(avtaleHendelse: AvtaleHendelseMelding): Boolean {
-        // Sjekker om det finnes behandlede avtaleHendelser i basen som har likt endret tildspunt som den som kommer inn. Bør ikke skje.
-        brukernotifikasjonRepository.findAllbyAvtaleId(avtaleHendelse.avtaleId.toString()).forEach {
-            if (it.status != BrukernotifikasjonStatus.INAKTIVERT) {
-                val melding: AvtaleHendelseMelding = jacksonMapper().readValue(it.avtaleMeldingJson)
-                if (melding.sistEndret == avtaleHendelse.sistEndret && melding.hendelseType == avtaleHendelse.hendelseType) {
-                    log.warn("Fant en brukernotifikasjon med samme hendelsetype og sistEndret tidspunkt som allerede er behandlet, avtaleId: ${avtaleHendelse.avtaleId}")
-                    return true
-                }
-            }
+        // Sjekker om det finnes behandlede avtaleHendelser i basen som har likt endret tidspunkt som den som kommer inn. Bør ikke skje.
+        val erDuplikat = brukernotifikasjonRepository.finnesDuplikatMelding(
+            avtaleId = avtaleHendelse.avtaleId.toString(),
+            sistEndret = avtaleHendelse.sistEndret.toString(),
+            hendelseType = avtaleHendelse.hendelseType.name
+        )
+        if (erDuplikat) {
+            log.warn("Fant en brukernotifikasjon med samme hendelsetype og sistEndret tidspunkt som allerede er behandlet, avtaleId: ${avtaleHendelse.avtaleId}")
         }
-        return false
+        return erDuplikat
     }
 
     fun nyBrukernotifikasjon(avtaleHendelse: AvtaleHendelseMelding, type: BrukernotifikasjonType, varslingsformål: Varslingsformål?, oppgaveIdOgJson: Pair<String, String>): Brukernotifikasjon =

@@ -4,6 +4,8 @@ import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.tables.Arbeidsgivernotifikasjon.Companion.ARBEIDSGIVERNOTIFIKASJON
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.tables.records.ArbeidsgivernotifikasjonRecord
 import org.jooq.DSLContext
+import org.jooq.JSON
+import org.jooq.impl.DSL
 import org.springframework.stereotype.Component
 import java.time.ZoneOffset
 
@@ -58,8 +60,8 @@ class ArbeidsgivernotifikasjonRepository(val dsl: DSLContext) {
     private fun mapToArbeidsgivernotifikasjon(record: ArbeidsgivernotifikasjonRecord): Arbeidsgivernotifikasjon {
         return Arbeidsgivernotifikasjon(
             id = record.id,
-            avtaleMeldingJson = record.avtaleMeldingJson,
-            arbeidsgivernotifikasjonJson = record.arbeidsgivernotifikasjonJson,
+            avtaleMeldingJson = record.avtaleMeldingJson.data(),
+            arbeidsgivernotifikasjonJson = record.arbeidsgivernotifikasjonJson?.data(),
             type = if (record.type != null) ArbeidsgivernotifikasjonType.valueOf(record.type!!) else null,
             status = enumValueOf<ArbeidsgivernotifikasjonStatus>(record.status),
             bedriftNr = record.bedriftNr,
@@ -79,8 +81,8 @@ class ArbeidsgivernotifikasjonRepository(val dsl: DSLContext) {
     private fun mapToDatabaseRecord(arbeidsgivernotifikasjon: Arbeidsgivernotifikasjon): ArbeidsgivernotifikasjonRecord {
         return ArbeidsgivernotifikasjonRecord(
             id = arbeidsgivernotifikasjon.id,
-            avtaleMeldingJson = arbeidsgivernotifikasjon.avtaleMeldingJson,
-            arbeidsgivernotifikasjonJson = arbeidsgivernotifikasjon.arbeidsgivernotifikasjonJson,
+            avtaleMeldingJson = JSON.json(arbeidsgivernotifikasjon.avtaleMeldingJson),
+            arbeidsgivernotifikasjonJson = arbeidsgivernotifikasjon.arbeidsgivernotifikasjonJson?.let { JSON.json(it) },
             type = arbeidsgivernotifikasjon.type?.name,
             status = arbeidsgivernotifikasjon.status.name,
             bedriftNr = arbeidsgivernotifikasjon.bedriftNr,
@@ -135,5 +137,26 @@ class ArbeidsgivernotifikasjonRepository(val dsl: DSLContext) {
             ?.map { mapToArbeidsgivernotifikasjon(it as ArbeidsgivernotifikasjonRecord) }
     }
 
+    fun finnesDuplikatMelding(avtaleId: String, sistEndret: String, hendelseType: String): Boolean {
+        return dsl.fetchExists(
+            dsl.selectOne()
+                .from(ARBEIDSGIVERNOTIFIKASJON)
+                .where(ARBEIDSGIVERNOTIFIKASJON.AVTALE_ID.eq(avtaleId))
+                .and(ARBEIDSGIVERNOTIFIKASJON.STATUS.ne(ArbeidsgivernotifikasjonStatus.SLETTET.name))
+                .and(DSL.field("avtale_melding_json->>'sistEndret'", String::class.java).eq(sistEndret))
+                .and(DSL.field("avtale_melding_json->>'hendelseType'", String::class.java).eq(hendelseType))
+        )
+    }
+
+    fun settBeskjederOgOppgaverTilSlettet(avtaleId: String) {
+        dsl.update(ARBEIDSGIVERNOTIFIKASJON)
+            .set(ARBEIDSGIVERNOTIFIKASJON.STATUS, ArbeidsgivernotifikasjonStatus.SLETTET.name)
+            .where(ARBEIDSGIVERNOTIFIKASJON.AVTALE_ID.eq(avtaleId))
+            .and(
+                ARBEIDSGIVERNOTIFIKASJON.TYPE.eq(ArbeidsgivernotifikasjonType.Beskjed.name)
+                    .or(ARBEIDSGIVERNOTIFIKASJON.TYPE.eq(ArbeidsgivernotifikasjonType.Oppgave.name))
+            )
+            .execute()
+    }
 
 }
