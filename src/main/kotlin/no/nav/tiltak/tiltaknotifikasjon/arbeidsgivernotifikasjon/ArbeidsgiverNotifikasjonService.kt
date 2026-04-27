@@ -14,6 +14,7 @@ import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generat
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.nyoppgave.NyOppgaveVellykket
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.nysak.NySakVellykket
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.nystatussak.NyStatusSakVellykket
+import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.nystatussak.SakFinnesIkke as NyStatusSakFinnesIkke
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.softdeletenotifikasjon.SoftDeleteNotifikasjonVellykket
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.softdeletesakbygrupperingsid.SakFinnesIkke
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.softdeletesakbygrupperingsid.SoftDeleteSakVellykket
@@ -499,7 +500,12 @@ class ArbeidsgiverNotifikasjonService(
                 }
                 arbeidsgivernotifikasjonRepository.save(opprinneligSak)
             } else {
-                log.error("AG: Sett sak status til ${nySakStatusQuery.variables.nyStatus} gikk ikke med resultatet: ${response.data?.nyStatusSak}")
+                val logMessage = "AG: Sett sak status til ${nySakStatusQuery.variables.nyStatus} gikk ikke med resultatet: $nySakStatusResultat"
+                if (nySakStatusResultat is NyStatusSakFinnesIkke) {
+                    log.info(logMessage)
+                } else {
+                    log.error(logMessage)
+                }
                 val sakResultat = response.data?.nyStatusSak.toString()
                 notifikasjon.feilmelding = sakResultat
                 notifikasjon.status = ArbeidsgivernotifikasjonStatus.FEILET_VED_OPPRETTELSE_HOS_FAGER
