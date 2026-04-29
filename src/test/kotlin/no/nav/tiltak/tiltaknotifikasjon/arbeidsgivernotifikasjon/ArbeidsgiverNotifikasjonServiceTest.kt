@@ -3,10 +3,12 @@ package no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.ninjasquad.springmockk.MockkBean
 import no.nav.tiltak.tiltaknotifikasjon.*
+import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.NyBeskjed
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.NyStatusSak
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleStatus
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
+import no.nav.tiltak.tiltaknotifikasjon.avtale.Tiltakstype
 import no.nav.tiltak.tiltaknotifikasjon.kafka.TiltakNotifikasjonKvitteringProdusent
 import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
 import org.assertj.core.api.Assertions.assertThat
@@ -350,6 +352,46 @@ class ArbeidsgiverNotifikasjonServiceTest {
         assertThat(sak!!.hardDeleteSkedulertTidspunkt!!.isBefore(sak2!!.hardDeleteSkedulertTidspunkt)).isTrue()
 
 
+    }
+
+    @Test
+    fun `skal lage beskjed med varslingsformål REFUSJON_KLAR ved refusjon klar hendelse`() {
+        val avtaleHendelseMelding: AvtaleHendelseMelding = jacksonMapper().readValue(jsonRefusjonKlarMelding)
+        arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding)
+
+        val arbeidsgivernotifikasjoner = arbeidsgivernotifikasjonRepository.findAll()
+        assertThat(arbeidsgivernotifikasjoner).hasSize(1)
+        val beskjed = arbeidsgivernotifikasjoner.first()
+        assertThat(beskjed.type).isEqualTo(ArbeidsgivernotifikasjonType.Beskjed)
+        assertThat(beskjed.varslingsformål).isEqualTo(Varslingsformål.REFUSJON_KLAR)
+    }
+
+    @Test
+    fun `skal ignorere refusjon klar for tiltakstype som ikke er relevant`() {
+        val avtaleHendelseMelding: AvtaleHendelseMelding = jacksonMapper().readValue<AvtaleHendelseMelding>(jsonRefusjonKlarMelding).copy(
+            tiltakstype = Tiltakstype.ARBEIDSTRENING
+        )
+        arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding)
+
+        val arbeidsgivernotifikasjoner = arbeidsgivernotifikasjonRepository.findAll()
+        assertThat(arbeidsgivernotifikasjoner).hasSize(0)
+    }
+
+    @Test
+    fun `skal ha SMS med refusjonstekst ved refusjon klar`() {
+        val avtaleHendelseMelding: AvtaleHendelseMelding = jacksonMapper().readValue(jsonRefusjonKlarMelding)
+        arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding)
+
+        val arbeidsgivernotifikasjoner = arbeidsgivernotifikasjonRepository.findAll()
+        assertThat(arbeidsgivernotifikasjoner).hasSize(1)
+        val beskjed = arbeidsgivernotifikasjoner.first()
+        val nyBeskjed: NyBeskjed = jacksonMapper().readValue(beskjed.arbeidsgivernotifikasjonJson!!)
+        val eksterneVarsler = nyBeskjed.variables.nyBeskjed.eksterneVarsler
+        assertThat(eksterneVarsler).isNotEmpty()
+        val smsTekst = eksterneVarsler!!.first().sms!!.smsTekst
+        assertThat(smsTekst).contains("refusjon")
+        assertThat(smsTekst).contains("tiltak-refusjon.nav.no")
+        assertThat(smsTekst).contains(avtaleHendelseMelding.avtaleNr.toString())
     }
 
 

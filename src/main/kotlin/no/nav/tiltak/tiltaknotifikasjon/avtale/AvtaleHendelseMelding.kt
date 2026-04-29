@@ -59,6 +59,16 @@ data class AvtaleHendelseMelding(
     // Familietilknytning
     val harFamilietilknytning: Boolean?,
     val familietilknytningForklaring: String?,
+    // Refusjon
+    val refusjonKontaktperson: RefusjonKontaktperson?,
+    val fristForGodkjenning: LocalDate?,
+)
+
+data class RefusjonKontaktperson(
+    val refusjonKontaktpersonFornavn: String?,
+    val refusjonKontaktpersonEtternavn: String?,
+    val refusjonKontaktpersonTlf: String?,
+    val ønskerVarslingOmRefusjon: Boolean?,
 )
 
 enum class AvtaleOpphav {
@@ -92,8 +102,11 @@ fun AvtaleHendelseMelding.lagArbeidsgivernotifikasjonTekst(erSak: Boolean): Stri
         HendelseType.ARBEIDSGIVERS_GODKJENNING_OPPHEVET_AV_VEILEDER -> NotifikasjonTekst.TILTAK_GODKJENNINGER_OPPHEVET_AV_VEILEDER.tekst(this)
         HendelseType.KONTAKTINFORMASJON_ENDRET -> NotifikasjonTekst.TILTAK_KONTAKTINFORMASJON_ENDRET.tekst(this)
         HendelseType.ANNULLERT -> NotifikasjonTekst.TILTAK_AVTALE_ANNULLERT.tekst(this)
+        HendelseType.REFUSJON_KLAR -> NotifikasjonTekst.TILTAK_AVTALE_KLAR_REFUSJON.tekst(this)
         else -> {
             throw IllegalArgumentException("HendelseType $hendelseType har ikke definert notifikasjonstekst")
         }
     }
-fun AvtaleHendelseMelding.erArbeidsgiversTlfGyldigNorskMobilnr(): Boolean = arbeidsgiverTlf?.matches(Regex("^(\\+47|0047)?(4|9)\\d{7}$")) ?: false
+fun erGyldigNorskMobilnr(tlf: String?): Boolean = tlf?.matches(Regex("^(\\+47|0047)?(4|9)\\d{7}$")) ?: false
+
+fun AvtaleHendelseMelding.erArbeidsgiversTlfGyldigNorskMobilnr(): Boolean = erGyldigNorskMobilnr(arbeidsgiverTlf)

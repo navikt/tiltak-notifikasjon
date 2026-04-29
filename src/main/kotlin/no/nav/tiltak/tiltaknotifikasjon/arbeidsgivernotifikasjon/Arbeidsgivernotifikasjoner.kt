@@ -113,6 +113,69 @@ fun nyBeskjed(avtaleHendelseMelding: AvtaleHendelseMelding, altinnProperties: Al
 
 }
 
+fun nyBeskjedRefusjon(avtaleHendelseMelding: AvtaleHendelseMelding, altinnProperties: AltinnProperties): NyBeskjed {
+    val smsTekst = lagRefusjonSmsTekst(avtaleHendelseMelding)
+    val eksterneVarsler = lagRefusjonEksterneVarsler(avtaleHendelseMelding, smsTekst)
+
+    val beskjedVariables = NyBeskjed.Variables(
+        NyBeskjedInput(
+            mottakere = listOf(
+                MottakerInput(
+                    AltinnMottakerInput(
+                        avtaleHendelseMelding.tiltakstype.serviceCode(altinnProperties),
+                        avtaleHendelseMelding.tiltakstype.serviceEdition(altinnProperties)
+                    )
+                )
+            ), notifikasjon = NotifikasjonInput(
+                merkelapp = avtaleHendelseMelding.tiltakstype.arbeidsgiverNotifikasjonMerkelapp,
+                tekst = avtaleHendelseMelding.lagArbeidsgivernotifikasjonTekst(false),
+                lenke = lagLink(avtaleHendelseMelding.avtaleId.toString())
+            ), metadata = MetadataInput(
+                virksomhetsnummer = avtaleHendelseMelding.bedriftNr,
+                eksternId = avtaleHendelseMelding.eksternId(),
+                opprettetTidspunkt = Instant.now().toString(),
+                grupperingsid = avtaleHendelseMelding.grupperingsId(),
+                hardDelete = null
+            ),
+            eksterneVarsler = eksterneVarsler
+        )
+    )
+    return NyBeskjed(beskjedVariables)
+}
+
+fun lagRefusjonSmsTekst(avtaleHendelseMelding: AvtaleHendelseMelding): String {
+    val tiltakNavn = avtaleHendelseMelding.tiltakstype.beskrivelse.lowercase()
+    return "Dere kan nå søke om refusjon for tilskudd til $tiltakNavn for avtale med nr: ${avtaleHendelseMelding.avtaleNr}. Frist for å søke er ${avtaleHendelseMelding.fristForGodkjenning ?: "ukjent"}. Søk om refusjon her: https://tiltak-refusjon.nav.no. Hilsen Nav."
+}
+
+fun lagRefusjonEksterneVarsler(avtaleHendelseMelding: AvtaleHendelseMelding, smsTekst: String): List<EksterntVarselInput> {
+    val kontaktperson = avtaleHendelseMelding.refusjonKontaktperson
+    val varsler = mutableListOf<EksterntVarselInput>()
+
+    if (kontaktperson != null && erGyldigNorskMobilnr(kontaktperson.refusjonKontaktpersonTlf)) {
+        if (kontaktperson.ønskerVarslingOmRefusjon == true && avtaleHendelseMelding.erArbeidsgiversTlfGyldigNorskMobilnr()) {
+            varsler.add(smsVarselInput(avtaleHendelseMelding.arbeidsgiverTlf!!, smsTekst))
+        }
+        varsler.add(smsVarselInput(kontaktperson.refusjonKontaktpersonTlf!!, smsTekst))
+    } else if (avtaleHendelseMelding.erArbeidsgiversTlfGyldigNorskMobilnr()) {
+        varsler.add(smsVarselInput(avtaleHendelseMelding.arbeidsgiverTlf!!, smsTekst))
+    }
+
+    return varsler
+}
+
+private fun smsVarselInput(tlf: String, smsTekst: String): EksterntVarselInput {
+    return EksterntVarselInput(
+        sms = EksterntVarselSmsInput(
+            mottaker = SmsMottakerInput(
+                kontaktinfo = SmsKontaktInfoInput(tlf = tlf)
+            ),
+            smsTekst = smsTekst,
+            sendetidspunkt = SendetidspunktInput(Sendevindu.DAGTID_IKKE_SOENDAG)
+        )
+    )
+}
+
 fun nySakStatusAnnullertQuery(sakId: String): NyStatusSak {
     val om12Uker = LocalDateTime.now().plusWeeks(12).toString()
     val nySakStatusVariables = NyStatusSak.Variables(
