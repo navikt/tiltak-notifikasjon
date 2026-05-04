@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.9</version>
+		<version>3.5.13</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>no.nav.tiltak</groupId>
@@ -35,7 +35,7 @@
 		<dependency>
 			<groupId>net.logstash.logback</groupId>
 			<artifactId>logstash-logback-encoder</artifactId>
-			<version>7.4</version>
+			<version>9.0</version>
 		</dependency>
 		<dependency>
 			<groupId>de.huxhorn.sulky</groupId>
@@ -174,7 +174,7 @@
 		<dependency>
 			<groupId>no.nav.team-tiltak</groupId>
 			<artifactId>tiltak-persondata</artifactId>
-			<version>2026.02.05_09.21-4a5e6165dedd</version>
+			<version>2026.04.21_06.19-b62bcf9d7d1d</version>
 		</dependency>
 
 		<dependency>
