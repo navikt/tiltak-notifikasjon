@@ -11,16 +11,15 @@ import java.time.Instant
 import java.time.LocalDateTime
 
 
-fun nySak(avtaleHendelseMelding: AvtaleHendelseMelding, altinnProperties: AltinnProperties): NySak {
+fun nySak(avtaleHendelseMelding: AvtaleHendelseMelding): NySak {
     val variabler = NySak.Variables(
         grupperingsid = avtaleHendelseMelding.grupperingsId(),
         merkelapp = avtaleHendelseMelding.tiltakstype.arbeidsgiverNotifikasjonMerkelapp,
         virksomhetsnummer = avtaleHendelseMelding.bedriftNr,
         mottakere = listOf(
             MottakerInput(
-                AltinnMottakerInput(
-                    avtaleHendelseMelding.tiltakstype.serviceCode(altinnProperties),
-                    avtaleHendelseMelding.tiltakstype.serviceEdition(altinnProperties)
+                altinnRessurs = AltinnRessursMottakerInput(
+                    ressursId = avtaleHendelseMelding.tiltakstype.ressursId,
                 )
             )
         ),
@@ -33,14 +32,13 @@ fun nySak(avtaleHendelseMelding: AvtaleHendelseMelding, altinnProperties: Altinn
     return nySak
 }
 
-fun nyOppgave(avtaleHendelseMelding: AvtaleHendelseMelding, altinnProperties: AltinnProperties): NyOppgave {
+fun nyOppgave(avtaleHendelseMelding: AvtaleHendelseMelding): NyOppgave {
     val oppgaveVariables = NyOppgave.Variables(
         NyOppgaveInput(
             mottakere = listOf(
                 MottakerInput(
-                    AltinnMottakerInput(
-                        avtaleHendelseMelding.tiltakstype.serviceCode(altinnProperties),
-                        avtaleHendelseMelding.tiltakstype.serviceEdition(altinnProperties)
+                    altinnRessurs = AltinnRessursMottakerInput(
+                        ressursId = avtaleHendelseMelding.tiltakstype.ressursId,
                     )
                 )
             ), notifikasjon = NotifikasjonInput(
@@ -73,14 +71,13 @@ fun nyOppgave(avtaleHendelseMelding: AvtaleHendelseMelding, altinnProperties: Al
 fun oppgaveUtført(id: String): OppgaveUtfoert = OppgaveUtfoert(OppgaveUtfoert.Variables(id))
 
 
-fun nyBeskjed(avtaleHendelseMelding: AvtaleHendelseMelding, altinnProperties: AltinnProperties): NyBeskjed {
+fun nyBeskjed(avtaleHendelseMelding: AvtaleHendelseMelding): NyBeskjed {
     val beskjedVariables = NyBeskjed.Variables(
         NyBeskjedInput(
             mottakere = listOf(
                 MottakerInput(
-                    AltinnMottakerInput(
-                        avtaleHendelseMelding.tiltakstype.serviceCode(altinnProperties),
-                        avtaleHendelseMelding.tiltakstype.serviceEdition(altinnProperties)
+                    altinnRessurs = AltinnRessursMottakerInput(
+                        ressursId = avtaleHendelseMelding.tiltakstype.ressursId,
                     )
                 )
             ), notifikasjon = NotifikasjonInput(
