@@ -61,6 +61,7 @@ fun HendelseType.skalSendeSmsTilArbeidsgiver(): Boolean =
         HendelseType.AVTALE_INNGÅTT -> true
         HendelseType.AVTALE_FORLENGET -> true
         HendelseType.AVTALE_FORKORTET -> true
+        HendelseType.REFUSJON_KLAR -> true
         HendelseType.OPPRETTET -> false // Dette lar seg dessverre ikke gjøre, fordi vi ikke har arbeidsgivers tlfnr på dette tidspunktet.
         else -> false
     }

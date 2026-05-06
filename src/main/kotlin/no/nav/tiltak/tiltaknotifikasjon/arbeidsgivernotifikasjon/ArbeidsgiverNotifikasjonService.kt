@@ -278,6 +278,18 @@ class ArbeidsgiverNotifikasjonService(
                     opprettNyBeskjed(nyBeskjed, notifikasjon)
                 }
 
+                HendelseType.REFUSJON_KLAR -> {
+                    if (avtaleHendelse.tiltakstype.skalVarslesOmRefusjon()) {
+                        log.info("AG: Refusjon klar: lager beskjed med SMS. avtaleId: ${avtaleHendelse.avtaleId}")
+                        val nyBeskjed = nyBeskjedRefusjon(avtaleHendelse, altinnProperties)
+                        val notifikasjon = nyArbeidsgivernotifikasjon(avtaleHendelse, ArbeidsgivernotifikasjonType.Beskjed, Varslingsformål.REFUSJON_KLAR, nyBeskjed)
+                        arbeidsgivernotifikasjonRepository.save(notifikasjon)
+                        opprettNyBeskjed(nyBeskjed, notifikasjon)
+                    } else {
+                        log.info("AG: Refusjon klar mottatt for tiltakstype ${avtaleHendelse.tiltakstype}, ignorerer. avtaleId: ${avtaleHendelse.avtaleId}")
+                    }
+                }
+
                 else -> {}
             }
         }
