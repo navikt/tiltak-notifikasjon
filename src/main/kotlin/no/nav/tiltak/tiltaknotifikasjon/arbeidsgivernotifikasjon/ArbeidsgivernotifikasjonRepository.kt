@@ -54,6 +54,15 @@ class ArbeidsgivernotifikasjonRepository(val dsl: DSLContext) {
             ?.map { mapToArbeidsgivernotifikasjon(it as ArbeidsgivernotifikasjonRecord) }
     }
 
+    fun findAllByFeilmelding(feilmelding: String): List<Arbeidsgivernotifikasjon> {
+        return dsl
+            .select()
+            .from(ARBEIDSGIVERNOTIFIKASJON)
+            .where(ARBEIDSGIVERNOTIFIKASJON.FEILMELDING.eq(feilmelding))
+            .fetchInto(ArbeidsgivernotifikasjonRecord::class.java)
+            .map { mapToArbeidsgivernotifikasjon(it as ArbeidsgivernotifikasjonRecord) }
+    }
+
     // Fra DB-record til Arbeidsgivernotifikasjon
     private fun mapToArbeidsgivernotifikasjon(record: ArbeidsgivernotifikasjonRecord): Arbeidsgivernotifikasjon {
         return Arbeidsgivernotifikasjon(
