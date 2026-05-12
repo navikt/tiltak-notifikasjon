@@ -7,3 +7,5 @@ Applikasjonen håndterer notifikasjoner til:
  - Arbeidsgivere via min-side-arbeidsgiver (ikke implementert enda)
 
 Teamet kan kontakes på slack: #arbeidsgiver-tiltak
+
+Testing
