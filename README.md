@@ -8,4 +8,4 @@ Applikasjonen håndterer notifikasjoner til:
 
 Teamet kan kontakes på slack: #arbeidsgiver-tiltak
 
-Verified
+
