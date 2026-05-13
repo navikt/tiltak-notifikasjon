@@ -1,37 +1,14 @@
 package no.nav.tiltak.tiltaknotifikasjon.avtale
 
-import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.AltinnProperties
-
-enum class Tiltakstype(val beskrivelse: String, val arbeidsgiverNotifikasjonMerkelapp: String) {
-    ARBEIDSTRENING(beskrivelse = "Arbeidstrening", arbeidsgiverNotifikasjonMerkelapp = "Arbeidstrening"),
-    MIDLERTIDIG_LONNSTILSKUDD(beskrivelse = "Midlertidig lønnstilskudd", arbeidsgiverNotifikasjonMerkelapp = "Lønnstilskudd"),
-    VARIG_LONNSTILSKUDD(beskrivelse = "Varig lønnstilskudd", arbeidsgiverNotifikasjonMerkelapp = "Lønnstilskudd"),
-    MENTOR(beskrivelse = "Mentor", arbeidsgiverNotifikasjonMerkelapp = "Mentor"),
-    INKLUDERINGSTILSKUDD(beskrivelse = "Inkluderingstilskudd", arbeidsgiverNotifikasjonMerkelapp = "Inkluderingstilskudd"),
-    SOMMERJOBB(beskrivelse = "Sommerjobb", arbeidsgiverNotifikasjonMerkelapp = "Sommerjobb"),
-    VTAO(beskrivelse = "Varig tilrettelagt arbeid i ordinær virksomhet", arbeidsgiverNotifikasjonMerkelapp = "Varig tilrettelagt arbeid");
+enum class Tiltakstype(val beskrivelse: String, val arbeidsgiverNotifikasjonMerkelapp: String, val ressursId: String) {
+    ARBEIDSTRENING(beskrivelse = "Arbeidstrening", arbeidsgiverNotifikasjonMerkelapp = "Arbeidstrening", ressursId = "nav_tiltak_arbeidstrening"),
+    MIDLERTIDIG_LONNSTILSKUDD(beskrivelse = "Midlertidig lønnstilskudd", arbeidsgiverNotifikasjonMerkelapp = "Lønnstilskudd", ressursId = "nav_tiltak_midlertidig-lonnstilskudd"),
+    VARIG_LONNSTILSKUDD(beskrivelse = "Varig lønnstilskudd", arbeidsgiverNotifikasjonMerkelapp = "Lønnstilskudd", ressursId = "nav_tiltak_varig-lonnstilskudd"),
+    MENTOR(beskrivelse = "Mentor", arbeidsgiverNotifikasjonMerkelapp = "Mentor", ressursId = "nav_tiltak_mentor"),
+    INKLUDERINGSTILSKUDD(beskrivelse = "Inkluderingstilskudd", arbeidsgiverNotifikasjonMerkelapp = "Inkluderingstilskudd", ressursId = "nav_tiltak_inkluderingstilskudd"),
+    SOMMERJOBB(beskrivelse = "Sommerjobb", arbeidsgiverNotifikasjonMerkelapp = "Sommerjobb", ressursId = "nav_tiltak_sommerjobb"),
+    VTAO(beskrivelse = "Varig tilrettelagt arbeid i ordinær virksomhet", arbeidsgiverNotifikasjonMerkelapp = "Varig tilrettelagt arbeid", ressursId = "nav_tiltak_varig-tilrettelagt-arbeid-ordinaer"),
+    FIREARIG_LONNSTILSKUDD(beskrivelse = "Fireårig lønnstilskudd for unge", arbeidsgiverNotifikasjonMerkelapp = "Lønnstilskudd", ressursId = "nav_tiltak_firearig-lonnstilskudd-for-unge")
 }
 
-fun Tiltakstype.serviceCode(altinnProperties: AltinnProperties): String {
-    return when (this) {
-        Tiltakstype.ARBEIDSTRENING -> altinnProperties.arbtreningServiceCode
-        Tiltakstype.MIDLERTIDIG_LONNSTILSKUDD -> altinnProperties.ltsMidlertidigServiceCode
-        Tiltakstype.VARIG_LONNSTILSKUDD -> altinnProperties.ltsVarigServiceCode
-        Tiltakstype.MENTOR -> altinnProperties.mentorServiceCode
-        Tiltakstype.INKLUDERINGSTILSKUDD -> altinnProperties.inkluderingstilskuddServiceCode
-        Tiltakstype.SOMMERJOBB -> altinnProperties.sommerjobbServiceCode
-        Tiltakstype.VTAO -> altinnProperties.vtaoServiceCode
-    }
-}
 
-fun Tiltakstype.serviceEdition(altinnProperties: AltinnProperties): String {
-    return when (this) {
-        Tiltakstype.ARBEIDSTRENING -> altinnProperties.arbtreningServiceEdition
-        Tiltakstype.MIDLERTIDIG_LONNSTILSKUDD -> altinnProperties.ltsMidlertidigServiceEdition
-        Tiltakstype.VARIG_LONNSTILSKUDD -> altinnProperties.ltsVarigServiceEdition
-        Tiltakstype.MENTOR -> altinnProperties.mentorServiceEdition
-        Tiltakstype.INKLUDERINGSTILSKUDD -> altinnProperties.inkluderingstilskuddServiceEdition
-        Tiltakstype.SOMMERJOBB -> altinnProperties.sommerjobbServiceEdition
-        Tiltakstype.VTAO -> altinnProperties.vtaoServiceEdition
-    }
-}
