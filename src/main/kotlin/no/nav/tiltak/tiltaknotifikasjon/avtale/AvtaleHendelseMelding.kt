@@ -42,6 +42,8 @@ data class AvtaleHendelseMelding(
     val godkjentAvDeltaker: LocalDateTime?,
     val feilregistrert: Boolean,
     val opphav: AvtaleOpphav?,
+    val versjon: Int,
+    val refusjonKontaktperson: RefusjonKontaktperson?,
     // Mentor-spesifikke felter
     val mentorFornavn: String?,
     val mentorEtternavn: String?,
