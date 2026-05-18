@@ -112,7 +112,7 @@ class AvtaleHendelseConsumer(
         try {
             val avtaleHendelseMelding: AvtaleHendelseMelding = mapper.readValue(melding.value())
 
-            if (unleash.isEnabled("tiltak-notifikasjon-refusjon-kontaktperson")) return // Midlertidig konsumering fra start i RefusjonKontaktpersonConsumer
+            if (unleash.isEnabled("refusjon-kontaktperson-bruker-midlertidig-consumer")) return // Midlertidig konsumering fra start i RefusjonKontaktpersonConsumer
             if (avtaleHendelseMelding.refusjonKontaktperson?.refusjonKontaktpersonTlf == null) return
 
 

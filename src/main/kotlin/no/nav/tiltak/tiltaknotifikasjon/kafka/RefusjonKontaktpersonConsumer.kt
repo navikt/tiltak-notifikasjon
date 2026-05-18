@@ -50,6 +50,7 @@ class RefusjonKontaktpersonConsumer(val refusjonKontaktpersonRepository: Arbeids
     }
 
     private fun skalBehandles(melding: AvtaleHendelseMelding): Boolean {
-        return unleash.isEnabled("tiltak-notifikasjon-refusjon-kontaktperson")
+        // Midlertidig switch. Behandles her fra start frem til alt er lest inn, så tar AvtaleHendelseConsumer over.
+        return unleash.isEnabled("refusjon-kontaktperson-bruker-midlertidig-consumer")
     }
 }
