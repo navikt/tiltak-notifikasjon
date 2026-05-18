@@ -1,11 +1,11 @@
 package no.nav.tiltak.tiltaknotifikasjon.kafka
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.getunleash.Unleash
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.ArbeidsgiverRefusjonKontaktpersonRepository
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.RefusjonKontaktperson
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
-import no.nav.tiltak.tiltaknotifikasjon.utils.ulid
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -15,7 +15,7 @@ import java.time.Instant
 
 @Component
 @Profile("prod-gcp", "dev-gcp", "dockercompose")
-class RefusjonKontaktpersonConsumer(val refusjonKontaktpersonRepository: ArbeidsgiverRefusjonKontaktpersonRepository) {
+class RefusjonKontaktpersonConsumer(val refusjonKontaktpersonRepository: ArbeidsgiverRefusjonKontaktpersonRepository, val unleash: Unleash) {
     private val mapper = jacksonMapper()
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -32,10 +32,9 @@ class RefusjonKontaktpersonConsumer(val refusjonKontaktpersonRepository: Arbeids
 
 
             val refusjonKontaktperson = RefusjonKontaktperson(
-                id = ulid(),
-                refusjonKontaktpersonTlf = avtaleHendelseMelding.refusjonKontaktperson.refusjonKontaktpersonTlf,
-                arbeidsgiverOnskerOgsaVarsling = avtaleHendelseMelding.refusjonKontaktperson.ønskerVarslingOmRefusjon ?: false,
                 avtaleId = avtaleHendelseMelding.avtaleId,
+                refusjonKontaktpersonTlf = avtaleHendelseMelding.refusjonKontaktperson.refusjonKontaktpersonTlf,
+                arbeidsgiverOnskerOgsaVarsling = avtaleHendelseMelding.refusjonKontaktperson.ønskerVarslingOmRefusjon,
                 avtaleInnholdVersjon = avtaleHendelseMelding.versjon,
                 avtaleHendelseType = avtaleHendelseMelding.hendelseType,
                 avtaleHendelseSistEndret = avtaleHendelseMelding.sistEndret,
@@ -51,7 +50,6 @@ class RefusjonKontaktpersonConsumer(val refusjonKontaktpersonRepository: Arbeids
     }
 
     private fun skalBehandles(melding: AvtaleHendelseMelding): Boolean {
-        // TODDO: TOGGLE HER SOM TAR ALT - MEN SOM SWITCHES OVER TIL ORDNÆR CONSUMER
-        return true
+        return unleash.isEnabled("tiltak-notifikasjon-refusjon-kontaktperson")
     }
 }

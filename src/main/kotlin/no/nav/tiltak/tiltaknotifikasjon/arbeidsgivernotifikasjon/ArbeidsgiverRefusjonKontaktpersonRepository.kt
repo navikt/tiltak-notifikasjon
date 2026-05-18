@@ -11,10 +11,9 @@ class ArbeidsgiverRefusjonKontaktpersonRepository(val dsl: DSLContext) {
 
     fun save(refusjonKontaktperson: RefusjonKontaktperson) {
         val record = ArbeidsgiverRefusjonKontaktpersonRecord(
-            id = refusjonKontaktperson.id,
+            avtaleId = refusjonKontaktperson.avtaleId,
             refusjonKontaktpersonTlf = refusjonKontaktperson.refusjonKontaktpersonTlf,
             arbeidsgiverOnskerOgsaVarsling = refusjonKontaktperson.arbeidsgiverOnskerOgsaVarsling,
-            avtaleId = refusjonKontaktperson.avtaleId,
             avtaleInnholdVersjon = refusjonKontaktperson.avtaleInnholdVersjon,
             avtaleHendelseType = refusjonKontaktperson.avtaleHendelseType.name,
             avtaleHendelseSistEndret = refusjonKontaktperson.avtaleHendelseSistEndret.atOffset(ZoneOffset.UTC),

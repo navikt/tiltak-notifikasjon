@@ -1,10 +1,13 @@
 package no.nav.tiltak.tiltaknotifikasjon.kafka
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.getunleash.Unleash
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.ArbeidsgiverNotifikasjonService
+import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.ArbeidsgiverRefusjonKontaktpersonRepository
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.Arbeidsgivernotifikasjon
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.ArbeidsgivernotifikasjonRepository
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.ArbeidsgivernotifikasjonStatus
+import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.RefusjonKontaktperson
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.avtale.Avtalerolle
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
@@ -31,7 +34,9 @@ class AvtaleHendelseConsumer(
     val arbeidsgiverNotifikasjonService: ArbeidsgiverNotifikasjonService,
     val brukernotifikasjonRepository: BrukernotifikasjonRepository,
     val arbeidsgivernotifikasjonRepository: ArbeidsgivernotifikasjonRepository,
-    val persondataService: PersondataService
+    val persondataService: PersondataService,
+    val unleash: Unleash,
+    private val arbeidsgiverRefusjonKontaktpersonRepository: ArbeidsgiverRefusjonKontaktpersonRepository
 ) {
     private val mapper = jacksonMapper()
     private val log = LoggerFactory.getLogger(javaClass)
@@ -43,6 +48,7 @@ class AvtaleHendelseConsumer(
             MDC.put("avtaleId", melding.key())
             MDC.put("kafkaOffset", melding.offset().toString())
 
+            lagreRefusjonKontaktperson(melding)
             val avtaleHendelsemelding = melding.value()
             behandleBrukernotifikasjon(avtaleHendelsemelding)
             behandleArbeidsgivernotifikasjon(avtaleHendelsemelding)
@@ -99,6 +105,32 @@ class AvtaleHendelseConsumer(
         } finally {
             MDC.remove("avtaleHendelseType")
             MDC.remove("avtaleStatus")
+        }
+    }
+
+    fun lagreRefusjonKontaktperson(melding: ConsumerRecord<String, String>) {
+        try {
+            val avtaleHendelseMelding: AvtaleHendelseMelding = mapper.readValue(melding.value())
+
+            if (unleash.isEnabled("tiltak-notifikasjon-refusjon-kontaktperson")) return // Midlertidig konsumering fra start i RefusjonKontaktpersonConsumer
+            if (avtaleHendelseMelding.refusjonKontaktperson?.refusjonKontaktpersonTlf == null) return
+
+
+            val refusjonKontaktperson = RefusjonKontaktperson(
+                avtaleId = avtaleHendelseMelding.avtaleId,
+                refusjonKontaktpersonTlf = avtaleHendelseMelding.refusjonKontaktperson.refusjonKontaktpersonTlf,
+                arbeidsgiverOnskerOgsaVarsling = avtaleHendelseMelding.refusjonKontaktperson.ønskerVarslingOmRefusjon,
+                avtaleInnholdVersjon = avtaleHendelseMelding.versjon,
+                avtaleHendelseType = avtaleHendelseMelding.hendelseType,
+                avtaleHendelseSistEndret = avtaleHendelseMelding.sistEndret,
+                topicOffset = melding.offset(),
+                innlestTidspunkt = Instant.now(),
+            )
+            arbeidsgiverRefusjonKontaktpersonRepository.save(refusjonKontaktperson)
+            log.info("Lagret refusjon kontaktperson for avtale ${avtaleHendelseMelding.avtaleId}, offset ${melding.offset()}")
+        } catch (e: Exception) {
+            log.error("Feil ved konsumering av refusjon kontaktperson, offset ${melding.offset()}", e)
+            throw e
         }
     }
 
