@@ -104,7 +104,7 @@ class AvtaleHendelseConsumer(
 
     fun lagreRefusjonKontaktperson(avtaleHendelseMelding: AvtaleHendelseMelding, offset: Long) {
         try {
-            if (unleash.isEnabled("refusjon-kontaktperson-bruker-midlertidig-consumer")) return // Midlertidig konsumering fra start i RefusjonKontaktpersonConsumer
+            if (!unleash.isEnabled("refusjon-kontaktperson-backfill-ferdig")) return // Backfill håndteres av RefusjonKontaktpersonConsumer
             if (avtaleHendelseMelding.refusjonKontaktperson?.refusjonKontaktpersonTlf == null) return
 
             val refusjonKontaktperson = RefusjonKontaktpersonEntitet(
