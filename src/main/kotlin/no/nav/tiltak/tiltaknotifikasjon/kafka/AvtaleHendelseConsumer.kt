@@ -63,8 +63,8 @@ class AvtaleHendelseConsumer(
         } finally {
             MDC.remove("avtaleId")
             MDC.remove("kafkaOffset")
-            MDC.remove("avtaleId")
-            MDC.remove("kafkaOffset")
+            MDC.remove("avtaleHendelseType")
+            MDC.remove("avtaleStatus")
         }
     }
 
@@ -107,7 +107,6 @@ class AvtaleHendelseConsumer(
             if (unleash.isEnabled("refusjon-kontaktperson-bruker-midlertidig-consumer")) return // Midlertidig konsumering fra start i RefusjonKontaktpersonConsumer
             if (avtaleHendelseMelding.refusjonKontaktperson?.refusjonKontaktpersonTlf == null) return
 
-
             val refusjonKontaktperson = RefusjonKontaktpersonEntitet(
                 avtaleId = avtaleHendelseMelding.avtaleId,
                 refusjonKontaktpersonTlf = avtaleHendelseMelding.refusjonKontaktperson.refusjonKontaktpersonTlf,
@@ -121,8 +120,7 @@ class AvtaleHendelseConsumer(
             arbeidsgiverRefusjonKontaktpersonRepository.save(refusjonKontaktperson)
             log.info("Lagret refusjon kontaktperson for avtale ${avtaleHendelseMelding.avtaleId}, offset ${offset}")
         } catch (e: Exception) {
-            log.error("Feil ved konsumering av refusjon kontaktperson, offset ${offset}", e)
-            throw e
+            log.error("Feil ved lagring av refusjon kontaktperson, offset $offset", e)
         }
     }
 
