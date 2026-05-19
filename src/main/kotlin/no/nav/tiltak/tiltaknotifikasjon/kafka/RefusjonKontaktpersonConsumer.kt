@@ -12,12 +12,14 @@ import org.springframework.context.annotation.Profile
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Component
 import java.time.Instant
+import java.util.concurrent.atomic.AtomicLong
 
 @Component
 @Profile("prod-gcp", "dev-gcp", "dockercompose")
 class RefusjonKontaktpersonConsumer(val refusjonKontaktpersonRepository: ArbeidsgiverRefusjonKontaktpersonRepository, val unleash: Unleash) {
     private val mapper = jacksonMapper()
     private val log = LoggerFactory.getLogger(javaClass)
+    private val antallLagret = AtomicLong(0)
 
     @KafkaListener(topics = [Topics.AVTALE_HENDELSE_COMPACT],
         groupId = "tiltak-notifikasjon-refusjon-kontaktperson-1",
@@ -41,7 +43,10 @@ class RefusjonKontaktpersonConsumer(val refusjonKontaktpersonRepository: Arbeids
                 innlestTidspunkt = Instant.now(),
             )
             refusjonKontaktpersonRepository.save(refusjonKontaktperson)
-            log.info("Lagret refusjon kontaktperson for avtale ${avtaleHendelseMelding.avtaleId}, offset ${melding.offset()}")
+            val count = antallLagret.incrementAndGet()
+            if (count % 100 == 0L) {
+                log.info("Backfill refusjon kontaktperson: $count meldinger lagret, siste offset ${melding.offset()}")
+            }
         } catch (e: Exception) {
             log.error(
                 "Feil ved konsumering av refusjon kontaktperson. Skipper melding fra topic ${melding.topic()}, partition ${melding.partition()}, offset ${melding.offset()}",
