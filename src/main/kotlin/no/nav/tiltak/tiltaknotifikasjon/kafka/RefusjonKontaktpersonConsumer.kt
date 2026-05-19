@@ -3,7 +3,7 @@ package no.nav.tiltak.tiltaknotifikasjon.kafka
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.getunleash.Unleash
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.ArbeidsgiverRefusjonKontaktpersonRepository
-import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.RefusjonKontaktperson
+import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.RefusjonKontaktpersonEntitet
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -31,7 +31,7 @@ class RefusjonKontaktpersonConsumer(val refusjonKontaktpersonRepository: Arbeids
             if (avtaleHendelseMelding.refusjonKontaktperson?.refusjonKontaktpersonTlf == null) return
 
 
-            val refusjonKontaktperson = RefusjonKontaktperson(
+            val refusjonKontaktperson = RefusjonKontaktpersonEntitet(
                 avtaleId = avtaleHendelseMelding.avtaleId,
                 refusjonKontaktpersonTlf = avtaleHendelseMelding.refusjonKontaktperson.refusjonKontaktpersonTlf,
                 arbeidsgiverOnskerOgsaVarsling = avtaleHendelseMelding.refusjonKontaktperson.ønskerVarslingOmRefusjon,

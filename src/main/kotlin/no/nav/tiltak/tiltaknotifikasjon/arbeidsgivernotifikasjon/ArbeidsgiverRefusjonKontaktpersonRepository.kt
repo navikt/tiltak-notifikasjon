@@ -10,7 +10,7 @@ import java.time.ZoneOffset
 @Component
 class ArbeidsgiverRefusjonKontaktpersonRepository(val dsl: DSLContext) {
 
-    fun save(refusjonKontaktperson: RefusjonKontaktperson) {
+    fun save(refusjonKontaktperson: RefusjonKontaktpersonEntitet) {
         val record = ArbeidsgiverRefusjonKontaktpersonRecord(
             id = ulid(),
             avtaleId = refusjonKontaktperson.avtaleId,

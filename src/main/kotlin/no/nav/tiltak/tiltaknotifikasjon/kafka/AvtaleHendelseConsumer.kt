@@ -7,7 +7,7 @@ import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.ArbeidsgiverRef
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.Arbeidsgivernotifikasjon
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.ArbeidsgivernotifikasjonRepository
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.ArbeidsgivernotifikasjonStatus
-import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.RefusjonKontaktperson
+import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.RefusjonKontaktpersonEntitet
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.avtale.Avtalerolle
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
@@ -116,7 +116,7 @@ class AvtaleHendelseConsumer(
             if (avtaleHendelseMelding.refusjonKontaktperson?.refusjonKontaktpersonTlf == null) return
 
 
-            val refusjonKontaktperson = RefusjonKontaktperson(
+            val refusjonKontaktperson = RefusjonKontaktpersonEntitet(
                 avtaleId = avtaleHendelseMelding.avtaleId,
                 refusjonKontaktpersonTlf = avtaleHendelseMelding.refusjonKontaktperson.refusjonKontaktpersonTlf,
                 arbeidsgiverOnskerOgsaVarsling = avtaleHendelseMelding.refusjonKontaktperson.ønskerVarslingOmRefusjon,

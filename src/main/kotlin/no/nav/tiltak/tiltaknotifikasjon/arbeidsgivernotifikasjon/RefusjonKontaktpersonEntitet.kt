@@ -4,7 +4,7 @@ import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
 import java.time.Instant
 import java.util.UUID
 
-data class RefusjonKontaktperson(
+data class RefusjonKontaktpersonEntitet(
     val avtaleId: UUID,
     val refusjonKontaktpersonTlf: String,
     val arbeidsgiverOnskerOgsaVarsling: Boolean?,
