@@ -48,10 +48,14 @@ class AvtaleHendelseConsumer(
             MDC.put("avtaleId", melding.key())
             MDC.put("kafkaOffset", melding.offset().toString())
 
-            lagreRefusjonKontaktperson(melding)
-            val avtaleHendelsemelding = melding.value()
-            behandleBrukernotifikasjon(avtaleHendelsemelding)
-            behandleArbeidsgivernotifikasjon(avtaleHendelsemelding)
+            val avtaleHendelseJson = melding.value()
+            val avtaleHendelsemelding: AvtaleHendelseMelding = mapper.readValue(avtaleHendelseJson)
+            MDC.put("avtaleHendelseType", avtaleHendelsemelding.hendelseType.toString())
+            MDC.put("avtaleStatus", avtaleHendelsemelding.avtaleStatus.toString())
+
+            lagreRefusjonKontaktperson(avtaleHendelsemelding, melding.offset())
+            behandleBrukernotifikasjon(avtaleHendelsemelding, avtaleHendelseJson)
+            behandleArbeidsgivernotifikasjon(avtaleHendelsemelding, avtaleHendelseJson)
             val sluttTidspunkt = System.currentTimeMillis()
             log.atInfo()
                 .addKeyValue("behandlingstidMs", sluttTidspunkt - startTidspunkt)
@@ -62,17 +66,14 @@ class AvtaleHendelseConsumer(
         }
     }
 
-    fun behandleBrukernotifikasjon(avtaleHendelse: String) {
+    fun behandleBrukernotifikasjon(avtaleHendelse: AvtaleHendelseMelding, avtaleHendelseJson: String) {
         try {
-            val melding: AvtaleHendelseMelding = mapper.readValue(avtaleHendelse)
-            MDC.put("avtaleHendelseType", melding.hendelseType.toString())
-            MDC.put("avtaleStatus", melding.avtaleStatus.toString())
-            if (!sjekkOmAvtaleFraArenaSkalBehandles(melding)) return
-            brukernotifikasjonService.behandleAvtaleHendelseMelding(melding)
+            if (!sjekkOmAvtaleFraArenaSkalBehandles(avtaleHendelse)) return
+            brukernotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelse)
         } catch (e: Exception) {
             val brukernotifikasjon = Brukernotifikasjon(
                 id = ulid(),
-                avtaleMeldingJson = avtaleHendelse,
+                avtaleMeldingJson = avtaleHendelseJson,
                 status = BrukernotifikasjonStatus.FEILET_VED_BEHANDLING,
                 opprettet = Instant.now(),
                 feilmelding = e.message
@@ -85,17 +86,14 @@ class AvtaleHendelseConsumer(
         }
     }
 
-    fun behandleArbeidsgivernotifikasjon(avtaleHendelse: String) {
+    fun behandleArbeidsgivernotifikasjon(avtaleHendelse: AvtaleHendelseMelding, avtaleHendelseJson: String) {
         try {
-            val melding: AvtaleHendelseMelding = mapper.readValue(avtaleHendelse)
-            MDC.put("avtaleHendelseType", melding.hendelseType.toString())
-            MDC.put("avtaleStatus", melding.avtaleStatus.toString())
-            if (!skalArbeidsgivernotifikasjonBehanldes(melding)) return
-            arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(melding)
+            if (!skalArbeidsgivernotifikasjonBehanldes(avtaleHendelse)) return
+            arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelse)
         } catch (e: Exception) {
             val arbeidsgivernotifikasjon = Arbeidsgivernotifikasjon(
                 id = ulid(),
-                avtaleMeldingJson = avtaleHendelse,
+                avtaleMeldingJson = avtaleHendelseJson,
                 status = ArbeidsgivernotifikasjonStatus.FEILET_VED_BEHANDLING,
                 opprettetTidspunkt = Instant.now(),
                 feilmelding = e.message
@@ -108,10 +106,8 @@ class AvtaleHendelseConsumer(
         }
     }
 
-    fun lagreRefusjonKontaktperson(melding: ConsumerRecord<String, String>) {
+    fun lagreRefusjonKontaktperson(avtaleHendelseMelding: AvtaleHendelseMelding, offset: Long) {
         try {
-            val avtaleHendelseMelding: AvtaleHendelseMelding = mapper.readValue(melding.value())
-
             if (unleash.isEnabled("refusjon-kontaktperson-bruker-midlertidig-consumer")) return // Midlertidig konsumering fra start i RefusjonKontaktpersonConsumer
             if (avtaleHendelseMelding.refusjonKontaktperson?.refusjonKontaktpersonTlf == null) return
 
@@ -123,13 +119,13 @@ class AvtaleHendelseConsumer(
                 avtaleInnholdVersjon = avtaleHendelseMelding.versjon,
                 avtaleHendelseType = avtaleHendelseMelding.hendelseType,
                 avtaleHendelseSistEndret = avtaleHendelseMelding.sistEndret,
-                topicOffset = melding.offset(),
+                topicOffset = offset,
                 innlestTidspunkt = Instant.now(),
             )
             arbeidsgiverRefusjonKontaktpersonRepository.save(refusjonKontaktperson)
-            log.info("Lagret refusjon kontaktperson for avtale ${avtaleHendelseMelding.avtaleId}, offset ${melding.offset()}")
+            log.info("Lagret refusjon kontaktperson for avtale ${avtaleHendelseMelding.avtaleId}, offset ${offset}")
         } catch (e: Exception) {
-            log.error("Feil ved konsumering av refusjon kontaktperson, offset ${melding.offset()}", e)
+            log.error("Feil ved konsumering av refusjon kontaktperson, offset ${offset}", e)
             throw e
         }
     }
