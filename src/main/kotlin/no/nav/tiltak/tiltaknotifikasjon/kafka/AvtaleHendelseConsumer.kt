@@ -60,7 +60,14 @@ class AvtaleHendelseConsumer(
             log.atInfo()
                 .addKeyValue("behandlingstidMs", sluttTidspunkt - startTidspunkt)
                 .log("Behandlet kafkamelding ${melding.offset()} på ${sluttTidspunkt - startTidspunkt} ms");
-        } finally {
+        } catch (e: Exception) {
+            log.error("Feil ved behandling/serialisering av avtalehendelsemelding. " +
+                    "Skipper melding fra topic ${melding.topic()}, " +
+                    "partition ${melding.partition()}, " +
+                    "offset ${melding.offset()}",
+                e)
+        }
+        finally {
             MDC.remove("avtaleId")
             MDC.remove("kafkaOffset")
             MDC.remove("avtaleHendelseType")
