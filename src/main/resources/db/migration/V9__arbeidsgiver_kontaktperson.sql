@@ -1,6 +1,7 @@
 create table arbeidsgiver_refusjon_kontaktperson
 (
-    avtale_id                         uuid primary key,
+    id                                varchar primary key,
+    avtale_id                         uuid unique              not null,
     refusjon_kontaktperson_tlf        varchar                  not null,
     arbeidsgiver_onsker_ogsa_varsling boolean,
     avtale_innhold_versjon            integer                  not null,

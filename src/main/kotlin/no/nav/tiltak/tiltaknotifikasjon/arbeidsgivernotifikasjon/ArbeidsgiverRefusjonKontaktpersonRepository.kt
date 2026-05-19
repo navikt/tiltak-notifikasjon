@@ -2,6 +2,7 @@ package no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon
 
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.tables.ArbeidsgiverRefusjonKontaktperson.Companion.ARBEIDSGIVER_REFUSJON_KONTAKTPERSON
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.tables.records.ArbeidsgiverRefusjonKontaktpersonRecord
+import no.nav.tiltak.tiltaknotifikasjon.utils.ulid
 import org.jooq.DSLContext
 import org.springframework.stereotype.Component
 import java.time.ZoneOffset
@@ -11,6 +12,7 @@ class ArbeidsgiverRefusjonKontaktpersonRepository(val dsl: DSLContext) {
 
     fun save(refusjonKontaktperson: RefusjonKontaktperson) {
         val record = ArbeidsgiverRefusjonKontaktpersonRecord(
+            id = ulid(),
             avtaleId = refusjonKontaktperson.avtaleId,
             refusjonKontaktpersonTlf = refusjonKontaktperson.refusjonKontaktpersonTlf,
             arbeidsgiverOnskerOgsaVarsling = refusjonKontaktperson.arbeidsgiverOnskerOgsaVarsling,
@@ -23,8 +25,13 @@ class ArbeidsgiverRefusjonKontaktpersonRepository(val dsl: DSLContext) {
         dsl
             .insertInto(ARBEIDSGIVER_REFUSJON_KONTAKTPERSON)
             .set(record)
-            .onDuplicateKeyUpdate()
-            .set(record)
+            .onConflict(ARBEIDSGIVER_REFUSJON_KONTAKTPERSON.AVTALE_ID)
+            .doUpdate()
+            // Oppdater alle felt unntatt id og avtale_id ved konflikt
+            .set(record.apply {
+                changed(ARBEIDSGIVER_REFUSJON_KONTAKTPERSON.ID, false)
+                changed(ARBEIDSGIVER_REFUSJON_KONTAKTPERSON.AVTALE_ID, false)
+            })
             .execute()
     }
 }
