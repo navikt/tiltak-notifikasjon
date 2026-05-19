@@ -63,6 +63,8 @@ class AvtaleHendelseConsumer(
         } finally {
             MDC.remove("avtaleId")
             MDC.remove("kafkaOffset")
+            MDC.remove("avtaleId")
+            MDC.remove("kafkaOffset")
         }
     }
 
@@ -80,9 +82,6 @@ class AvtaleHendelseConsumer(
             )
             brukernotifikasjonRepository.save(brukernotifikasjon)
             log.error("Error parsing AvtaleHendelseMelding: ${brukernotifikasjon.id}", e)
-        } finally {
-            MDC.remove("avtaleHendelseType")
-            MDC.remove("avtaleStatus")
         }
     }
 
@@ -100,9 +99,6 @@ class AvtaleHendelseConsumer(
             )
             arbeidsgivernotifikasjonRepository.save(arbeidsgivernotifikasjon)
             log.error("Error parsing AvtaleHendelseMelding for arbeidsgivernotifikasjon: ${arbeidsgivernotifikasjon.id}", e)
-        } finally {
-            MDC.remove("avtaleHendelseType")
-            MDC.remove("avtaleStatus")
         }
     }
 
