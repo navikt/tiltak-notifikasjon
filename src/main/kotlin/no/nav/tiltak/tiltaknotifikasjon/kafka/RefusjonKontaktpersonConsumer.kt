@@ -44,8 +44,10 @@ class RefusjonKontaktpersonConsumer(val refusjonKontaktpersonRepository: Arbeids
             refusjonKontaktpersonRepository.save(refusjonKontaktperson)
             log.info("Lagret refusjon kontaktperson for avtale ${avtaleHendelseMelding.avtaleId}, offset ${melding.offset()}")
         } catch (e: Exception) {
-            log.error("Feil ved konsumering av refusjon kontaktperson, offset ${melding.offset()}", e)
-            throw e
+            log.error(
+                "Feil ved konsumering av refusjon kontaktperson. Skipper melding fra topic ${melding.topic()}, partition ${melding.partition()}, offset ${melding.offset()}",
+                e,
+            )
         }
     }
 
