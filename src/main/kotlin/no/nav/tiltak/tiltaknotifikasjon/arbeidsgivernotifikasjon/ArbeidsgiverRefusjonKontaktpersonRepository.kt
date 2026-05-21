@@ -6,16 +6,18 @@ import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.tables.records.Arbe
 import no.nav.tiltak.tiltaknotifikasjon.utils.ulid
 import org.jooq.DSLContext
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
 import java.time.ZoneOffset
 
 @Component
 class ArbeidsgiverRefusjonKontaktpersonRepository(val dsl: DSLContext) {
 
+    @Transactional
     fun save(refusjonKontaktperson: RefusjonKontaktpersonEntitet) {
-         val idPåEksisterendeEntitet = finnIdPåEksisterende(refusjonKontaktperson)
+        val idPåEksisterendeEntitet = finnIdPåEksisterende(refusjonKontaktperson)
 
         val record = ArbeidsgiverRefusjonKontaktpersonRecord(
-            id = idPåEksisterendeEntitet?: ulid(),
+            id = idPåEksisterendeEntitet ?: ulid(),
             avtaleId = refusjonKontaktperson.avtaleId,
             refusjonKontaktpersonTlf = refusjonKontaktperson.refusjonKontaktpersonTlf,
             arbeidsgiverOnskerOgsaVarsling = refusjonKontaktperson.arbeidsgiverOnskerOgsaVarsling,
@@ -52,11 +54,12 @@ class ArbeidsgiverRefusjonKontaktpersonRepository(val dsl: DSLContext) {
         innlestTidspunkt = record.innlestTidspunkt!!.toInstant(),
     )
 
-    private fun finnIdPåEksisterende(entiet: RefusjonKontaktpersonEntitet): String? {
-        val record = dsl
+    private fun finnIdPåEksisterende(entitet: RefusjonKontaktpersonEntitet): String? {
+        return dsl
             .selectFrom(ARBEIDSGIVER_REFUSJON_KONTAKTPERSON)
-            .where(ARBEIDSGIVER_REFUSJON_KONTAKTPERSON.AVTALE_ID.eq(entiet.avtaleId))
+            .where(ARBEIDSGIVER_REFUSJON_KONTAKTPERSON.AVTALE_ID.eq(entitet.avtaleId))
+            .forUpdate()
             .fetchOne()
-        return record?.id
+            ?.id
     }
 }
