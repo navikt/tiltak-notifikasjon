@@ -88,7 +88,7 @@ class AvtaleHendelseConsumer(
                 feilmelding = e.message
             )
             brukernotifikasjonRepository.save(brukernotifikasjon)
-            log.error("Error parsing AvtaleHendelseMelding: ${brukernotifikasjon.id}", e)
+            log.error("Feil ved behandling AvtaleHendelseMelding for brukernotifikasjon: ${brukernotifikasjon.id}", e)
         }
     }
 
@@ -105,7 +105,7 @@ class AvtaleHendelseConsumer(
                 feilmelding = e.message
             )
             arbeidsgivernotifikasjonRepository.save(arbeidsgivernotifikasjon)
-            log.error("Error parsing AvtaleHendelseMelding for arbeidsgivernotifikasjon: ${arbeidsgivernotifikasjon.id}", e)
+            log.error("Feil ved behandling av AvtaleHendelseMelding for arbeidsgivernotifikasjon: ${arbeidsgivernotifikasjon.id}", e)
         }
     }
 
