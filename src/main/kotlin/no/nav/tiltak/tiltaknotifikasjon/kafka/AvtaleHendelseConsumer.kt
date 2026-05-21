@@ -66,6 +66,7 @@ class AvtaleHendelseConsumer(
                     "partition ${melding.partition()}, " +
                     "offset ${melding.offset()}",
                 e)
+            registrerFeiletMelding(melding.value(), e)
         }
         finally {
             MDC.remove("avtaleId")
@@ -143,6 +144,34 @@ class AvtaleHendelseConsumer(
         if (!erKode6Eller7) return true
         if (avtaleHendelsemelding.hendelseType == HendelseType.STATUSENDRING || avtaleHendelsemelding.hendelseType == HendelseType.ANNULLERT) return true
         return false
+    }
+
+    private fun registrerFeiletMelding(avtaleHendelseJson: String, exception: Exception) {
+        runCatching {
+            val brukernotifikasjon = Brukernotifikasjon(
+                id = ulid(),
+                avtaleMeldingJson = avtaleHendelseJson,
+                status = BrukernotifikasjonStatus.FEILET_VED_BEHANDLING,
+                opprettet = Instant.now(),
+                feilmelding = exception.message
+            )
+            brukernotifikasjonRepository.save(brukernotifikasjon)
+        }.onFailure {
+            log.error("Feil ved lagring av feilet brukernotifikasjon ved toppnivåfeil", it)
+        }
+
+        runCatching {
+            val arbeidsgivernotifikasjon = Arbeidsgivernotifikasjon(
+                id = ulid(),
+                avtaleMeldingJson = avtaleHendelseJson,
+                status = ArbeidsgivernotifikasjonStatus.FEILET_VED_BEHANDLING,
+                opprettetTidspunkt = Instant.now(),
+                feilmelding = exception.message
+            )
+            arbeidsgivernotifikasjonRepository.save(arbeidsgivernotifikasjon)
+        }.onFailure {
+            log.error("Feil ved lagring av feilet arbeidsgivernotifikasjon ved toppnivåfeil", it)
+        }
     }
 
 }
