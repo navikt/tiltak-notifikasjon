@@ -12,8 +12,10 @@ import java.time.ZoneOffset
 class ArbeidsgiverRefusjonKontaktpersonRepository(val dsl: DSLContext) {
 
     fun save(refusjonKontaktperson: RefusjonKontaktpersonEntitet) {
+         val idPåEksisterendeEntitet = finnIdPåEksisterende(refusjonKontaktperson)
+
         val record = ArbeidsgiverRefusjonKontaktpersonRecord(
-            id = ulid(),
+            id = idPåEksisterendeEntitet?: ulid(),
             avtaleId = refusjonKontaktperson.avtaleId,
             refusjonKontaktpersonTlf = refusjonKontaktperson.refusjonKontaktpersonTlf,
             arbeidsgiverOnskerOgsaVarsling = refusjonKontaktperson.arbeidsgiverOnskerOgsaVarsling,
@@ -28,11 +30,7 @@ class ArbeidsgiverRefusjonKontaktpersonRepository(val dsl: DSLContext) {
             .set(record)
             .onConflict(ARBEIDSGIVER_REFUSJON_KONTAKTPERSON.AVTALE_ID)
             .doUpdate()
-            // Oppdater alle felt unntatt id og avtale_id ved konflikt
-            .set(record.apply {
-                changed(ARBEIDSGIVER_REFUSJON_KONTAKTPERSON.ID, false)
-                changed(ARBEIDSGIVER_REFUSJON_KONTAKTPERSON.AVTALE_ID, false)
-            })
+            .set(record)
             .execute()
     }
 
@@ -53,4 +51,12 @@ class ArbeidsgiverRefusjonKontaktpersonRepository(val dsl: DSLContext) {
         topicOffset = record.topicOffset!!,
         innlestTidspunkt = record.innlestTidspunkt!!.toInstant(),
     )
+
+    private fun finnIdPåEksisterende(entiet: RefusjonKontaktpersonEntitet): String? {
+        val record = dsl
+            .selectFrom(ARBEIDSGIVER_REFUSJON_KONTAKTPERSON)
+            .where(ARBEIDSGIVER_REFUSJON_KONTAKTPERSON.AVTALE_ID.eq(entiet.avtaleId))
+            .fetchOne()
+        return record?.id
+    }
 }
