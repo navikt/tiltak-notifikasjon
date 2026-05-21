@@ -6,14 +6,18 @@ import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.tables.records.Arbe
 import no.nav.tiltak.tiltaknotifikasjon.utils.ulid
 import org.jooq.DSLContext
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
 import java.time.ZoneOffset
 
 @Component
 class ArbeidsgiverRefusjonKontaktpersonRepository(val dsl: DSLContext) {
 
+    @Transactional
     fun save(refusjonKontaktperson: RefusjonKontaktpersonEntitet) {
+        val idPåEksisterendeEntitet = finnIdPåEksisterende(refusjonKontaktperson)
+
         val record = ArbeidsgiverRefusjonKontaktpersonRecord(
-            id = ulid(),
+            id = idPåEksisterendeEntitet ?: ulid(),
             avtaleId = refusjonKontaktperson.avtaleId,
             refusjonKontaktpersonTlf = refusjonKontaktperson.refusjonKontaktpersonTlf,
             arbeidsgiverOnskerOgsaVarsling = refusjonKontaktperson.arbeidsgiverOnskerOgsaVarsling,
@@ -28,11 +32,7 @@ class ArbeidsgiverRefusjonKontaktpersonRepository(val dsl: DSLContext) {
             .set(record)
             .onConflict(ARBEIDSGIVER_REFUSJON_KONTAKTPERSON.AVTALE_ID)
             .doUpdate()
-            // Oppdater alle felt unntatt id og avtale_id ved konflikt
-            .set(record.apply {
-                changed(ARBEIDSGIVER_REFUSJON_KONTAKTPERSON.ID, false)
-                changed(ARBEIDSGIVER_REFUSJON_KONTAKTPERSON.AVTALE_ID, false)
-            })
+            .set(record)
             .execute()
     }
 
@@ -53,4 +53,13 @@ class ArbeidsgiverRefusjonKontaktpersonRepository(val dsl: DSLContext) {
         topicOffset = record.topicOffset!!,
         innlestTidspunkt = record.innlestTidspunkt!!.toInstant(),
     )
+
+    private fun finnIdPåEksisterende(entitet: RefusjonKontaktpersonEntitet): String? {
+        return dsl
+            .selectFrom(ARBEIDSGIVER_REFUSJON_KONTAKTPERSON)
+            .where(ARBEIDSGIVER_REFUSJON_KONTAKTPERSON.AVTALE_ID.eq(entitet.avtaleId))
+            .forUpdate()
+            .fetchOne()
+            ?.id
+    }
 }
