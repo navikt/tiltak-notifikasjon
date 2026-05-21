@@ -147,7 +147,8 @@ class AvtaleHendelseConsumer(
     }
 
     private fun registrerFeiletMelding(avtaleHendelseJson: String, exception: Exception) {
-        runCatching {
+        // TODO: Mer sentralisert letterbox pattern her..
+        try {
             val brukernotifikasjon = Brukernotifikasjon(
                 id = ulid(),
                 avtaleMeldingJson = avtaleHendelseJson,
@@ -156,11 +157,11 @@ class AvtaleHendelseConsumer(
                 feilmelding = exception.message
             )
             brukernotifikasjonRepository.save(brukernotifikasjon)
-        }.onFailure {
-            log.error("Feil ved lagring av feilet brukernotifikasjon ved toppnivåfeil", it)
+        } catch (e: Exception) {
+            log.error("Feil ved lagring av feilet brukernotifikasjon ved toppnivåfeil", e)
         }
 
-        runCatching {
+        try {
             val arbeidsgivernotifikasjon = Arbeidsgivernotifikasjon(
                 id = ulid(),
                 avtaleMeldingJson = avtaleHendelseJson,
@@ -169,8 +170,8 @@ class AvtaleHendelseConsumer(
                 feilmelding = exception.message
             )
             arbeidsgivernotifikasjonRepository.save(arbeidsgivernotifikasjon)
-        }.onFailure {
-            log.error("Feil ved lagring av feilet arbeidsgivernotifikasjon ved toppnivåfeil", it)
+        } catch (e: Exception) {
+            log.error("Feil ved lagring av feilet arbeidsgivernotifikasjon ved toppnivåfeil", e)
         }
     }
 
