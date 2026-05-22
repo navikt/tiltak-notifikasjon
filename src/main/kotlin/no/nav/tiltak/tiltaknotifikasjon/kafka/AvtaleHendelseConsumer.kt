@@ -11,7 +11,7 @@ import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.RefusjonKontakt
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.avtale.Avtalerolle
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
-import no.nav.tiltak.tiltaknotifikasjon.avtale.kanOppdatereRefusjonKontakpterson
+import no.nav.tiltak.tiltaknotifikasjon.avtale.kanOppdatereRefusjonKontaktperson
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.Brukernotifikasjon
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.BrukernotifikasjonRepository
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.BrukernotifikasjonService
@@ -115,7 +115,7 @@ class AvtaleHendelseConsumer(
         try {
             if (!unleash.isEnabled("refusjon-kontaktperson-backfill-ferdig")) return // Backfill håndteres av RefusjonKontaktpersonConsumer
             if (avtaleHendelseMelding.refusjonKontaktperson?.refusjonKontaktpersonTlf == null) return
-            if (!avtaleHendelseMelding.hendelseType.kanOppdatereRefusjonKontakpterson()) return
+            if (!avtaleHendelseMelding.hendelseType.kanOppdatereRefusjonKontaktperson()) return
             log.info("Lagrer refusjon kontaktperson for avtale ${avtaleHendelseMelding.avtaleId}, offset $offset")
 
             val refusjonKontaktperson = RefusjonKontaktpersonEntitet(
