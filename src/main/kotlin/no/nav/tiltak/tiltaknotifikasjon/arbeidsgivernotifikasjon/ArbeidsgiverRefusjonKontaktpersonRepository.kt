@@ -1,6 +1,7 @@
 package no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon
 
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
+import no.nav.tiltak.tiltaknotifikasjon.avtale.Tiltakstype
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.tables.ArbeidsgiverRefusjonKontaktperson.Companion.ARBEIDSGIVER_REFUSJON_KONTAKTPERSON
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.tables.records.ArbeidsgiverRefusjonKontaktpersonRecord
 import no.nav.tiltak.tiltaknotifikasjon.utils.ulid
@@ -21,6 +22,8 @@ class ArbeidsgiverRefusjonKontaktpersonRepository(val dsl: DSLContext) {
             avtaleId = refusjonKontaktperson.avtaleId,
             refusjonKontaktpersonTlf = refusjonKontaktperson.refusjonKontaktpersonTlf,
             arbeidsgiverOnskerOgsaVarsling = refusjonKontaktperson.arbeidsgiverOnskerOgsaVarsling,
+            arbeidsgiverTlf = refusjonKontaktperson.arbeidsgiverTlf,
+            tiltakstype = refusjonKontaktperson.tiltakstype.name,
             avtaleInnholdVersjon = refusjonKontaktperson.avtaleInnholdVersjon,
             avtaleHendelseType = refusjonKontaktperson.avtaleHendelseType.name,
             avtaleHendelseSistEndret = refusjonKontaktperson.avtaleHendelseSistEndret.atOffset(ZoneOffset.UTC),
@@ -45,8 +48,10 @@ class ArbeidsgiverRefusjonKontaktpersonRepository(val dsl: DSLContext) {
 
     private fun mapToEntitet(record: ArbeidsgiverRefusjonKontaktpersonRecord) = RefusjonKontaktpersonEntitet(
         avtaleId = record.avtaleId!!,
-        refusjonKontaktpersonTlf = record.refusjonKontaktpersonTlf!!,
+        refusjonKontaktpersonTlf = record.refusjonKontaktpersonTlf,
         arbeidsgiverOnskerOgsaVarsling = record.arbeidsgiverOnskerOgsaVarsling,
+        arbeidsgiverTlf = record.arbeidsgiverTlf,
+        tiltakstype = Tiltakstype.valueOf(record.tiltakstype!!),
         avtaleInnholdVersjon = record.avtaleInnholdVersjon!!,
         avtaleHendelseType = HendelseType.valueOf(record.avtaleHendelseType!!),
         avtaleHendelseSistEndret = record.avtaleHendelseSistEndret!!.toInstant(),
