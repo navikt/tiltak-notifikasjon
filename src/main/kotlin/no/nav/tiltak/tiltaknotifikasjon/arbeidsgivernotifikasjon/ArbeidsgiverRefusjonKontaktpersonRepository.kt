@@ -47,16 +47,16 @@ class ArbeidsgiverRefusjonKontaktpersonRepository(val dsl: DSLContext) {
     }
 
     private fun mapToEntitet(record: ArbeidsgiverRefusjonKontaktpersonRecord) = RefusjonKontaktpersonEntitet(
-        avtaleId = record.avtaleId!!,
+        avtaleId = record.avtaleId,
         refusjonKontaktpersonTlf = record.refusjonKontaktpersonTlf,
         arbeidsgiverOnskerOgsaVarsling = record.arbeidsgiverOnskerOgsaVarsling,
         arbeidsgiverTlf = record.arbeidsgiverTlf,
-        tiltakstype = Tiltakstype.valueOf(record.tiltakstype!!),
-        avtaleInnholdVersjon = record.avtaleInnholdVersjon!!,
-        avtaleHendelseType = HendelseType.valueOf(record.avtaleHendelseType!!),
-        avtaleHendelseSistEndret = record.avtaleHendelseSistEndret!!.toInstant(),
-        topicOffset = record.topicOffset!!,
-        innlestTidspunkt = record.innlestTidspunkt!!.toInstant(),
+        tiltakstype = Tiltakstype.valueOf(record.tiltakstype),
+        avtaleInnholdVersjon = record.avtaleInnholdVersjon,
+        avtaleHendelseType = HendelseType.valueOf(record.avtaleHendelseType),
+        avtaleHendelseSistEndret = record.avtaleHendelseSistEndret.toInstant(),
+        topicOffset = record.topicOffset,
+        innlestTidspunkt = record.innlestTidspunkt.toInstant(),
     )
 
     private fun finnIdPåEksisterende(entitet: RefusjonKontaktpersonEntitet): String? {
