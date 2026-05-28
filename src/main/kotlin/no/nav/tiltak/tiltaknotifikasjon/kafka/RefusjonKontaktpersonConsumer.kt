@@ -28,10 +28,8 @@ class RefusjonKontaktpersonConsumer(val refusjonKontaktpersonRepository: Arbeids
     )
     fun konsumer(melding: ConsumerRecord<String, String>) {
         try {
-            if (!skalBehandles()) return
             val avtaleHendelseMelding: AvtaleHendelseMelding = mapper.readValue(melding.value())
-            if (avtaleHendelseMelding.tiltakstype == Tiltakstype.ARBEIDSTRENING) return
-            if (avtaleHendelseMelding.avtaleInngått == null) return
+            if (!skalBehandles(avtaleHendelseMelding)) return
 
             val refusjonKontaktperson = RefusjonKontaktpersonEntitet(
                 avtaleId = avtaleHendelseMelding.avtaleId,
@@ -58,7 +56,10 @@ class RefusjonKontaktpersonConsumer(val refusjonKontaktpersonRepository: Arbeids
         }
     }
 
-    private fun skalBehandles(): Boolean {
+    private fun skalBehandles(avtaleHendelseMelding: AvtaleHendelseMelding): Boolean {
+        if (avtaleHendelseMelding.tiltakstype == Tiltakstype.ARBEIDSTRENING) return false // arbeidstrening har ikke økonomi
+        if (avtaleHendelseMelding.avtaleInngått == null) return false // refusjonsvarslinger har ingen nytte på ting som ikke er inngått
+        if (avtaleHendelseMelding.arbeidsgiverTlf == null) return false // skal ikke kunne skje på inngått avtale
         // Kjører backfill frem til toggle skrus på, da tar AvtaleHendelseConsumer over
         return !unleash.isEnabled("refusjon-kontaktperson-backfill-ferdig")
     }

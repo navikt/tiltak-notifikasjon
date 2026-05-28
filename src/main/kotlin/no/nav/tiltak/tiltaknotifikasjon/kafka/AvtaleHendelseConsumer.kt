@@ -114,8 +114,9 @@ class AvtaleHendelseConsumer(
     fun lagreRefusjonKontaktperson(avtaleHendelseMelding: AvtaleHendelseMelding, offset: Long) {
         try {
             if (!unleash.isEnabled("refusjon-kontaktperson-backfill-ferdig")) return // Backfill håndteres av RefusjonKontaktpersonConsumer
-            if (avtaleHendelseMelding.tiltakstype == Tiltakstype.ARBEIDSTRENING) return
-            if (avtaleHendelseMelding.avtaleInngått == null) return
+            if (avtaleHendelseMelding.tiltakstype == Tiltakstype.ARBEIDSTRENING) return // arbeidstrening har ikke økonomi
+            if (avtaleHendelseMelding.avtaleInngått == null) return  // refusjonsvarslinger har ingen nytte på ting som ikke er inngått
+            if (avtaleHendelseMelding.arbeidsgiverTlf == null) return // skal ikke kunne skje på inngått avtale
 
             val refusjonKontaktperson = RefusjonKontaktpersonEntitet(
                 avtaleId = avtaleHendelseMelding.avtaleId,
