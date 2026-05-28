@@ -122,7 +122,7 @@ class AvtaleHendelseConsumer(
                 avtaleId = avtaleHendelseMelding.avtaleId,
                 refusjonKontaktpersonTlf = avtaleHendelseMelding.refusjonKontaktperson?.refusjonKontaktpersonTlf,
                 arbeidsgiverOnskerOgsaVarsling = avtaleHendelseMelding.refusjonKontaktperson?.ønskerVarslingOmRefusjon,
-                arbeidsgiverTlf = avtaleHendelseMelding.arbeidsgiverTlf!!,
+                arbeidsgiverTlf = avtaleHendelseMelding.arbeidsgiverTlf,
                 tiltakstype = avtaleHendelseMelding.tiltakstype,
                 avtaleInnholdVersjon = avtaleHendelseMelding.versjon,
                 avtaleHendelseType = avtaleHendelseMelding.hendelseType,
