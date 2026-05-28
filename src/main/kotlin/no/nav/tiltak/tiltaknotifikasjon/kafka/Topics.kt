@@ -6,4 +6,5 @@ object Topics {
     const val BRUKERNOTIFIKASJON_BRUKERVARSEL = "min-side.aapen-brukervarsel-v1"
     const val BRUKERNOTIFIKASJON_HENDELSE = "min-side.aapen-varsel-hendelse-v1"
     const val NOTIFIKASJON_KVITTERING = "team-tiltak.tiltak-notifikasjon-kvittering"
+    const val TILTAK_VARSEL = "arbeidsgiver.tiltak-varsel"
 }
