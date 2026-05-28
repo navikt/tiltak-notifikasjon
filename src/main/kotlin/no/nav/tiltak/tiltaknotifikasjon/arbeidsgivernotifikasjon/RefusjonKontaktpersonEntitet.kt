@@ -9,7 +9,7 @@ data class RefusjonKontaktpersonEntitet(
     val avtaleId: UUID,
     val refusjonKontaktpersonTlf: String?,
     val arbeidsgiverOnskerOgsaVarsling: Boolean?,
-    val arbeidsgiverTlf: String?,
+    val arbeidsgiverTlf: String,
     val tiltakstype: Tiltakstype,
     val avtaleInnholdVersjon: Int,
     val avtaleHendelseType: HendelseType,

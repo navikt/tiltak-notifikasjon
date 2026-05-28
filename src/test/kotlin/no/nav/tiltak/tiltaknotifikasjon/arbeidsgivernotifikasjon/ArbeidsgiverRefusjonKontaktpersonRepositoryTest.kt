@@ -108,7 +108,7 @@ class ArbeidsgiverRefusjonKontaktpersonRepositoryTest {
         avtaleId: UUID = UUID.randomUUID(),
         tlf: String? = "99887766",
         onskerVarsling: Boolean? = true,
-        arbeidsgiverTlf: String? = "44556677",
+        arbeidsgiverTlf: String = "44556677",
         tiltakstype: Tiltakstype = Tiltakstype.MIDLERTIDIG_LONNSTILSKUDD,
         versjon: Int = 1,
     ) = RefusjonKontaktpersonEntitet(

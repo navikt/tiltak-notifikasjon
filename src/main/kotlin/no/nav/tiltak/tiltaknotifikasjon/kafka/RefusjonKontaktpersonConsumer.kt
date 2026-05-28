@@ -31,12 +31,13 @@ class RefusjonKontaktpersonConsumer(val refusjonKontaktpersonRepository: Arbeids
             if (!skalBehandles()) return
             val avtaleHendelseMelding: AvtaleHendelseMelding = mapper.readValue(melding.value())
             if (avtaleHendelseMelding.tiltakstype == Tiltakstype.ARBEIDSTRENING) return
+            if (avtaleHendelseMelding.avtaleInngått == null) return
 
             val refusjonKontaktperson = RefusjonKontaktpersonEntitet(
                 avtaleId = avtaleHendelseMelding.avtaleId,
                 refusjonKontaktpersonTlf = avtaleHendelseMelding.refusjonKontaktperson?.refusjonKontaktpersonTlf,
                 arbeidsgiverOnskerOgsaVarsling = avtaleHendelseMelding.refusjonKontaktperson?.ønskerVarslingOmRefusjon,
-                arbeidsgiverTlf = avtaleHendelseMelding.arbeidsgiverTlf,
+                arbeidsgiverTlf = avtaleHendelseMelding.arbeidsgiverTlf!!,
                 tiltakstype = avtaleHendelseMelding.tiltakstype,
                 avtaleInnholdVersjon = avtaleHendelseMelding.versjon,
                 avtaleHendelseType = avtaleHendelseMelding.hendelseType,

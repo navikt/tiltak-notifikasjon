@@ -115,12 +115,13 @@ class AvtaleHendelseConsumer(
         try {
             if (!unleash.isEnabled("refusjon-kontaktperson-backfill-ferdig")) return // Backfill håndteres av RefusjonKontaktpersonConsumer
             if (avtaleHendelseMelding.tiltakstype == Tiltakstype.ARBEIDSTRENING) return
+            if (avtaleHendelseMelding.avtaleInngått == null) return
 
             val refusjonKontaktperson = RefusjonKontaktpersonEntitet(
                 avtaleId = avtaleHendelseMelding.avtaleId,
                 refusjonKontaktpersonTlf = avtaleHendelseMelding.refusjonKontaktperson?.refusjonKontaktpersonTlf,
                 arbeidsgiverOnskerOgsaVarsling = avtaleHendelseMelding.refusjonKontaktperson?.ønskerVarslingOmRefusjon,
-                arbeidsgiverTlf = avtaleHendelseMelding.arbeidsgiverTlf,
+                arbeidsgiverTlf = avtaleHendelseMelding.arbeidsgiverTlf!!,
                 tiltakstype = avtaleHendelseMelding.tiltakstype,
                 avtaleInnholdVersjon = avtaleHendelseMelding.versjon,
                 avtaleHendelseType = avtaleHendelseMelding.hendelseType,
