@@ -5,6 +5,7 @@ import io.getunleash.Unleash
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.ArbeidsgiverRefusjonKontaktpersonRepository
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.RefusjonKontaktpersonEntitet
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
+import no.nav.tiltak.tiltaknotifikasjon.avtale.Tiltakstype
 import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
@@ -22,20 +23,20 @@ class RefusjonKontaktpersonConsumer(val refusjonKontaktpersonRepository: Arbeids
     private val antallLagret = AtomicLong(0)
 
     @KafkaListener(topics = [Topics.AVTALE_HENDELSE_COMPACT],
-        groupId = "tiltak-notifikasjon-refusjon-kontaktperson-2",
+        groupId = "tiltak-notifikasjon-refusjon-kontaktperson-3",
         properties = ["auto.offset.reset=earliest"], // Hmm, trodde ikke dette var nødvendig.. tydeligvis.
     )
     fun konsumer(melding: ConsumerRecord<String, String>) {
         try {
-            if (!skalBehandles()) return
             val avtaleHendelseMelding: AvtaleHendelseMelding = mapper.readValue(melding.value())
-            if (avtaleHendelseMelding.refusjonKontaktperson?.refusjonKontaktpersonTlf == null) return
-
+            if (!skalBehandles(avtaleHendelseMelding)) return
 
             val refusjonKontaktperson = RefusjonKontaktpersonEntitet(
                 avtaleId = avtaleHendelseMelding.avtaleId,
-                refusjonKontaktpersonTlf = avtaleHendelseMelding.refusjonKontaktperson.refusjonKontaktpersonTlf,
-                arbeidsgiverOnskerOgsaVarsling = avtaleHendelseMelding.refusjonKontaktperson.ønskerVarslingOmRefusjon,
+                refusjonKontaktpersonTlf = avtaleHendelseMelding.refusjonKontaktperson?.refusjonKontaktpersonTlf,
+                arbeidsgiverOnskerOgsaVarsling = avtaleHendelseMelding.refusjonKontaktperson?.ønskerVarslingOmRefusjon,
+                arbeidsgiverTlf = avtaleHendelseMelding.arbeidsgiverTlf!!,
+                tiltakstype = avtaleHendelseMelding.tiltakstype,
                 avtaleInnholdVersjon = avtaleHendelseMelding.versjon,
                 avtaleHendelseType = avtaleHendelseMelding.hendelseType,
                 avtaleHendelseSistEndret = avtaleHendelseMelding.sistEndret,
@@ -55,7 +56,10 @@ class RefusjonKontaktpersonConsumer(val refusjonKontaktpersonRepository: Arbeids
         }
     }
 
-    private fun skalBehandles(): Boolean {
+    private fun skalBehandles(avtaleHendelseMelding: AvtaleHendelseMelding): Boolean {
+        if (avtaleHendelseMelding.tiltakstype == Tiltakstype.ARBEIDSTRENING) return false // arbeidstrening har ikke økonomi
+        if (avtaleHendelseMelding.avtaleInngått == null) return false // refusjonsvarslinger har ingen nytte på ting som ikke er inngått
+        if (avtaleHendelseMelding.arbeidsgiverTlf == null) return false // skal ikke kunne skje på inngått avtale
         // Kjører backfill frem til toggle skrus på, da tar AvtaleHendelseConsumer over
         return !unleash.isEnabled("refusjon-kontaktperson-backfill-ferdig")
     }

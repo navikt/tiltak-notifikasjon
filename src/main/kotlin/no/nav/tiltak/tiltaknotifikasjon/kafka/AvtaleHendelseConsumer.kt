@@ -12,6 +12,7 @@ import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.avtale.Avtalerolle
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
 import no.nav.tiltak.tiltaknotifikasjon.avtale.kanOppdatereRefusjonKontaktperson
+import no.nav.tiltak.tiltaknotifikasjon.avtale.Tiltakstype
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.Brukernotifikasjon
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.BrukernotifikasjonRepository
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.BrukernotifikasjonService
@@ -114,14 +115,17 @@ class AvtaleHendelseConsumer(
     fun lagreRefusjonKontaktperson(avtaleHendelseMelding: AvtaleHendelseMelding, offset: Long) {
         try {
             if (!unleash.isEnabled("refusjon-kontaktperson-backfill-ferdig")) return // Backfill håndteres av RefusjonKontaktpersonConsumer
-            if (avtaleHendelseMelding.refusjonKontaktperson?.refusjonKontaktpersonTlf == null) return
+            if (avtaleHendelseMelding.tiltakstype == Tiltakstype.ARBEIDSTRENING) return // arbeidstrening har ikke økonomi
+            if (avtaleHendelseMelding.avtaleInngått == null) return  // refusjonsvarslinger har ingen nytte på ting som ikke er inngått
+            if (avtaleHendelseMelding.arbeidsgiverTlf == null) return // skal ikke kunne skje på inngått avtale
             if (!avtaleHendelseMelding.hendelseType.kanOppdatereRefusjonKontaktperson()) return
-            log.info("Lagrer refusjon kontaktperson for avtale ${avtaleHendelseMelding.avtaleId}, offset $offset")
 
             val refusjonKontaktperson = RefusjonKontaktpersonEntitet(
                 avtaleId = avtaleHendelseMelding.avtaleId,
-                refusjonKontaktpersonTlf = avtaleHendelseMelding.refusjonKontaktperson.refusjonKontaktpersonTlf,
-                arbeidsgiverOnskerOgsaVarsling = avtaleHendelseMelding.refusjonKontaktperson.ønskerVarslingOmRefusjon,
+                refusjonKontaktpersonTlf = avtaleHendelseMelding.refusjonKontaktperson?.refusjonKontaktpersonTlf,
+                arbeidsgiverOnskerOgsaVarsling = avtaleHendelseMelding.refusjonKontaktperson?.ønskerVarslingOmRefusjon,
+                arbeidsgiverTlf = avtaleHendelseMelding.arbeidsgiverTlf,
+                tiltakstype = avtaleHendelseMelding.tiltakstype,
                 avtaleInnholdVersjon = avtaleHendelseMelding.versjon,
                 avtaleHendelseType = avtaleHendelseMelding.hendelseType,
                 avtaleHendelseSistEndret = avtaleHendelseMelding.sistEndret,
