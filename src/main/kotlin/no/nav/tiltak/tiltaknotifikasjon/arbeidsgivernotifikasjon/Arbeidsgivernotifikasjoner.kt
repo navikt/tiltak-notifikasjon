@@ -57,7 +57,7 @@ fun nyOppgave(avtaleHendelseMelding: AvtaleHendelseMelding): NyOppgave {
                 EksterntVarselInput(
                     sms = EksterntVarselSmsInput(
                         mottaker = SmsMottakerInput(
-                            kontaktinfo = SmsKontaktIxxnfoInput(tlf = avtaleHendelseMelding.arbeidsgiverTlf!!)
+                            kontaktinfo = SmsKontaktInfoInput(tlf = avtaleHendelseMelding.arbeidsgiverTlf!!)
                         ),
                         smsTekst = "Hei! Du har fått en ny oppgave om tiltak. Logg inn på Min side - arbeidsgiver hos NAV for å se hva det gjelder. Vennlig hilsen NAV",
                         sendetidspunkt = SendetidspunktInput(Sendevindu.DAGTID_IKKE_SOENDAG)
