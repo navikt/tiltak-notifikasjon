@@ -23,7 +23,7 @@ class RefusjonKontaktpersonConsumer(val refusjonKontaktpersonRepository: Arbeids
     private val antallLagret = AtomicLong(0)
 
     @KafkaListener(topics = [Topics.AVTALE_HENDELSE_COMPACT],
-        groupId = "tiltak-notifikasjon-refusjon-kontaktperson-3",
+        groupId = "tiltak-notifikasjon-refusjon-kontaktperson-4",
         properties = ["auto.offset.reset=earliest"], // Hmm, trodde ikke dette var nødvendig.. tydeligvis.
     )
     fun konsumer(melding: ConsumerRecord<String, String>) {
@@ -33,6 +33,7 @@ class RefusjonKontaktpersonConsumer(val refusjonKontaktpersonRepository: Arbeids
 
             val refusjonKontaktperson = RefusjonKontaktpersonEntitet(
                 avtaleId = avtaleHendelseMelding.avtaleId,
+                bedriftNr = avtaleHendelseMelding.bedriftNr,
                 refusjonKontaktpersonTlf = avtaleHendelseMelding.refusjonKontaktperson?.refusjonKontaktpersonTlf,
                 arbeidsgiverOnskerOgsaVarsling = avtaleHendelseMelding.refusjonKontaktperson?.ønskerVarslingOmRefusjon,
                 arbeidsgiverTlf = avtaleHendelseMelding.arbeidsgiverTlf!!,

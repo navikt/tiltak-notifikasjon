@@ -19,6 +19,7 @@ class ArbeidsgiverRefusjonKontaktpersonRepository(val dsl: DSLContext) {
 
         val record = ArbeidsgiverRefusjonKontaktpersonRecord(
             id = idPåEksisterendeEntitet ?: ulid(),
+            bedriftNr = refusjonKontaktperson.bedriftNr,
             avtaleId = refusjonKontaktperson.avtaleId,
             refusjonKontaktpersonTlf = refusjonKontaktperson.refusjonKontaktpersonTlf,
             arbeidsgiverOnskerOgsaVarsling = refusjonKontaktperson.arbeidsgiverOnskerOgsaVarsling,
@@ -48,6 +49,7 @@ class ArbeidsgiverRefusjonKontaktpersonRepository(val dsl: DSLContext) {
 
     private fun mapToEntitet(record: ArbeidsgiverRefusjonKontaktpersonRecord) = RefusjonKontaktpersonEntitet(
         avtaleId = record.avtaleId,
+        bedriftNr = record.bedriftNr,
         refusjonKontaktpersonTlf = record.refusjonKontaktpersonTlf,
         arbeidsgiverOnskerOgsaVarsling = record.arbeidsgiverOnskerOgsaVarsling,
         arbeidsgiverTlf = record.arbeidsgiverTlf,

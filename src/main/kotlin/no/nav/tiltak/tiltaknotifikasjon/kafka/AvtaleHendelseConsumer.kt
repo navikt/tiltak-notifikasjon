@@ -122,6 +122,7 @@ class AvtaleHendelseConsumer(
 
             val refusjonKontaktperson = RefusjonKontaktpersonEntitet(
                 avtaleId = avtaleHendelseMelding.avtaleId,
+                bedriftNr = avtaleHendelseMelding.bedriftNr,
                 refusjonKontaktpersonTlf = avtaleHendelseMelding.refusjonKontaktperson?.refusjonKontaktpersonTlf,
                 arbeidsgiverOnskerOgsaVarsling = avtaleHendelseMelding.refusjonKontaktperson?.ønskerVarslingOmRefusjon,
                 arbeidsgiverTlf = avtaleHendelseMelding.arbeidsgiverTlf,
