@@ -32,7 +32,26 @@ fun nySak(avtaleHendelseMelding: AvtaleHendelseMelding): NySak {
     return nySak
 }
 
-fun nySak
+fun nySak(avtaleId: String,  tiltakstype: Tiltakstype, bedriftNr: String): NySak {
+    val variabler = NySak.Variables(
+        grupperingsid = avtaleId,
+        merkelapp = avtaleId,
+        virksomhetsnummer = avtaleId,
+        mottakere = listOf(
+            MottakerInput(
+                altinnRessurs = AltinnRessursMottakerInput(
+                    ressursId = tiltakstype.ressursId,
+                )
+            )
+        ),
+        tittel = avtaleId,
+        lenke = lagLink(avtaleId),
+        initiellStatus = SaksStatus.MOTTATT,
+        tidspunkt = Instant.now().toString(),
+    )
+    val nySak = NySak(variabler)
+    return nySak
+}
 
 fun nyOppgave(avtaleHendelseMelding: AvtaleHendelseMelding): NyOppgave {
     val oppgaveVariables = NyOppgave.Variables(

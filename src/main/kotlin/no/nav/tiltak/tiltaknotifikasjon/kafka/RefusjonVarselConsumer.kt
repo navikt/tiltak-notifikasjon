@@ -2,6 +2,7 @@ package no.nav.tiltak.tiltaknotifikasjon.kafka
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.ArbeidsgiverRefusjonKontaktpersonRepository
+import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.nySak
 import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
@@ -26,6 +27,16 @@ class RefusjonVarselConsumer(private val arbeidsgiverRefusjonKontaktpersonReposi
                 // Vi vil lage en sak for alle refusjoner på en avtale. GrupperingsID kan være noe sånt som avtaleId-refusjon,
                 // og da vil alle varsler for refusjoner på samme avtale grupperes i samme sak, og kan styres på egen tilgang (Tiltaksrefusjon).
                 // Vi må først finne ut om vi skal opprette en sak eller ikke. Vi kan forsøke å opprette og se om vi får DuplikatSak Feilmelding.
+                val sak = nySak(
+                    avtaleId = refusjonVarselMelding.avtaleId,
+                    tiltakstype = refusjonKontaktperson.tiltakstype,
+                    bedriftsnummer = refusjonKontaktperson.,
+                    varselType = refusjonVarselMelding.varselType,
+                    fristForGodkjenning = refusjonVarselMelding.fristForGodkjenning,
+                ))
+
+
+
                 // Når vi skal opprette en sak så må vi oppgi avtaleId (grupperingsid), men vi trenger også tiltakstype og bedriftsnummer.
                 // Dette er ikke informasjon som kommer på denne topicen, men! Vi kan vel anta at alle refusjon_klar varsler har en tidligere Sak knyttet til avtalen.
                 // Jeg tror den mest fornuftige løsningen her er å utvide TILTAK_VARSEL topicen til å inkludere litt mer informasjon.
