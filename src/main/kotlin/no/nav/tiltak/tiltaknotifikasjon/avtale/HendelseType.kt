@@ -67,7 +67,6 @@ fun HendelseType.skalSendeSmsTilArbeidsgiver(): Boolean =
 
 fun HendelseType.kanOppdatereRefusjonKontaktperson(): Boolean =
     when (this) {
-        HendelseType.ENDRET -> true
-        HendelseType.KONTAKTINFORMASJON_ENDRET -> true
+        HendelseType.ENDRET, HendelseType.KONTAKTINFORMASJON_ENDRET -> true
         else -> false
     }
