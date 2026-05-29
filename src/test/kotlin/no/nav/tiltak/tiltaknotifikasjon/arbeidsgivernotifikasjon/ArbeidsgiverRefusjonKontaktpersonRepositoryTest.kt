@@ -2,6 +2,7 @@ package no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon
 
 import com.ninjasquad.springmockk.MockkBean
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
+import no.nav.tiltak.tiltaknotifikasjon.avtale.Tiltakstype
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.tables.ArbeidsgiverRefusjonKontaktperson.Companion.ARBEIDSGIVER_REFUSJON_KONTAKTPERSON
 import no.nav.tiltak.tiltaknotifikasjon.kafka.MinSideProdusent
 import no.nav.tiltak.tiltaknotifikasjon.kafka.TiltakNotifikasjonKvitteringProdusent
@@ -105,13 +106,17 @@ class ArbeidsgiverRefusjonKontaktpersonRepositoryTest {
 
     private fun lagEntitet(
         avtaleId: UUID = UUID.randomUUID(),
-        tlf: String = "99887766",
+        tlf: String? = "99887766",
         onskerVarsling: Boolean? = true,
+        arbeidsgiverTlf: String = "44556677",
+        tiltakstype: Tiltakstype = Tiltakstype.MIDLERTIDIG_LONNSTILSKUDD,
         versjon: Int = 1,
     ) = RefusjonKontaktpersonEntitet(
         avtaleId = avtaleId,
         refusjonKontaktpersonTlf = tlf,
         arbeidsgiverOnskerOgsaVarsling = onskerVarsling,
+        arbeidsgiverTlf = arbeidsgiverTlf,
+        tiltakstype = tiltakstype,
         avtaleInnholdVersjon = versjon,
         avtaleHendelseType = HendelseType.ENDRET,
         avtaleHendelseSistEndret = Instant.now(),
