@@ -64,3 +64,9 @@ fun HendelseType.skalSendeSmsTilArbeidsgiver(): Boolean =
         HendelseType.OPPRETTET -> false // Dette lar seg dessverre ikke gjøre, fordi vi ikke har arbeidsgivers tlfnr på dette tidspunktet.
         else -> false
     }
+
+fun HendelseType.kanOppdatereRefusjonKontaktperson(): Boolean =
+    when (this) {
+        HendelseType.ENDRET, HendelseType.KONTAKTINFORMASJON_ENDRET -> true
+        else -> false
+    }

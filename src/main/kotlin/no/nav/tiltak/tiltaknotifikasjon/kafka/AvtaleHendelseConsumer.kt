@@ -11,6 +11,7 @@ import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.RefusjonKontakt
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.avtale.Avtalerolle
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
+import no.nav.tiltak.tiltaknotifikasjon.avtale.kanOppdatereRefusjonKontaktperson
 import no.nav.tiltak.tiltaknotifikasjon.avtale.Tiltakstype
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.Brukernotifikasjon
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.BrukernotifikasjonRepository
@@ -117,6 +118,7 @@ class AvtaleHendelseConsumer(
             if (avtaleHendelseMelding.tiltakstype == Tiltakstype.ARBEIDSTRENING) return // arbeidstrening har ikke økonomi
             if (avtaleHendelseMelding.avtaleInngått == null) return  // refusjonsvarslinger har ingen nytte på ting som ikke er inngått
             if (avtaleHendelseMelding.arbeidsgiverTlf == null) return // skal ikke kunne skje på inngått avtale
+            if (!avtaleHendelseMelding.hendelseType.kanOppdatereRefusjonKontaktperson()) return
 
             val refusjonKontaktperson = RefusjonKontaktpersonEntitet(
                 avtaleId = avtaleHendelseMelding.avtaleId,
