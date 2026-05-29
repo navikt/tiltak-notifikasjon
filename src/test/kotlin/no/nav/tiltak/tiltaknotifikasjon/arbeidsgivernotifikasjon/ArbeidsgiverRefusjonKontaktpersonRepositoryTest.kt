@@ -113,6 +113,7 @@ class ArbeidsgiverRefusjonKontaktpersonRepositoryTest {
         versjon: Int = 1,
     ) = RefusjonKontaktpersonEntitet(
         avtaleId = avtaleId,
+        bedriftNr = "123456789",
         refusjonKontaktpersonTlf = tlf,
         arbeidsgiverOnskerOgsaVarsling = onskerVarsling,
         arbeidsgiverTlf = arbeidsgiverTlf,

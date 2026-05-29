@@ -7,6 +7,7 @@ import java.util.UUID
 
 data class RefusjonKontaktpersonEntitet(
     val avtaleId: UUID,
+    val bedriftNr: String,
     val refusjonKontaktpersonTlf: String?,
     val arbeidsgiverOnskerOgsaVarsling: Boolean?,
     val arbeidsgiverTlf: String,
