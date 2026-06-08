@@ -17,4 +17,6 @@ data class RefusjonKontaktpersonEntitet(
     val avtaleHendelseSistEndret: Instant,
     val topicOffset: Long,
     val innlestTidspunkt: Instant,
+    val deltakerFornavn: String?,
+    val deltakerEtternavn: String?,
 )

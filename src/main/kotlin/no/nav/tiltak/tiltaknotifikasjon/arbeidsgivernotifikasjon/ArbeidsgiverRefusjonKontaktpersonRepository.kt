@@ -30,6 +30,8 @@ class ArbeidsgiverRefusjonKontaktpersonRepository(val dsl: DSLContext) {
             avtaleHendelseSistEndret = refusjonKontaktperson.avtaleHendelseSistEndret.atOffset(ZoneOffset.UTC),
             topicOffset = refusjonKontaktperson.topicOffset,
             innlestTidspunkt = refusjonKontaktperson.innlestTidspunkt.atOffset(ZoneOffset.UTC),
+            deltakerFornavn = refusjonKontaktperson.deltakerFornavn,
+            deltakerEtternavn = refusjonKontaktperson.deltakerEtternavn,
         )
         dsl
             .insertInto(ARBEIDSGIVER_REFUSJON_KONTAKTPERSON)
@@ -59,6 +61,8 @@ class ArbeidsgiverRefusjonKontaktpersonRepository(val dsl: DSLContext) {
         avtaleHendelseSistEndret = record.avtaleHendelseSistEndret.toInstant(),
         topicOffset = record.topicOffset,
         innlestTidspunkt = record.innlestTidspunkt.toInstant(),
+        deltakerFornavn = record.deltakerFornavn,
+        deltakerEtternavn = record.deltakerEtternavn,
     )
 
     private fun finnIdPåEksisterende(entitet: RefusjonKontaktpersonEntitet): String? {
