@@ -32,25 +32,66 @@ fun nySak(avtaleHendelseMelding: AvtaleHendelseMelding): NySak {
     return nySak
 }
 
-fun nySak(avtaleId: String,  tiltakstype: Tiltakstype, bedriftNr: String): NySak {
+fun nySakRefusjoner(refusjonKontaktperson: RefusjonKontaktpersonEntitet, refusjonId: String): NySak {
     val variabler = NySak.Variables(
-        grupperingsid = avtaleId,
-        merkelapp = avtaleId,
-        virksomhetsnummer = avtaleId,
+        grupperingsid = refusjonKontaktperson.grupperingsId(),
+        merkelapp = refusjonKontaktperson.tiltakstype.arbeidsgiverNotifikasjonMerkelapp,
+        virksomhetsnummer = refusjonKontaktperson.bedriftNr,
         mottakere = listOf(
             MottakerInput(
                 altinnRessurs = AltinnRessursMottakerInput(
-                    ressursId = tiltakstype.ressursId,
+                    ressursId = refusjonKontaktperson.tiltakstype.ressursId,
                 )
             )
         ),
-        tittel = avtaleId,
-        lenke = lagLink(avtaleId),
+        tittel = "Refusjoner for avtale om ${refusjonKontaktperson.tiltakstype.beskrivelse}", //TODO: Vurdere om vi skal få inn avtaleNr eller deltakernavn eller lignende her
+        lenke = lagRefusjonLink(refusjonId),
         initiellStatus = SaksStatus.MOTTATT,
         tidspunkt = Instant.now().toString(),
     )
     val nySak = NySak(variabler)
     return nySak
+}
+fun nyBeskjedRefusjoner(refusjonKontaktperson: RefusjonKontaktpersonEntitet, refusjonId: String): NyBeskjed {
+    val variabler = NyBeskjed.Variables(
+        NyBeskjedInput(
+            mottakere = listOf(
+                MottakerInput(
+                    altinnRessurs = AltinnRessursMottakerInput(
+                        ressursId = refusjonKontaktperson.tiltakstype.ressursId,
+                    )
+                )
+            ), notifikasjon = NotifikasjonInput(
+                merkelapp = refusjonKontaktperson.tiltakstype.arbeidsgiverNotifikasjonMerkelapp,
+                tekst = "Det har kommet en ny oppdatering på refusjonssøknaden din for avtale om ${refusjonKontaktperson.tiltakstype.beskrivelse}. Klikk på lenken for å se oppdateringen.",
+                lenke = lagRefusjonLink(refusjonId)
+            ), metadata = MetadataInput(
+                virksomhetsnummer = refusjonKontaktperson.bedriftNr,
+                eksternId = refusjonKontaktperson.eksternId(),
+                opprettetTidspunkt = Instant.now().toString(),
+                grupperingsid = refusjonKontaktperson.grupperingsId(),
+                hardDelete = null
+            ), eksterneVarsler = listOf(
+                EksterntVarselInput(
+                    sms = EksterntVarselSmsInput(
+                        mottaker = SmsMottakerInput(
+                            kontaktinfo = SmsKontaktInfoInput(tlf = refusjonKontaktperson.arbeidsgiverTlf)
+                        ),
+                        smsTekst = "Hei! Det har kommet en ny oppdatering på refusjonssøknaden din for avtale om ${refusjonKontaktperson.tiltakstype.beskrivelse}. Logg inn på Min side - arbeidsgiver hos NAV for å se hva det gjelder. Vennlig hilsen NAV",
+                        sendetidspunkt = SendetidspunktInput(Sendevindu.DAGTID_IKKE_SOENDAG)
+                    )
+        )
+    )))
+    val nyBeskjed = NyBeskjed(variabler)
+    return nyBeskjed
+}
+
+fun nyHentSakQuery(grupperingsid: String, merkelapp: String): HentSakMedGrupperingsid {
+    val variables = HentSakMedGrupperingsid.Variables(
+        grupperingsid = grupperingsid,
+        merkelapp = merkelapp,
+    )
+    return HentSakMedGrupperingsid(variables)
 }
 
 fun nyOppgave(avtaleHendelseMelding: AvtaleHendelseMelding): NyOppgave {
@@ -194,5 +235,11 @@ private fun lagLink(avtaleId: String): String {
         Cluster.DEV_GCP -> "https://tiltaksgjennomforing.ekstern.dev.nav.no/tiltaksgjennomforing/avtale/${avtaleId}?part=ARBEIDSGIVER"
         Cluster.LOKAL -> "https://tiltaksgjennomforing.ekstern.dev.nav.no/tiltaksgjennomforing/avtale/${avtaleId}?part=ARBEIDSGIVER"
     }
-
+}
+fun lagRefusjonLink(refusjonId: String): String {
+    return when (Cluster.current) {
+        Cluster.PROD_GCP -> "https://tiltak-refusjon.nav.no/refusjon/${refusjonId}"
+        Cluster.DEV_GCP -> "https://tiltak-refusjon.ekstern.dev.nav.no/refusjon/${refusjonId}"
+        Cluster.LOKAL -> "https://tiltak-refusjon.ekstern.dev.nav.no/refusjon/${refusjonId}"
+    }
 }

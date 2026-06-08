@@ -1,0 +1,21 @@
+create table arbeidsgiver_refusjon_notifikasjon
+(
+    id                                varchar primary key,
+    arbeidsgivernotifikasjon_json     varchar                  not null,
+    type                              varchar                  not null,
+    status                            varchar                  not null,
+    bedrift_nr                        varchar                  not null,
+    feilmelding                       varchar,
+    sendt_tidspunkt                   timestamp with time zone,
+    opprettet_tidspunkt               timestamp with time zone not null,
+    varslingsformål                   varchar                  not null,
+    avtale_id                         varchar                  not null,
+    response_id                       varchar,
+    hard_delete_skedulert_tidspunkt   timestamp without time zone
+);
+
+create index if not exists idx_arbeidsgiver_refusjon_notifikasjon_avtale_id
+    on arbeidsgiver_refusjon_notifikasjon (avtale_id);
+
+create index if not exists idx_arbeidsgiver_refusjon_notifikasjon_response_id
+    on arbeidsgiver_refusjon_notifikasjon (response_id);

@@ -1,0 +1,37 @@
+query hentSakMedGrupperingsid(
+    $grupperingsid: String!,
+    $merkelapp: String!
+) {
+    hentSakMedGrupperingsid(
+        grupperingsid: $grupperingsid,
+        merkelapp: $merkelapp
+    ) {
+        ... on HentetSak {
+            __typename
+            sak {
+                id
+                grupperingsid
+                virksomhetsnummer
+                tittel
+                lenke
+                nesteSteg
+                tilleggsinformasjon
+                merkelapp
+                sisteStatus
+                __typename
+            }
+        }
+        ... on SakFinnesIkke {
+            feilmelding
+            __typename
+        }
+        ... on UgyldigMerkelapp {
+            feilmelding
+            __typename
+        }
+        ... on UkjentProdusent {
+            feilmelding
+            __typename
+        }
+    }
+}

@@ -3,8 +3,33 @@ query hentNotifikasjon($id: ID!) {
         __typename
         ... on HentetNotifikasjon {
             notifikasjon {
-            __typename
+                __typename
+                ... on Beskjed {
+                    __typename
+                    metadata {
+                        id
+                        eksternId
+                    }
+                    beskjed {
+                        tekst
+                    }
+                }
+                ... on Kalenderavtale {
+                    __typename
+                    metadata {
+                        id
+                        eksternId
+                    }
+                    kalenderavtale {
+                        tekst
+                    }
+                }
                 ... on Oppgave {
+                    __typename
+                    metadata {
+                        id
+                        eksternId
+                    }
                     oppgave {
                         tilstand
                         tekst
