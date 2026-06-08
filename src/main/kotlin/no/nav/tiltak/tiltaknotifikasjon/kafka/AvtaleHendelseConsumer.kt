@@ -132,6 +132,8 @@ class AvtaleHendelseConsumer(
                 avtaleHendelseSistEndret = avtaleHendelseMelding.sistEndret,
                 topicOffset = offset,
                 innlestTidspunkt = Instant.now(),
+                deltakerFornavn = avtaleHendelseMelding.deltakerFornavn,
+                deltakerEtternavn = avtaleHendelseMelding.deltakerEtternavn,
             )
             arbeidsgiverRefusjonKontaktpersonRepository.save(refusjonKontaktperson)
             log.info("Lagret refusjon kontaktperson for avtale ${avtaleHendelseMelding.avtaleId}, offset ${offset}")
