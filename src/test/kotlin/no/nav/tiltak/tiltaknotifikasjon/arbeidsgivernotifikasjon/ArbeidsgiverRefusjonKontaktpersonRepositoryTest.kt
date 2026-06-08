@@ -123,5 +123,7 @@ class ArbeidsgiverRefusjonKontaktpersonRepositoryTest {
         avtaleHendelseSistEndret = Instant.now(),
         topicOffset = 42L,
         innlestTidspunkt = Instant.now(),
+        deltakerFornavn = "Ola",
+        deltakerEtternavn = "Nordmann",
     )
 }
