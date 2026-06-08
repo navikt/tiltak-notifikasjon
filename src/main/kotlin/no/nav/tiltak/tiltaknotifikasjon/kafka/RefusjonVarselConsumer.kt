@@ -46,8 +46,7 @@ class RefusjonVarselConsumer(
             val refusjonId = melding.key().split("-").first() // val meldingId = "${refusjonId}-$varselType" (tiltak-refusjon-api)
             if (!finnesSak(refusjonVarselMelding.avtaleId.toString(), refusjonKontaktpersonEntitet.tiltakstype)) {
                 // Sak for alle refusjonene på avtalen
-                opprettNySak(refusjonId, refusjonVarselMelding, refusjonKontaktpersonEntitet) //TODO: TRENGER DELTAKTERS NAVN HER! :(
-                // Kan vi anta at det alltid er alltid eksisterer en sak for avtalen? I såfall kan vi hente deltakers navn fra den andre tabellen her.
+                opprettNySak(refusjonId, refusjonVarselMelding, refusjonKontaktpersonEntitet)
             }
             // Beskjed med sms om refusjon klar
             opprettNyBeskjed(refusjonVarselMelding, refusjonKontaktpersonEntitet, refusjonId)

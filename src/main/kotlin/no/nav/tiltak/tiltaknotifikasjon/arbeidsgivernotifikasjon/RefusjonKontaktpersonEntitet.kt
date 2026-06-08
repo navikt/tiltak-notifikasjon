@@ -1,5 +1,6 @@
 package no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon
 
+import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
 import no.nav.tiltak.tiltaknotifikasjon.avtale.Tiltakstype
 import no.nav.tiltak.tiltaknotifikasjon.utils.ulid
@@ -29,3 +30,11 @@ fun RefusjonKontaktpersonEntitet.eksternId(): String = "${avtaleId}_${ulid()}"
 
 /** grupperingsId for saker, beskjeder og oppgaver knyttet til refusjoner. Alle notifikasjoner med denne grupperingsIden vil knyttes sammen */
 fun RefusjonKontaktpersonEntitet.grupperingsId(): String = "${avtaleId}-refusjoner"
+
+fun RefusjonKontaktpersonEntitet.deltakerFulltNavn(): String? {
+    if (deltakerFornavn != null && deltakerEtternavn != null) {
+        return "for $deltakerFornavn $deltakerEtternavn"
+    } else {
+        return null
+    }
+}

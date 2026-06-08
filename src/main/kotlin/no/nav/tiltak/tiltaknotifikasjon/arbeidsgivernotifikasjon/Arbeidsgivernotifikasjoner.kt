@@ -44,7 +44,7 @@ fun nySakRefusjoner(refusjonKontaktperson: RefusjonKontaktpersonEntitet, refusjo
                 )
             )
         ),
-        tittel = "Refusjoner for avtale om ${refusjonKontaktperson.tiltakstype.beskrivelse}", //TODO: Vurdere om vi skal få inn avtaleNr eller deltakernavn eller lignende her
+        tittel = "Refusjoner for avtale om ${refusjonKontaktperson.tiltakstype.beskrivelse} ${refusjonKontaktperson.deltakerFulltNavn()}",
         lenke = lagRefusjonLink(refusjonId),
         initiellStatus = SaksStatus.MOTTATT,
         tidspunkt = Instant.now().toString(),
