@@ -1,6 +1,7 @@
 create table arbeidsgiver_refusjon_notifikasjon
 (
     id                                varchar primary key,
+    refusjon_id                       varchar                  not null,
     arbeidsgivernotifikasjon_json     varchar                  not null,
     type                              varchar                  not null,
     status                            varchar                  not null,

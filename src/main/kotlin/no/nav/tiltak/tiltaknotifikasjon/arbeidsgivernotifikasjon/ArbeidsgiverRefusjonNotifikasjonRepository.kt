@@ -27,6 +27,14 @@ class ArbeidsgiverRefusjonNotifikasjonRepository(val dsl: DSLContext) {
             ?.let { mapToArbeidsgiverRefusjonNotifikasjon(it) }
     }
 
+    fun findAllByRefusjonId(refusjonId: String): List<ArbeidsgiverRefusjonNotifikasjon> {
+        return dsl
+            .selectFrom(ARBEIDSGIVER_REFUSJON_NOTIFIKASJON)
+            .where(ARBEIDSGIVER_REFUSJON_NOTIFIKASJON.REFUSJON_ID.eq(refusjonId))
+            .fetch()
+            .map { mapToArbeidsgiverRefusjonNotifikasjon(it) }
+    }
+
     fun findAll(): List<ArbeidsgiverRefusjonNotifikasjon> {
         return dsl
             .selectFrom(ARBEIDSGIVER_REFUSJON_NOTIFIKASJON)
@@ -48,6 +56,7 @@ class ArbeidsgiverRefusjonNotifikasjonRepository(val dsl: DSLContext) {
             avtaleId = record.avtaleId,
             responseId = record.responseId,
             hardDeleteSkedulertTidspunkt = record.hardDeleteSkedulertTidspunkt,
+            refusjonId = record.refusjonId,
         )
 
     private fun mapToDatabaseRecord(arbeidsgiverRefusjonNotifikasjon: ArbeidsgiverRefusjonNotifikasjon) =
@@ -64,5 +73,6 @@ class ArbeidsgiverRefusjonNotifikasjonRepository(val dsl: DSLContext) {
             avtaleId = arbeidsgiverRefusjonNotifikasjon.avtaleId,
             responseId = arbeidsgiverRefusjonNotifikasjon.responseId,
             hardDeleteSkedulertTidspunkt = arbeidsgiverRefusjonNotifikasjon.hardDeleteSkedulertTidspunkt,
+            refusjonId = arbeidsgiverRefusjonNotifikasjon.refusjonId,
         )
 }

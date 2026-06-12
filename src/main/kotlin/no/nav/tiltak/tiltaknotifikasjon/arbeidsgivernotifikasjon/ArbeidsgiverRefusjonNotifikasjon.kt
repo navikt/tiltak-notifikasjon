@@ -5,6 +5,7 @@ import java.time.LocalDateTime
 
 data class ArbeidsgiverRefusjonNotifikasjon(
     val id: String,
+    val refusjonId: String,
     var arbeidsgivernotifikasjonJson: String,
     var type: ArbeidsgivernotifikasjonType,
     var status: ArbeidsgivernotifikasjonStatus,

@@ -49,6 +49,10 @@ class RefusjonVarselConsumer(
                 opprettNySak(refusjonId, refusjonVarselMelding, refusjonKontaktpersonEntitet)
             }
             // Beskjed med sms om refusjon klar
+            if (finnesNotifikasjon(refusjonId, refusjonVarselMelding.refusjonVarselType)) {
+                log.warn("AG: Notifikasjon for refusjonId $refusjonId og varseltype ${refusjonVarselMelding.refusjonVarselType} finnes allerede. Skipper opprettelse av ny notifikasjon. Skipper melding med offset ${melding.offset()}")
+                return
+            }
             opprettNyBeskjed(refusjonVarselMelding, refusjonKontaktpersonEntitet, refusjonId)
 
 
@@ -67,6 +71,7 @@ class RefusjonVarselConsumer(
         runBlocking {
             val response = notifikasjonGraphQlClient.execute(sakQuery)
             if (response.errors != null) {
+                // om sak skulle finnes vil vi bare få duplikat-feilmelding i graphql, så det gjør ikke så mye å forsøke å opprette 2 ganger.
                 log.error("AG: GraphQl-kall for å hente refusjon-sak med grupperingsid feilet: ${response.errors}")
             }
             if (response.data?.hentSakMedGrupperingsid is HentetSak) {
@@ -74,6 +79,11 @@ class RefusjonVarselConsumer(
             }
         }
         return sakFinnes
+    }
+    fun finnesNotifikasjon(refusjonId: String, varselType: RefusjonVarselType): Boolean {
+        val notifikasjoner = arbeidsgiverRefusjonNotifikasjonRepository.findAllByRefusjonId(refusjonId)
+        val find = notifikasjoner.find { it.varslingsformål == varselType.fraRefusjonVarselType() }
+        return find != null
     }
 
     fun opprettNyBeskjed(refusjonVarselMelding: RefusjonVarselMelding, refusjonKontaktperson: RefusjonKontaktpersonEntitet, refusjonId: String) {
@@ -86,6 +96,7 @@ class RefusjonVarselConsumer(
             bedriftNr = refusjonKontaktperson.bedriftNr,
             varslingsformål = refusjonVarselMelding.refusjonVarselType.fraRefusjonVarselType(),
             avtaleId = refusjonKontaktperson.avtaleId.toString(),
+            refusjonId = refusjonId, // FOR IDEMPOTENS SJEKK
         )
         arbeidsgiverRefusjonNotifikasjonRepository.save(notifikasjon)
         runBlocking {
@@ -109,6 +120,7 @@ class RefusjonVarselConsumer(
             bedriftNr = refusjonKontaktperson.bedriftNr,
             varslingsformål = refusjonVarselMelding.refusjonVarselType.fraRefusjonVarselType(),
             avtaleId = refusjonVarselMelding.avtaleId.toString(),
+            refusjonId = refusjonId,
         )
         arbeidsgiverRefusjonNotifikasjonRepository.save(notifikasjon)
         runBlocking {
