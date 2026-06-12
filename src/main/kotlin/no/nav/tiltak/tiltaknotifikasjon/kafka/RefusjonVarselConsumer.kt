@@ -44,7 +44,7 @@ class RefusjonVarselConsumer(
             }
 
             val refusjonId = melding.key().split("-").first() // val meldingId = "${refusjonId}-$varselType" (tiltak-refusjon-api)
-            if (!finnesSak(refusjonVarselMelding.avtaleId.toString(), refusjonKontaktpersonEntitet.tiltakstype)) {
+            if (!finnesSak(refusjonKontaktpersonEntitet.grupperingsId(), refusjonKontaktpersonEntitet.tiltakstype)) {
                 // Sak for alle refusjonene på avtalen
                 opprettNySak(refusjonId, refusjonVarselMelding, refusjonKontaktpersonEntitet)
             }
@@ -65,9 +65,9 @@ class RefusjonVarselConsumer(
         }
     }
 
-    fun finnesSak(avtaleId: String, tiltakstype: Tiltakstype): Boolean {
+        fun finnesSak(grupperingsId: String, tiltakstype: Tiltakstype): Boolean {
         var sakFinnes = false
-        val sakQuery = nyHentSakQuery(avtaleId, tiltakstype.arbeidsgiverNotifikasjonMerkelapp)
+        val sakQuery = nyHentSakQuery(grupperingsId, tiltakstype.arbeidsgiverNotifikasjonMerkelapp)
         runBlocking {
             val response = notifikasjonGraphQlClient.execute(sakQuery)
             if (response.errors != null) {
