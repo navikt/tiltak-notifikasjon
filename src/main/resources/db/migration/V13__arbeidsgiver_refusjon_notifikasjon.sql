@@ -20,3 +20,6 @@ create index if not exists idx_arbeidsgiver_refusjon_notifikasjon_avtale_id
 
 create index if not exists idx_arbeidsgiver_refusjon_notifikasjon_response_id
     on arbeidsgiver_refusjon_notifikasjon (response_id);
+
+create index if not exists idx_arbeidsgiver_refusjon_notifikasjon_refusjon_id
+    on arbeidsgiver_refusjon_notifikasjon (refusjon_id);

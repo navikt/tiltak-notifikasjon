@@ -17,7 +17,7 @@ enum class RefusjonVarselType {
     FRIST_FORLENGET,
     KORRIGERT;
 
-    fun fraRefusjonVarselType(): Varslingsformål {
+    fun tilVarslingsformål(): Varslingsformål {
         return when (this) {
             KLAR -> Varslingsformål.REFUSJON_KLAR
             REVARSEL -> Varslingsformål.REFUSJON_REVARSEL

@@ -53,6 +53,7 @@ class ArbeidsgiverRefusjonNotifikasjonRepositoryTest {
         assertThat(result.varslingsformål).isEqualTo(notifikasjon.varslingsformål)
         assertThat(result.avtaleId).isEqualTo(notifikasjon.avtaleId)
         assertThat(result.responseId).isEqualTo(notifikasjon.responseId)
+        assertThat(result.refusjonId).isEqualTo(notifikasjon.refusjonId)
         assertThat(result.hardDeleteSkedulertTidspunkt).isEqualTo(notifikasjon.hardDeleteSkedulertTidspunkt)
     }
 

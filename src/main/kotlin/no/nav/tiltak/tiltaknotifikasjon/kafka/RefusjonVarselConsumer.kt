@@ -90,7 +90,7 @@ class RefusjonVarselConsumer(
     }
     fun finnesNotifikasjon(refusjonId: String, varselType: RefusjonVarselType): Boolean {
         val notifikasjoner = arbeidsgiverRefusjonNotifikasjonRepository.findAllByRefusjonId(refusjonId)
-        val find = notifikasjoner.find { it.varslingsformål == varselType.fraRefusjonVarselType() }
+        val find = notifikasjoner.find { it.varslingsformål == varselType.tilVarslingsformål() }
         return find != null
     }
 
@@ -102,7 +102,7 @@ class RefusjonVarselConsumer(
             type = ArbeidsgivernotifikasjonType.Beskjed,
             status = ArbeidsgivernotifikasjonStatus.BEHANDLET,
             bedriftNr = refusjonKontaktperson.bedriftNr,
-            varslingsformål = refusjonVarselMelding.refusjonVarselType.fraRefusjonVarselType(),
+            varslingsformål = refusjonVarselMelding.refusjonVarselType.tilVarslingsformål(),
             avtaleId = refusjonKontaktperson.avtaleId.toString(),
             refusjonId = refusjonId, // FOR IDEMPOTENS SJEKK
         )
@@ -126,7 +126,7 @@ class RefusjonVarselConsumer(
             type = ArbeidsgivernotifikasjonType.Sak,
             status = ArbeidsgivernotifikasjonStatus.SAK_MOTTATT,
             bedriftNr = refusjonKontaktperson.bedriftNr,
-            varslingsformål = refusjonVarselMelding.refusjonVarselType.fraRefusjonVarselType(),
+            varslingsformål = refusjonVarselMelding.refusjonVarselType.tilVarslingsformål(),
             avtaleId = refusjonVarselMelding.avtaleId.toString(),
             refusjonId = refusjonId,
         )
