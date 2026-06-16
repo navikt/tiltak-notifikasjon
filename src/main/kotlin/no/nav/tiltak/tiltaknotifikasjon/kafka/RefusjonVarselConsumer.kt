@@ -57,11 +57,19 @@ class RefusjonVarselConsumer(
 
 
         } catch (e: Exception) {
-            log.error(
-                "Feil ved konsumering av refusjon varsel. Skipper melding fra topic ${melding.topic()}, " +
-                        "partition ${melding.partition()}, offset ${melding.offset()}",
-                e,
+            val notifikasjon = ArbeidsgiverRefusjonNotifikasjon(
+                ulid(),
+                arbeidsgivernotifikasjonJson = jacksonMapper().writeValueAsString(melding),
+                type = ArbeidsgivernotifikasjonType.Ukjent,
+                status = ArbeidsgivernotifikasjonStatus.FEILET_VED_BEHANDLING,
+                bedriftNr = null,
+                varslingsformål = Varslingsformål.INGEN_VARSLING,
+                avtaleId = null,
+                refusjonId = null,
+                feilmelding = e.stackTraceToString()
             )
+            arbeidsgiverRefusjonNotifikasjonRepository.save(notifikasjon)
+            log.error("Feil ved konsumering av refusjon varsel fra topic ${melding.topic()} offset ${melding.offset()}", e)
         }
     }
 

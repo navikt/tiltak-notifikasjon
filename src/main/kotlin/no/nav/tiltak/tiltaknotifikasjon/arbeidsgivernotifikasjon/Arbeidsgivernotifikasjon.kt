@@ -34,7 +34,7 @@ enum class ArbeidsgivernotifikasjonStatus {
 }
 
 enum class ArbeidsgivernotifikasjonType {
-    Beskjed, Oppgave, Sak, FerdigstillOppgave, SoftDeleteNotifikasjon, SoftDeleteSak, NySakStatus
+    Beskjed, Oppgave, Sak, FerdigstillOppgave, SoftDeleteNotifikasjon, SoftDeleteSak, NySakStatus, Ukjent
 }
 
 enum class Varslingsformål {
