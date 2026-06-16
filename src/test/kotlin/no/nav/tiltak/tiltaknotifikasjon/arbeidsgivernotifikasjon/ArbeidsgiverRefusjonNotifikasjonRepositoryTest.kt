@@ -125,5 +125,6 @@ class ArbeidsgiverRefusjonNotifikasjonRepositoryTest {
         avtaleId = avtaleId,
         responseId = responseId,
         hardDeleteSkedulertTidspunkt = hardDeleteSkedulertTidspunkt,
+        refusjonId = "refusjon-1",
     )
 }
