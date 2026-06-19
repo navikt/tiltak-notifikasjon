@@ -3,6 +3,7 @@ package no.nav.tiltak.tiltaknotifikasjon.kafka
 import com.expediagroup.graphql.client.spring.GraphQLWebClient
 import com.expediagroup.graphql.client.types.GraphQLClientResponse
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.getunleash.Unleash
 import kotlinx.coroutines.runBlocking
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.*
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.hentsakmedgrupperingsid.HentetSak
@@ -27,6 +28,7 @@ class RefusjonVarselConsumer(
     private val arbeidsgiverRefusjonNotifikasjonRepository: ArbeidsgiverRefusjonNotifikasjonRepository,
     arbeidsgivernotifikasjonProperties: ArbeidsgivernotifikasjonProperties,
     @Qualifier("azureWebClientBuilder") azureWebClientBuilder: WebClient.Builder,
+    private val unleash: Unleash,
 ) {
     private val mapper = jacksonMapper()
     private val log = LoggerFactory.getLogger(javaClass)
@@ -35,6 +37,7 @@ class RefusjonVarselConsumer(
     @KafkaListener(topics = [Topics.TILTAK_VARSEL])
     fun konsumer(melding: ConsumerRecord<String, String>) {
         try {
+            if (!unleash.isEnabled("refusjon-klar-i-tiltak-notifikasjon")) return // Switch som gjør motsatt togling på dagens kode i tiltaksgjennomforing-api.
             val refusjonVarselMelding: RefusjonVarselMelding = mapper.readValue(melding.value())
             if (refusjonVarselMelding.refusjonVarselType != RefusjonVarselType.KLAR) return
             val refusjonKontaktpersonEntitet = arbeidsgiverRefusjonKontaktpersonRepository.findByAvtaleId(refusjonVarselMelding.avtaleId)
