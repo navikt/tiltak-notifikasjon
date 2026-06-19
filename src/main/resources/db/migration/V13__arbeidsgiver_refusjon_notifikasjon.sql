@@ -12,7 +12,9 @@ create table arbeidsgiver_refusjon_notifikasjon
     varslingsformål                 varchar                  not null,
     avtale_id                       varchar,
     response_id                     varchar,
-    hard_delete_skedulert_tidspunkt timestamp without time zone
+    hard_delete_skedulert_tidspunkt timestamp without time zone,
+    kafka_offset                    bigint not null,
+    kafka_key                       varchar not null
 );
 
 create index if not exists idx_arbeidsgiver_refusjon_notifikasjon_avtale_id

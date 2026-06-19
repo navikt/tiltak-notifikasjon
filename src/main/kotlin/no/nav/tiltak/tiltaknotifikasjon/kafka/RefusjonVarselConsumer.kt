@@ -46,20 +46,22 @@ class RefusjonVarselConsumer(
             val refusjonId = melding.key().split("-").first() // val meldingId = "${refusjonId}-$varselType" (tiltak-refusjon-api)
             if (!finnesSak(refusjonKontaktpersonEntitet.grupperingsId(), refusjonKontaktpersonEntitet.tiltakstype)) {
                 // Sak for alle refusjonene på avtalen
-                opprettNySak(refusjonId, refusjonVarselMelding, refusjonKontaktpersonEntitet)
+                opprettNySak(refusjonId, refusjonVarselMelding, refusjonKontaktpersonEntitet, melding)
             }
             // Beskjed med sms om refusjon klar
             if (finnesNotifikasjon(refusjonId, refusjonVarselMelding.refusjonVarselType)) {
                 log.warn("AG: Notifikasjon for refusjonId $refusjonId og varseltype ${refusjonVarselMelding.refusjonVarselType} finnes allerede. Skipper opprettelse av ny notifikasjon. Skipper melding med offset ${melding.offset()}")
                 return
             }
-            opprettNyBeskjed(refusjonVarselMelding, refusjonKontaktpersonEntitet, refusjonId)
+            opprettNyBeskjed(refusjonVarselMelding, refusjonKontaktpersonEntitet, refusjonId, melding)
 
 
         } catch (e: Exception) {
             val notifikasjon = ArbeidsgiverRefusjonNotifikasjon(
                 ulid(),
-                arbeidsgivernotifikasjonJson = jacksonMapper().writeValueAsString(melding),
+                arbeidsgivernotifikasjonJson = melding.value(),
+                kafkaOffset = melding.offset(),
+                kafkaKey = melding.key(),
                 type = ArbeidsgivernotifikasjonType.Ukjent,
                 status = ArbeidsgivernotifikasjonStatus.FEILET_VED_BEHANDLING,
                 bedriftNr = null,
@@ -94,7 +96,12 @@ class RefusjonVarselConsumer(
         return find != null
     }
 
-    fun opprettNyBeskjed(refusjonVarselMelding: RefusjonVarselMelding, refusjonKontaktperson: RefusjonKontaktpersonEntitet, refusjonId: String) {
+    fun opprettNyBeskjed(
+        refusjonVarselMelding: RefusjonVarselMelding,
+        refusjonKontaktperson: RefusjonKontaktpersonEntitet,
+        refusjonId: String,
+        melding: ConsumerRecord<String, String>
+    ) {
         val refusjonBeskjed = nyBeskjedRefusjoner(refusjonKontaktperson, refusjonId)
         val notifikasjon = ArbeidsgiverRefusjonNotifikasjon(
             ulid(),
@@ -104,7 +111,9 @@ class RefusjonVarselConsumer(
             bedriftNr = refusjonKontaktperson.bedriftNr,
             varslingsformål = refusjonVarselMelding.refusjonVarselType.tilVarslingsformål(),
             avtaleId = refusjonKontaktperson.avtaleId.toString(),
-            refusjonId = refusjonId, // FOR IDEMPOTENS SJEKK
+            refusjonId = refusjonId,
+            kafkaOffset = melding.offset(),
+            kafkaKey = melding.key(), // FOR IDEMPOTENS SJEKK,
         )
         arbeidsgiverRefusjonNotifikasjonRepository.save(notifikasjon)
         runBlocking {
@@ -118,7 +127,12 @@ class RefusjonVarselConsumer(
         }
     }
 
-    fun opprettNySak(refusjonId: String, refusjonVarselMelding: RefusjonVarselMelding, refusjonKontaktperson: RefusjonKontaktpersonEntitet) {
+    fun opprettNySak(
+        refusjonId: String,
+        refusjonVarselMelding: RefusjonVarselMelding,
+        refusjonKontaktperson: RefusjonKontaktpersonEntitet,
+        melding: ConsumerRecord<String, String>
+    ) {
         val refusjonSak = nySakRefusjoner(refusjonKontaktperson, refusjonId)
         val notifikasjon = ArbeidsgiverRefusjonNotifikasjon(
             ulid(),
@@ -129,6 +143,8 @@ class RefusjonVarselConsumer(
             varslingsformål = refusjonVarselMelding.refusjonVarselType.tilVarslingsformål(),
             avtaleId = refusjonVarselMelding.avtaleId.toString(),
             refusjonId = refusjonId,
+            kafkaOffset = melding.offset(),
+            kafkaKey = melding.key(),
         )
         arbeidsgiverRefusjonNotifikasjonRepository.save(notifikasjon)
         runBlocking {

@@ -57,6 +57,8 @@ class ArbeidsgiverRefusjonNotifikasjonRepository(val dsl: DSLContext) {
             responseId = record.responseId,
             hardDeleteSkedulertTidspunkt = record.hardDeleteSkedulertTidspunkt,
             refusjonId = record.refusjonId,
+            kafkaOffset = record.kafkaOffset,
+            kafkaKey = record.kafkaKey,
         )
 
     private fun mapToDatabaseRecord(arbeidsgiverRefusjonNotifikasjon: ArbeidsgiverRefusjonNotifikasjon) =
@@ -74,5 +76,7 @@ class ArbeidsgiverRefusjonNotifikasjonRepository(val dsl: DSLContext) {
             responseId = arbeidsgiverRefusjonNotifikasjon.responseId,
             hardDeleteSkedulertTidspunkt = arbeidsgiverRefusjonNotifikasjon.hardDeleteSkedulertTidspunkt,
             refusjonId = arbeidsgiverRefusjonNotifikasjon.refusjonId,
+            kafkaOffset = arbeidsgiverRefusjonNotifikasjon.kafkaOffset,
+            kafkaKey = arbeidsgiverRefusjonNotifikasjon.kafkaKey,
         )
 }

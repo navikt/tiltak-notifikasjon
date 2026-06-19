@@ -18,6 +18,10 @@ data class ArbeidsgiverRefusjonNotifikasjon(
     /** id'en som notifikasjonen har hos fager. Den blir generert av de ved opprettelse og returnert */
     var responseId: String? = null,
     /** Tidspunktet notifikasjonen er skedulert til å slettes. Api-et forventer LocalDateTime i Europe/Oslo tidssone */
-    var hardDeleteSkedulertTidspunkt: LocalDateTime? = null
+    var hardDeleteSkedulertTidspunkt: LocalDateTime? = null,
+    /** Kafka partition offset for replay-formål */
+    val kafkaOffset: Long,
+    /** Kafka message key for replay-formål */
+    val kafkaKey: String
 
 )
