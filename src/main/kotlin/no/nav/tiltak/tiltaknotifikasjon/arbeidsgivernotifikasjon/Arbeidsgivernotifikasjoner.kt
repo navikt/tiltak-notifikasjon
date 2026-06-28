@@ -53,6 +53,7 @@ fun nySakRefusjoner(refusjonKontaktperson: RefusjonKontaktpersonEntitet, refusjo
     val nySak = NySak(variabler)
     return nySak
 }
+
 fun nyBeskjedRefusjoner(refusjonKontaktperson: RefusjonKontaktpersonEntitet, refusjonId: String, refusjonsnummer: String, måned: String): NyBeskjed {
     val variabler = NyBeskjed.Variables(
         NyBeskjedInput(
@@ -72,17 +73,9 @@ fun nyBeskjedRefusjoner(refusjonKontaktperson: RefusjonKontaktpersonEntitet, ref
                 opprettetTidspunkt = Instant.now().toString(),
                 grupperingsid = refusjonKontaktperson.grupperingsId(),
                 hardDelete = null
-            ), eksterneVarsler = listOf(
-                EksterntVarselInput(
-                    sms = EksterntVarselSmsInput(
-                        mottaker = SmsMottakerInput(
-                            kontaktinfo = SmsKontaktInfoInput(tlf = refusjonKontaktperson.arbeidsgiverTlf)
-                        ),
-                        smsTekst = "Hei! Du har fått en ny beskjed om refusjon for tiltak. Logg inn på Min side - arbeidsgiver hos Nav for å se hva det gjelder. Vennlig hilsen Nav",
-                        sendetidspunkt = SendetidspunktInput(Sendevindu.DAGTID_IKKE_SOENDAG)
-                    )
+            ), eksterneVarsler = lagRefusjonEksterneVarsler(refusjonKontaktperson)
         )
-    )))
+    )
     val nyBeskjed = NyBeskjed(variabler)
     return nyBeskjed
 }
@@ -229,6 +222,27 @@ fun nySoftDeleteNotifikasjonQuery(notifikasjonId: String): SoftDeleteNotifikasjo
     return softDeleteNotifikasjon
 }
 
+fun lagRefusjonEksterneVarsler(refusjonKontaktperson: RefusjonKontaktpersonEntitet): List<EksterntVarselInput> {
+    val varsler = mutableListOf<EksterntVarselInput>()
+    fun meldingTilArbeidsgiver(tlf: String): EksterntVarselInput {
+        return EksterntVarselInput(
+            sms = EksterntVarselSmsInput(
+                mottaker = SmsMottakerInput(kontaktinfo = SmsKontaktInfoInput(tlf = tlf)),
+                smsTekst = "Hei! Du har fått en ny beskjed om refusjon for tiltak. Logg inn på Min side - arbeidsgiver hos Nav for å se hva det gjelder. Vennlig hilsen Nav",
+                sendetidspunkt = SendetidspunktInput(Sendevindu.DAGTID_IKKE_SOENDAG)
+            )
+        )
+    }
+    if (refusjonKontaktperson.refusjonKontaktpersonTlf != null && erGyldigNorskMobilnr(refusjonKontaktperson.refusjonKontaktpersonTlf)) {
+        varsler.add(meldingTilArbeidsgiver(refusjonKontaktperson.refusjonKontaktpersonTlf))
+        if (refusjonKontaktperson.arbeidsgiverOnskerOgsaVarsling == true && erGyldigNorskMobilnr(refusjonKontaktperson.arbeidsgiverTlf)) {
+            varsler.add(meldingTilArbeidsgiver(refusjonKontaktperson.arbeidsgiverTlf))
+        }
+    } else if (erGyldigNorskMobilnr(refusjonKontaktperson.arbeidsgiverTlf)) {
+        varsler.add(meldingTilArbeidsgiver(refusjonKontaktperson.arbeidsgiverTlf))
+    }
+    return varsler
+}
 
 private fun lagLink(avtaleId: String): String {
     return when (Cluster.current) {

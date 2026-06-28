@@ -98,4 +98,6 @@ fun AvtaleHendelseMelding.lagArbeidsgivernotifikasjonTekst(erSak: Boolean): Stri
             throw IllegalArgumentException("HendelseType $hendelseType har ikke definert notifikasjonstekst")
         }
     }
-fun AvtaleHendelseMelding.erArbeidsgiversTlfGyldigNorskMobilnr(): Boolean = arbeidsgiverTlf?.matches(Regex("^(\\+47|0047)?(4|9)\\d{7}$")) ?: false
+
+fun erGyldigNorskMobilnr(tlf: String?): Boolean = tlf?.matches(Regex("^(\\+47|0047)?(4|9)\\d{7}$")) ?: false
+fun AvtaleHendelseMelding.erArbeidsgiversTlfGyldigNorskMobilnr(): Boolean = erGyldigNorskMobilnr(arbeidsgiverTlf)
