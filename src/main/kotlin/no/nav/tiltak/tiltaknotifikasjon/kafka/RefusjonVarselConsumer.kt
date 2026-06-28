@@ -67,7 +67,7 @@ class RefusjonVarselConsumer(
                 ulid(),
                 arbeidsgivernotifikasjonJson = melding.value(),
                 kafkaOffset = melding.offset(),
-                kafkaKey = melding.key(),
+                kafkaKey = melding.key() ?: "<null>",
                 type = ArbeidsgivernotifikasjonType.Ukjent,
                 status = ArbeidsgivernotifikasjonStatus.FEILET_VED_BEHANDLING,
                 bedriftNr = null,
