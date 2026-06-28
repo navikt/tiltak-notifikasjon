@@ -52,7 +52,7 @@ fun nySakRefusjoner(refusjonKontaktperson: RefusjonKontaktpersonEntitet, refusjo
     val nySak = NySak(variabler)
     return nySak
 }
-fun nyBeskjedRefusjoner(refusjonKontaktperson: RefusjonKontaktpersonEntitet, refusjonId: String): NyBeskjed {
+fun nyBeskjedRefusjoner(refusjonKontaktperson: RefusjonKontaktpersonEntitet, refusjonId: String, refusjonsnummer: String, måned: String): NyBeskjed {
     val variabler = NyBeskjed.Variables(
         NyBeskjedInput(
             mottakere = listOf(
@@ -63,7 +63,7 @@ fun nyBeskjedRefusjoner(refusjonKontaktperson: RefusjonKontaktpersonEntitet, ref
                 )
             ), notifikasjon = NotifikasjonInput(
                 merkelapp = refusjonKontaktperson.tiltakstype.arbeidsgiverNotifikasjonMerkelapp,
-                tekst = "Det har kommet en ny oppdatering på refusjonssøknaden din for avtale om ${refusjonKontaktperson.tiltakstype.beskrivelse}. Klikk på lenken for å se oppdateringen.",
+                tekst = "Du kan nå søke om refusjon for $måned ($refusjonsnummer)",
                 lenke = lagRefusjonLink(refusjonId)
             ), metadata = MetadataInput(
                 virksomhetsnummer = refusjonKontaktperson.bedriftNr,
@@ -77,7 +77,7 @@ fun nyBeskjedRefusjoner(refusjonKontaktperson: RefusjonKontaktpersonEntitet, ref
                         mottaker = SmsMottakerInput(
                             kontaktinfo = SmsKontaktInfoInput(tlf = refusjonKontaktperson.arbeidsgiverTlf)
                         ),
-                        smsTekst = "Hei! Det har kommet en ny oppdatering på refusjonssøknaden din for avtale om ${refusjonKontaktperson.tiltakstype.beskrivelse}. Logg inn på Min side - arbeidsgiver hos NAV for å se hva det gjelder. Vennlig hilsen NAV",
+                        smsTekst = "Hei! Du har fått en ny beskjed om refusjon for tiltak. Logg inn på Min side - arbeidsgiver hos Nav for å se hva det gjelder. Vennlig hilsen Nav",
                         sendetidspunkt = SendetidspunktInput(Sendevindu.DAGTID_IKKE_SOENDAG)
                     )
         )

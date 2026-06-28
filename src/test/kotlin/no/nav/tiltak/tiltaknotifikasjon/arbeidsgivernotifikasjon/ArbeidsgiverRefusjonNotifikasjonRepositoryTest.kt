@@ -127,5 +127,7 @@ class ArbeidsgiverRefusjonNotifikasjonRepositoryTest {
         responseId = responseId,
         hardDeleteSkedulertTidspunkt = hardDeleteSkedulertTidspunkt,
         refusjonId = "refusjon-1",
+        kafkaOffset = 100L,
+        kafkaKey = "DKLW53FKLDE-1",
     )
 }

@@ -20,6 +20,8 @@ import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import java.time.Instant
+import java.time.format.TextStyle
+import java.util.Locale
 
 @Component
 @Profile("prod-gcp", "dev-gcp", "dockercompose")
@@ -46,17 +48,18 @@ class RefusjonVarselConsumer(
                 return
             }
 
-            val refusjonId = melding.key().split("-").first() // val meldingId = "${refusjonId}-$varselType" (tiltak-refusjon-api)
+            /* Vi kjører idempotens-sjekk eksplisitt på sak og beskjed på refusjonId og varselType.  */
             if (!finnesSak(refusjonKontaktpersonEntitet.grupperingsId(), refusjonKontaktpersonEntitet.tiltakstype)) {
                 // Sak for alle refusjonene på avtalen
-                opprettNySak(refusjonId, refusjonVarselMelding, refusjonKontaktpersonEntitet, melding)
+                opprettNySak(refusjonVarselMelding.refusjonId, refusjonVarselMelding, refusjonKontaktpersonEntitet, melding)
             }
             // Beskjed med sms om refusjon klar
-            if (finnesNotifikasjon(refusjonId, refusjonVarselMelding.refusjonVarselType)) {
-                log.warn("AG: Notifikasjon for refusjonId $refusjonId og varseltype ${refusjonVarselMelding.refusjonVarselType} finnes allerede. Skipper opprettelse av ny notifikasjon. Skipper melding med offset ${melding.offset()}")
+            if (finnesNotifikasjon(refusjonVarselMelding.refusjonId, refusjonVarselMelding.refusjonVarselType)) {
+                log.warn("AG: Notifikasjon for refusjonId ${refusjonVarselMelding.refusjonId} og varseltype ${refusjonVarselMelding.refusjonVarselType} finnes allerede. Skipper opprettelse av ny notifikasjon. Skipper melding med offset ${melding.offset()}")
                 return
             }
-            opprettNyBeskjed(refusjonVarselMelding, refusjonKontaktpersonEntitet, refusjonId, melding)
+            val måned: String = refusjonVarselMelding.tilskuddFom.month.getDisplayName(TextStyle.FULL, Locale.of("no"))
+            opprettNyBeskjed(refusjonVarselMelding, refusjonKontaktpersonEntitet, refusjonVarselMelding.refusjonId, refusjonVarselMelding.refusjonsnummer, melding, måned)
 
 
         } catch (e: Exception) {
@@ -78,7 +81,7 @@ class RefusjonVarselConsumer(
         }
     }
 
-        fun finnesSak(grupperingsId: String, tiltakstype: Tiltakstype): Boolean {
+    fun finnesSak(grupperingsId: String, tiltakstype: Tiltakstype): Boolean {
         var sakFinnes = false
         val sakQuery = nyHentSakQuery(grupperingsId, tiltakstype.arbeidsgiverNotifikasjonMerkelapp)
         runBlocking {
@@ -103,9 +106,11 @@ class RefusjonVarselConsumer(
         refusjonVarselMelding: RefusjonVarselMelding,
         refusjonKontaktperson: RefusjonKontaktpersonEntitet,
         refusjonId: String,
-        melding: ConsumerRecord<String, String>
+        refusjonsnummer: String,
+        melding: ConsumerRecord<String, String>,
+        måned: String
     ) {
-        val refusjonBeskjed = nyBeskjedRefusjoner(refusjonKontaktperson, refusjonId)
+        val refusjonBeskjed = nyBeskjedRefusjoner(refusjonKontaktperson, refusjonId, refusjonsnummer, måned)
         val notifikasjon = ArbeidsgiverRefusjonNotifikasjon(
             ulid(),
             arbeidsgivernotifikasjonJson = jacksonMapper().writeValueAsString(refusjonBeskjed),
