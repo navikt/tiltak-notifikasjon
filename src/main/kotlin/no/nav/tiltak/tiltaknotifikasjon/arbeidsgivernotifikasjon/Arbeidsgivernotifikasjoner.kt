@@ -10,6 +10,7 @@ import no.nav.tiltak.tiltaknotifikasjon.utils.Cluster
 import java.time.Instant
 import java.time.LocalDateTime
 
+private const val REFUSJON_RESSURS_ID = "nav_tiltak_tiltaksrefusjon"
 
 fun nySak(avtaleHendelseMelding: AvtaleHendelseMelding): NySak {
     val variabler = NySak.Variables(
@@ -40,7 +41,7 @@ fun nySakRefusjoner(refusjonKontaktperson: RefusjonKontaktpersonEntitet, refusjo
         mottakere = listOf(
             MottakerInput(
                 altinnRessurs = AltinnRessursMottakerInput(
-                    ressursId = refusjonKontaktperson.tiltakstype.ressursId,
+                    ressursId = REFUSJON_RESSURS_ID,
                 )
             )
         ),
@@ -58,7 +59,7 @@ fun nyBeskjedRefusjoner(refusjonKontaktperson: RefusjonKontaktpersonEntitet, ref
             mottakere = listOf(
                 MottakerInput(
                     altinnRessurs = AltinnRessursMottakerInput(
-                        ressursId = refusjonKontaktperson.tiltakstype.ressursId,
+                        ressursId = REFUSJON_RESSURS_ID,
                     )
                 )
             ), notifikasjon = NotifikasjonInput(
