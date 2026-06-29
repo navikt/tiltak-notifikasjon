@@ -44,7 +44,7 @@ class RefusjonVarselConsumer(
             if (refusjonVarselMelding.refusjonVarselType != RefusjonVarselType.KLAR) return
             val refusjonKontaktpersonEntitet = arbeidsgiverRefusjonKontaktpersonRepository.findByAvtaleId(refusjonVarselMelding.avtaleId)
             if (refusjonKontaktpersonEntitet == null) {
-                log.warn("AG: Fant ingen refusjonkontaktperson for avtaleId ${refusjonVarselMelding.avtaleId} Skipper melding med offset ${melding.offset()}")
+                log.warn("AGR: Fant ingen refusjonkontaktperson for avtaleId ${refusjonVarselMelding.avtaleId} Skipper melding med offset ${melding.offset()}")
                 return
             }
 
@@ -55,7 +55,7 @@ class RefusjonVarselConsumer(
             }
             // Beskjed med sms om refusjon klar
             if (finnesNotifikasjon(refusjonVarselMelding.refusjonId, refusjonVarselMelding.refusjonVarselType)) {
-                log.warn("AG: Notifikasjon for refusjonId ${refusjonVarselMelding.refusjonId} og varseltype ${refusjonVarselMelding.refusjonVarselType} finnes allerede. Skipper opprettelse av ny notifikasjon. Skipper melding med offset ${melding.offset()}")
+                log.warn("AGR: Notifikasjon for refusjonId ${refusjonVarselMelding.refusjonId} og varseltype ${refusjonVarselMelding.refusjonVarselType} finnes allerede. Skipper opprettelse av ny notifikasjon. Skipper melding med offset ${melding.offset()}")
                 return
             }
             val måned: String = refusjonVarselMelding.tilskuddFom.month.getDisplayName(TextStyle.FULL, Locale.of("no"))
@@ -77,7 +77,7 @@ class RefusjonVarselConsumer(
                 feilmelding = e.stackTraceToString()
             )
             arbeidsgiverRefusjonNotifikasjonRepository.save(notifikasjon)
-            log.error("Feil ved konsumering av refusjon varsel fra topic ${melding.topic()} offset ${melding.offset()}", e)
+            log.error("AGR: Feil ved konsumering av refusjon varsel fra topic ${melding.topic()} offset ${melding.offset()}", e)
         }
     }
 
@@ -88,7 +88,7 @@ class RefusjonVarselConsumer(
             val response = notifikasjonGraphQlClient.execute(sakQuery)
             if (response.errors != null) {
                 // om sak skulle finnes vil vi bare få duplikat-feilmelding i graphql, så det gjør ikke så mye å forsøke å opprette 2 ganger.
-                log.error("AG: GraphQl-kall for å hente refusjon-sak med grupperingsid feilet: ${response.errors}")
+                log.error("AGR: GraphQl-kall for å hente refusjon-sak med grupperingsid feilet: ${response.errors}")
             }
             if (response.data?.hentSakMedGrupperingsid is HentetSak) {
                 sakFinnes = true
@@ -167,7 +167,7 @@ class RefusjonVarselConsumer(
     }
 
     private fun settVellykket(notifikasjon: ArbeidsgiverRefusjonNotifikasjon, responseId: String, beskrivelse: String) {
-        log.info("AG: $beskrivelse opprettet vellykket. avtaleId: ${notifikasjon.avtaleId}")
+        log.info("AGR: $beskrivelse opprettet vellykket. avtaleId: ${notifikasjon.avtaleId}")
         notifikasjon.responseId = responseId
         notifikasjon.sendtTidspunkt = Instant.now()
         arbeidsgiverRefusjonNotifikasjonRepository.save(notifikasjon)
@@ -175,12 +175,12 @@ class RefusjonVarselConsumer(
 
     private fun settFeilet(notifikasjon: ArbeidsgiverRefusjonNotifikasjon, response: GraphQLClientResponse<*>, beskrivelse: String) {
         if (response.errors != null) {
-            log.error("AG: GraphQl-kall for å opprette $beskrivelse feilet: ${response.errors}")
+            log.error("AGR: GraphQl-kall for å opprette $beskrivelse feilet: ${response.errors}")
             notifikasjon.status = ArbeidsgivernotifikasjonStatus.FEILET_VED_SENDING
             notifikasjon.feilmelding = response.errors.toString()
         } else {
             // UgyldigMerkelapp | UgyldigMottaker | DuplikatGrupperingsid | DuplikatGrupperingsidEtterDelete | UkjentProdusent | UkjentRolle
-            log.error("AG: opprett $beskrivelse gikk ikke med resultatet: ${response.data}")
+            log.error("AGR: opprett $beskrivelse gikk ikke med resultatet: ${response.data}")
             notifikasjon.feilmelding = response.data.toString()
             notifikasjon.status = ArbeidsgivernotifikasjonStatus.FEILET_VED_OPPRETTELSE_HOS_FAGER
         }
