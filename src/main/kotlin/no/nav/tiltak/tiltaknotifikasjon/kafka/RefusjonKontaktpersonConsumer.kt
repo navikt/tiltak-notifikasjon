@@ -6,6 +6,7 @@ import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.ArbeidsgiverRef
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.RefusjonKontaktpersonEntitet
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.avtale.Tiltakstype
+import no.nav.tiltak.tiltaknotifikasjon.avtale.kanOppdatereRefusjonKontaktperson
 import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
@@ -23,7 +24,7 @@ class RefusjonKontaktpersonConsumer(val refusjonKontaktpersonRepository: Arbeids
     private val antallLagret = AtomicLong(0)
 
     @KafkaListener(topics = [Topics.AVTALE_HENDELSE_COMPACT],
-        groupId = "tiltak-notifikasjon-refusjon-kontaktperson-5",
+        groupId = "tiltak-notifikasjon-refusjon-kontaktperson-6",
         properties = ["auto.offset.reset=earliest"], // Hmm, trodde ikke dette var nødvendig.. tydeligvis.
     )
     fun konsumer(melding: ConsumerRecord<String, String>) {
@@ -63,6 +64,7 @@ class RefusjonKontaktpersonConsumer(val refusjonKontaktpersonRepository: Arbeids
         if (avtaleHendelseMelding.tiltakstype == Tiltakstype.ARBEIDSTRENING) return false // arbeidstrening har ikke økonomi
         if (avtaleHendelseMelding.avtaleInngått == null) return false // refusjonsvarslinger har ingen nytte på ting som ikke er inngått
         if (avtaleHendelseMelding.arbeidsgiverTlf == null) return false // skal ikke kunne skje på inngått avtale
+        if (!avtaleHendelseMelding.hendelseType.kanOppdatereRefusjonKontaktperson()) return false
         // Kjører backfill frem til toggle skrus på, da tar AvtaleHendelseConsumer over
         return !unleash.isEnabled("refusjon-kontaktperson-backfill-ferdig")
     }
