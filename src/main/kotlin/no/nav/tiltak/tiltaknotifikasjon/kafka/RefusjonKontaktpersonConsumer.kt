@@ -47,6 +47,7 @@ class RefusjonKontaktpersonConsumer(val refusjonKontaktpersonRepository: Arbeids
                 deltakerFornavn = avtaleHendelseMelding.deltakerFornavn,
             )
             refusjonKontaktpersonRepository.save(refusjonKontaktperson)
+            log.info("Lagret refusjon kontaktperson via backfill, offset: ${melding.offset()}")
             val count = antallLagret.incrementAndGet()
             if (count % 100 == 0L) {
                 log.info("Backfill refusjon kontaktperson: $count meldinger lagret, siste offset ${melding.offset()}")

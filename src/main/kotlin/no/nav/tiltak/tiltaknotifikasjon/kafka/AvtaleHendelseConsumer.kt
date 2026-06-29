@@ -136,7 +136,7 @@ class AvtaleHendelseConsumer(
                 deltakerEtternavn = avtaleHendelseMelding.deltakerEtternavn,
             )
             arbeidsgiverRefusjonKontaktpersonRepository.save(refusjonKontaktperson)
-            log.info("Lagret refusjon kontaktperson for avtale ${avtaleHendelseMelding.avtaleId}, offset ${offset}")
+            log.info("Lagret refusjon kontaktperson for avtale ${avtaleHendelseMelding.avtaleId}, offset: $offset")
         } catch (e: Exception) {
             log.error("Feil ved lagring av refusjon kontaktperson, offset $offset", e)
         }
