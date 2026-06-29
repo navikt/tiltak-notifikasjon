@@ -62,8 +62,8 @@ class RefusjonKontaktpersonConsumer(val refusjonKontaktpersonRepository: Arbeids
 
     private fun skalBehandles(avtaleHendelseMelding: AvtaleHendelseMelding): Boolean {
         if (avtaleHendelseMelding.tiltakstype == Tiltakstype.ARBEIDSTRENING) return false // arbeidstrening har ikke økonomi
-        if (avtaleHendelseMelding.arbeidsgiverTlf == null) return false // skal ikke kunne skje på inngått avtale
         if (avtaleHendelseMelding.avtaleInngått == null) return false // refusjonsvarslinger har ingen nytte på ting som ikke er inngått
+        if (avtaleHendelseMelding.arbeidsgiverTlf == null) return false // skal ikke kunne skje på inngått avtale
         if (!avtaleHendelseMelding.hendelseType.kanOppdatereRefusjonKontaktperson()) return false
         // Kjører backfill frem til toggle skrus på, da tar AvtaleHendelseConsumer over
         return !unleash.isEnabled("refusjon-kontaktperson-backfill-ferdig")
