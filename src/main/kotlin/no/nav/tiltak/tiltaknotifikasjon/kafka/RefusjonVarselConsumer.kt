@@ -121,7 +121,7 @@ class RefusjonVarselConsumer(
             avtaleId = refusjonKontaktperson.avtaleId.toString(),
             refusjonId = refusjonId,
             kafkaOffset = melding.offset(),
-            kafkaKey = melding.key(), // FOR IDEMPOTENS SJEKK,
+            kafkaKey = melding.key(),
         )
         arbeidsgiverRefusjonNotifikasjonRepository.save(notifikasjon)
         runBlocking {
