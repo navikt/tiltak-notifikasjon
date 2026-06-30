@@ -167,7 +167,7 @@ class RefusjonVarselConsumer(
     }
 
     private fun settVellykket(notifikasjon: ArbeidsgiverRefusjonNotifikasjon, responseId: String, beskrivelse: String) {
-        log.info("AGR: $beskrivelse opprettet vellykket. avtaleId: ${notifikasjon.avtaleId}")
+        log.info("AGR: $beskrivelse opprettet vellykket. avtaleId: ${notifikasjon.avtaleId} refusjonId: ${notifikasjon.refusjonId} responseId: $responseId")
         notifikasjon.responseId = responseId
         notifikasjon.sendtTidspunkt = Instant.now()
         arbeidsgiverRefusjonNotifikasjonRepository.save(notifikasjon)
@@ -175,12 +175,12 @@ class RefusjonVarselConsumer(
 
     private fun settFeilet(notifikasjon: ArbeidsgiverRefusjonNotifikasjon, response: GraphQLClientResponse<*>, beskrivelse: String) {
         if (response.errors != null) {
-            log.error("AGR: GraphQl-kall for å opprette $beskrivelse feilet: ${response.errors}")
+            log.error("AGR: GraphQl-kall for å opprette $beskrivelse feilet. avtaleId: ${notifikasjon.avtaleId} refusjonId: ${notifikasjon.refusjonId} responseId: ${notifikasjon.responseId}: ${response.errors}")
             notifikasjon.status = ArbeidsgivernotifikasjonStatus.FEILET_VED_SENDING
             notifikasjon.feilmelding = response.errors.toString()
         } else {
             // UgyldigMerkelapp | UgyldigMottaker | DuplikatGrupperingsid | DuplikatGrupperingsidEtterDelete | UkjentProdusent | UkjentRolle
-            log.error("AGR: opprett $beskrivelse gikk ikke med resultatet: ${response.data}")
+            log.error("AGR: opprett $beskrivelse gikk ikke med resultatet. avtaleId: ${notifikasjon.avtaleId} refusjonId: ${notifikasjon.refusjonId} responseId: ${notifikasjon.responseId}: ${response.data}")
             notifikasjon.feilmelding = response.data.toString()
             notifikasjon.status = ArbeidsgivernotifikasjonStatus.FEILET_VED_OPPRETTELSE_HOS_FAGER
         }
