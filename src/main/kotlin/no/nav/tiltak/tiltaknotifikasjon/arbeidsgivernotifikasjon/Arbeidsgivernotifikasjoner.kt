@@ -11,6 +11,7 @@ import java.time.Instant
 import java.time.LocalDateTime
 
 private const val REFUSJON_RESSURS_ID = "nav_tiltak_tiltaksrefusjon"
+private const val REFUSJON_MERKELAPP = "Tiltaksrefusjon"
 
 fun nySak(avtaleHendelseMelding: AvtaleHendelseMelding): NySak {
     val variabler = NySak.Variables(
@@ -36,7 +37,7 @@ fun nySak(avtaleHendelseMelding: AvtaleHendelseMelding): NySak {
 fun nySakRefusjoner(refusjonKontaktperson: RefusjonKontaktpersonEntitet, refusjonId: String): NySak {
     val variabler = NySak.Variables(
         grupperingsid = refusjonKontaktperson.grupperingsId(),
-        merkelapp = refusjonKontaktperson.tiltakstype.arbeidsgiverNotifikasjonMerkelapp,
+        merkelapp = REFUSJON_MERKELAPP,
         virksomhetsnummer = refusjonKontaktperson.bedriftNr,
         mottakere = listOf(
             MottakerInput(
@@ -64,7 +65,7 @@ fun nyBeskjedRefusjoner(refusjonKontaktperson: RefusjonKontaktpersonEntitet, ref
                     )
                 )
             ), notifikasjon = NotifikasjonInput(
-                merkelapp = refusjonKontaktperson.tiltakstype.arbeidsgiverNotifikasjonMerkelapp,
+                merkelapp = REFUSJON_MERKELAPP,
                 tekst = "Du kan nå søke om refusjon for $måned ($refusjonsnummer)",
                 lenke = lagRefusjonLink(refusjonId)
             ), metadata = MetadataInput(
