@@ -9,7 +9,6 @@ import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.*
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.hentsakmedgrupperingsid.HentetSak
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.nybeskjed.NyBeskjedVellykket
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.nysak.NySakVellykket
-import no.nav.tiltak.tiltaknotifikasjon.avtale.Tiltakstype
 import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
 import no.nav.tiltak.tiltaknotifikasjon.utils.ulid
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -21,7 +20,7 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import java.time.Instant
 import java.time.format.TextStyle
-import java.util.Locale
+import java.util.*
 
 @Component
 @Profile("prod-gcp", "dev-gcp", "dockercompose")
@@ -49,7 +48,7 @@ class RefusjonVarselConsumer(
             }
 
             /* Vi kjører idempotens-sjekk eksplisitt på sak og beskjed på refusjonId og varselType.  */
-            if (!finnesSak(refusjonKontaktpersonEntitet.grupperingsId(), refusjonKontaktpersonEntitet.tiltakstype)) {
+            if (!finnesSak(refusjonKontaktpersonEntitet.grupperingsId())) {
                 // Sak for alle refusjonene på avtalen
                 opprettNySak(refusjonVarselMelding.refusjonId, refusjonVarselMelding, refusjonKontaktpersonEntitet, melding)
             }
@@ -81,9 +80,9 @@ class RefusjonVarselConsumer(
         }
     }
 
-    fun finnesSak(grupperingsId: String, tiltakstype: Tiltakstype): Boolean {
+    fun finnesSak(grupperingsId: String): Boolean {
         var sakFinnes = false
-        val sakQuery = nyHentSakQuery(grupperingsId, tiltakstype.arbeidsgiverNotifikasjonMerkelapp)
+        val sakQuery = nyHentSakQuery(grupperingsId, REFUSJON_MERKELAPP)
         runBlocking {
             val response = notifikasjonGraphQlClient.execute(sakQuery)
             if (response.errors != null) {
@@ -120,7 +119,7 @@ class RefusjonVarselConsumer(
             status = ArbeidsgivernotifikasjonStatus.BEHANDLET,
             bedriftNr = refusjonKontaktperson.bedriftNr,
             varslingsformål = refusjonVarselMelding.refusjonVarselType.tilVarslingsformål(),
-            avtaleId = refusjonKontaktperson.avtaleId.toString(),
+            avtaleId = refusjonVarselMelding.avtaleId.toString(),
             refusjonId = refusjonId,
             kafkaOffset = melding.offset(),
             kafkaKey = melding.key(),

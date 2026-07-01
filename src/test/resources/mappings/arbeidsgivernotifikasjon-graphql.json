@@ -300,6 +300,11 @@
             "matchesJsonPath": "$..[?(@.grupperingsid=='d29ee14b-27b8-4b1e-9e10-000000000001-refusjoner')]",
             "ignoreArrayOrder": true,
             "ignoreExtraElements": true
+          },
+          {
+            "matchesJsonPath": "$..[?(@.merkelapp=='Tiltaksrefusjon')]",
+            "ignoreArrayOrder": true,
+            "ignoreExtraElements": true
           }
         ]
       },
@@ -318,7 +323,7 @@
                 "virksomhetsnummer": "999999999",
                 "tittel": "Refusjoner",
                 "lenke": "https://nav.no",
-                "merkelapp": "Lønnstilskudd"
+                "merkelapp": "Tiltaksrefusjon"
               }
             }
           }

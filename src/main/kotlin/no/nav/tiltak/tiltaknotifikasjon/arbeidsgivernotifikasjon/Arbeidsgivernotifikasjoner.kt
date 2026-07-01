@@ -11,7 +11,7 @@ import java.time.Instant
 import java.time.LocalDateTime
 
 private const val REFUSJON_RESSURS_ID = "nav_tiltak_tiltaksrefusjon"
-private const val REFUSJON_MERKELAPP = "Tiltaksrefusjon"
+const val REFUSJON_MERKELAPP = "Tiltaksrefusjon"
 
 fun nySak(avtaleHendelseMelding: AvtaleHendelseMelding): NySak {
     val variabler = NySak.Variables(
