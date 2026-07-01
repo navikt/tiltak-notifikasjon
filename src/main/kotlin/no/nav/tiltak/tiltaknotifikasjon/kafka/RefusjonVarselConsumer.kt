@@ -54,8 +54,8 @@ class RefusjonVarselConsumer(
                 opprettNySak(refusjonVarselMelding.refusjonId, refusjonVarselMelding, refusjonKontaktpersonEntitet, melding)
             }
             // Beskjed med sms om refusjon klar
-            if (finnesNotifikasjon(refusjonVarselMelding.refusjonId, refusjonVarselMelding.refusjonVarselType)) {
-                log.warn("AGR: Notifikasjon for refusjonId ${refusjonVarselMelding.refusjonId} og varseltype ${refusjonVarselMelding.refusjonVarselType} finnes allerede. Skipper opprettelse av ny notifikasjon. Skipper melding med offset ${melding.offset()}")
+            if (finnesNotifikasjon(refusjonVarselMelding.refusjonId, refusjonVarselMelding.refusjonVarselType, ArbeidsgivernotifikasjonType.Beskjed)) {
+                log.warn("AGR: Notifikasjon av typen Beskjed for refusjonId ${refusjonVarselMelding.refusjonId} og varseltype ${refusjonVarselMelding.refusjonVarselType} finnes allerede. Skipper opprettelse av ny notifikasjon. Skipper melding med offset ${melding.offset()}")
                 return
             }
             val måned: String = refusjonVarselMelding.tilskuddFom.month.getDisplayName(TextStyle.FULL, Locale.of("no"))
@@ -96,9 +96,11 @@ class RefusjonVarselConsumer(
         }
         return sakFinnes
     }
-    fun finnesNotifikasjon(refusjonId: String, varselType: RefusjonVarselType): Boolean {
+    fun finnesNotifikasjon(refusjonId: String, varselType: RefusjonVarselType, notifikasjonstype: ArbeidsgivernotifikasjonType): Boolean {
         val notifikasjoner = arbeidsgiverRefusjonNotifikasjonRepository.findAllByRefusjonId(refusjonId)
-        val find = notifikasjoner.find { it.varslingsformål == varselType.tilVarslingsformål() }
+        // Må filtrere på ønsket notifikasjonstype her - ellers vil f.eks. en Sak med samme varslingsformål (opprettet i samme kjøring)
+        // feilaktig bli tolket som at beskjeden allerede er sendt, slik at opprettNyBeskjed() blir hoppet over.
+        val find = notifikasjoner.find { it.type == notifikasjonstype && it.varslingsformål == varselType.tilVarslingsformål() }
         return find != null
     }
 

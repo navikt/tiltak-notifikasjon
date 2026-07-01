@@ -24,7 +24,8 @@ data class RefusjonKontaktpersonEntitet(
 
 
 /** ID sammensatt av avtaleNr og en random ulid (avtaleNr_ulid) Skal være unik for hver notifikasjon hos fager.
- * VI BRUKER IKKE DENNE. Vi slår opp på oppgaver via ID'en Fager returnerer */
+ * VI bruker ikke denne til noe funksjonelt, den er til kun for å tilfredstille krav i reqest mot fager, ved opprettelse av notifikasjoner.
+ * Vi slår opp på oppgaver via ID'en Fager returnerer */
 fun RefusjonKontaktpersonEntitet.eksternId(): String = "${avtaleId}_${ulid()}"
 
 /** grupperingsId for saker, beskjeder og oppgaver knyttet til refusjoner. Alle notifikasjoner med denne grupperingsIden vil knyttes sammen */
