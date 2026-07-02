@@ -231,6 +231,26 @@ class RefusjonVarselConsumerTest {
     }
 
     @Test
+    fun `skal lagre beskjed som FEILET_VED_SENDING når GraphQL-kallet kaster exception (ikke la den boble ut)`() {
+        // Kontaktperson med bedriftNr som wiremock-stubben svarer HTTP 500 på ved nyBeskjed -> execute() kaster.
+        val avtaleId = UUID.randomUUID()
+        kontaktpersonRepository.save(kontaktperson(avtaleId).copy(bedriftNr = "000000000"))
+        val refusjonId = UUID.randomUUID().toString()
+
+        consumer.konsumer(consumerRecord(melding(avtaleId = avtaleId, refusjonId = refusjonId)))
+
+        val notifikasjoner = notifikasjonRepository.findAllByRefusjonId(refusjonId)
+        val beskjed = notifikasjoner.find { it.type == ArbeidsgivernotifikasjonType.Beskjed }
+        assertThat(beskjed).isNotNull()
+        assertThat(beskjed!!.status).isEqualTo(ArbeidsgivernotifikasjonStatus.FEILET_VED_SENDING)
+        assertThat(beskjed.responseId).isNull()
+        assertThat(beskjed.sendtTidspunkt).isNull()
+        assertThat(beskjed.feilmelding).isNotBlank()
+        // Exception skal håndteres i opprettNyBeskjed, ikke boble ut til ytterste catch og lage en Ukjent dead-letter.
+        assertThat(notifikasjoner.none { it.type == ArbeidsgivernotifikasjonType.Ukjent }).isTrue()
+    }
+
+    @Test
     fun `finnesNotifikasjon skal returnere true når type og varselformål matcher eksisterende notifikasjon`() {
         val avtaleId = UUID.randomUUID()
         kontaktpersonRepository.save(kontaktperson(avtaleId))

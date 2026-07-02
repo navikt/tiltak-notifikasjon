@@ -126,12 +126,16 @@ class RefusjonVarselConsumer(
         )
         arbeidsgiverRefusjonNotifikasjonRepository.save(notifikasjon)
         runBlocking {
-            val response = notifikasjonGraphQlClient.execute(refusjonBeskjed)
-            val resultat = response.data?.nyBeskjed
-            if (resultat is NyBeskjedVellykket) {
-                settVellykket(notifikasjon, resultat.id, "refusjon-beskjed")
-            } else {
-                settFeilet(notifikasjon, response, "refusjon-beskjed")
+            try {
+                val response = notifikasjonGraphQlClient.execute(refusjonBeskjed)
+                val resultat = response.data?.nyBeskjed
+                if (resultat is NyBeskjedVellykket) {
+                    settVellykket(notifikasjon, resultat.id, "refusjon-beskjed")
+                } else {
+                    settFeilet(notifikasjon, response, "refusjon-beskjed")
+                }
+            } catch (e: Exception) {
+                settFeiletVedException(notifikasjon, e, "refusjon-beskjed")
             }
         }
     }
@@ -157,12 +161,16 @@ class RefusjonVarselConsumer(
         )
         arbeidsgiverRefusjonNotifikasjonRepository.save(notifikasjon)
         runBlocking {
-            val response = notifikasjonGraphQlClient.execute(refusjonSak)
-            val resultat = response.data?.nySak
-            if (resultat is NySakVellykket) {
-                settVellykket(notifikasjon, resultat.id, "refusjon-sak")
-            } else {
-                settFeilet(notifikasjon, response, "refusjon-sak")
+            try {
+                val response = notifikasjonGraphQlClient.execute(refusjonSak)
+                val resultat = response.data?.nySak
+                if (resultat is NySakVellykket) {
+                    settVellykket(notifikasjon, resultat.id, "refusjon-sak")
+                } else {
+                    settFeilet(notifikasjon, response, "refusjon-sak")
+                }
+            } catch (e: Exception) {
+                settFeiletVedException(notifikasjon, e, "refusjon-sak")
             }
         }
     }
@@ -185,6 +193,13 @@ class RefusjonVarselConsumer(
             notifikasjon.feilmelding = response.data.toString()
             notifikasjon.status = ArbeidsgivernotifikasjonStatus.FEILET_VED_OPPRETTELSE_HOS_FAGER
         }
+        arbeidsgiverRefusjonNotifikasjonRepository.save(notifikasjon)
+    }
+
+    private fun settFeiletVedException(notifikasjon: ArbeidsgiverRefusjonNotifikasjon, e: Exception, beskrivelse: String) {
+        log.error("AGR: GraphQl-kall for å opprette $beskrivelse feilet med exception. avtaleId: ${notifikasjon.avtaleId} refusjonId: ${notifikasjon.refusjonId}", e)
+        notifikasjon.status = ArbeidsgivernotifikasjonStatus.FEILET_VED_SENDING
+        notifikasjon.feilmelding = e.stackTraceToString()
         arbeidsgiverRefusjonNotifikasjonRepository.save(notifikasjon)
     }
 }

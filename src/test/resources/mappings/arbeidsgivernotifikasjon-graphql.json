@@ -89,6 +89,32 @@
       }
     },
     {
+      "priority": 1,
+      "request": {
+        "method": "POST",
+        "urlPattern": "/",
+        "bodyPatterns": [
+          {
+            "matchesJsonPath": "$..[?(@.operationName=='nyBeskjed')]",
+            "ignoreArrayOrder": true,
+            "ignoreExtraElements": true
+          },
+          {
+            "matchesJsonPath": "$..[?(@.virksomhetsnummer=='000000000')]",
+            "ignoreArrayOrder": true,
+            "ignoreExtraElements": true
+          }
+        ]
+      },
+      "response": {
+        "status": 500,
+        "headers": {
+          "Content-Type": "text/plain"
+        },
+        "body": "Simulert nedetid hos fager"
+      }
+    },
+    {
       "priority": 3,
       "request": {
         "method": "POST",
