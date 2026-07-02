@@ -157,6 +157,8 @@ class RefusjonVarselConsumerTest {
         val beskjed = notifikasjoner.find { it.type == ArbeidsgivernotifikasjonType.Beskjed }
         assertThat(beskjed).isNotNull()
         assertThat(beskjed!!.status).isEqualTo(ArbeidsgivernotifikasjonStatus.BEHANDLET)
+        assertThat(beskjed.responseId).isNotNull()
+        assertThat(beskjed.sendtTidspunkt).isNotNull()
     }
 
     @Test
@@ -171,8 +173,12 @@ class RefusjonVarselConsumerTest {
         val sak = notifikasjoner.find { it.type == ArbeidsgivernotifikasjonType.Sak }
         assertThat(sak).isNotNull()
         assertThat(sak!!.status).isEqualTo(ArbeidsgivernotifikasjonStatus.SAK_MOTTATT)
+        assertThat(sak.responseId).isNotNull()
+        assertThat(sak.sendtTidspunkt).isNotNull()
         val beskjed = notifikasjoner.find { it.type == ArbeidsgivernotifikasjonType.Beskjed }
         assertThat(beskjed).isNotNull()
+        assertThat(beskjed!!.responseId).isNotNull()
+        assertThat(beskjed.sendtTidspunkt).isNotNull()
     }
 
     @Test
