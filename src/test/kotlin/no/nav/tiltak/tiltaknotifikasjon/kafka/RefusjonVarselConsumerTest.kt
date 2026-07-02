@@ -98,7 +98,7 @@ class RefusjonVarselConsumerTest {
         avtaleId = avtaleId,
         refusjonId = refusjonId,
         tilskuddsperiodeId = UUID.randomUUID(),
-        refusjonVarselType = refusjonVarselType,
+        varselType = refusjonVarselType,
         fristForGodkjenning = LocalDate.now().plusDays(14),
         avtaleNr = 1,
         løpenummer = 1,

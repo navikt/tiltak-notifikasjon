@@ -40,8 +40,8 @@ class RefusjonVarselConsumer(
         try {
             if (!unleash.isEnabled("refusjon-klar-i-tiltak-notifikasjon")) return // Switch som gjør motsatt togling på dagens kode i tiltaksgjennomforing-api.
             val refusjonVarselMelding: RefusjonVarselMelding = mapper.readValue(melding.value())
-            if (refusjonVarselMelding.refusjonVarselType != RefusjonVarselType.KLAR) {
-                log.info("AGR: Mottok melding med varseltype ${refusjonVarselMelding.refusjonVarselType} somn ikke behandles. refusjonId: ${refusjonVarselMelding.refusjonId}. offset: ${melding.offset()}")
+            if (refusjonVarselMelding.varselType != RefusjonVarselType.KLAR) {
+                log.info("AGR: Mottok melding med varseltype ${refusjonVarselMelding.varselType} somn ikke behandles. refusjonId: ${refusjonVarselMelding.refusjonId}. offset: ${melding.offset()}")
                 return
             }
             val refusjonKontaktpersonEntitet = arbeidsgiverRefusjonKontaktpersonRepository.findByAvtaleId(refusjonVarselMelding.avtaleId)
@@ -56,8 +56,8 @@ class RefusjonVarselConsumer(
                 opprettNySak(refusjonVarselMelding.refusjonId, refusjonVarselMelding, refusjonKontaktpersonEntitet, melding)
             }
             // Beskjed med sms om refusjon klar
-            if (finnesNotifikasjon(refusjonVarselMelding.refusjonId, refusjonVarselMelding.refusjonVarselType, ArbeidsgivernotifikasjonType.Beskjed)) {
-                log.warn("AGR: Notifikasjon av typen Beskjed for refusjonId ${refusjonVarselMelding.refusjonId} og varseltype ${refusjonVarselMelding.refusjonVarselType} finnes allerede. Skipper opprettelse av ny notifikasjon. Skipper melding med offset ${melding.offset()}")
+            if (finnesNotifikasjon(refusjonVarselMelding.refusjonId, refusjonVarselMelding.varselType, ArbeidsgivernotifikasjonType.Beskjed)) {
+                log.warn("AGR: Notifikasjon av typen Beskjed for refusjonId ${refusjonVarselMelding.refusjonId} og varseltype ${refusjonVarselMelding.varselType} finnes allerede. Skipper opprettelse av ny notifikasjon. Skipper melding med offset ${melding.offset()}")
                 return
             }
             val måned: String = refusjonVarselMelding.tilskuddFom.month.getDisplayName(TextStyle.FULL, Locale.of("no"))
@@ -121,7 +121,7 @@ class RefusjonVarselConsumer(
             type = ArbeidsgivernotifikasjonType.Beskjed,
             status = ArbeidsgivernotifikasjonStatus.BEHANDLET,
             bedriftNr = refusjonKontaktperson.bedriftNr,
-            varslingsformål = refusjonVarselMelding.refusjonVarselType.tilVarslingsformål(),
+            varslingsformål = refusjonVarselMelding.varselType.tilVarslingsformål(),
             avtaleId = refusjonVarselMelding.avtaleId.toString(),
             refusjonId = refusjonId,
             kafkaOffset = melding.offset(),
@@ -156,7 +156,7 @@ class RefusjonVarselConsumer(
             type = ArbeidsgivernotifikasjonType.Sak,
             status = ArbeidsgivernotifikasjonStatus.SAK_MOTTATT,
             bedriftNr = refusjonKontaktperson.bedriftNr,
-            varslingsformål = refusjonVarselMelding.refusjonVarselType.tilVarslingsformål(),
+            varslingsformål = refusjonVarselMelding.varselType.tilVarslingsformål(),
             avtaleId = refusjonVarselMelding.avtaleId.toString(),
             refusjonId = refusjonId,
             kafkaOffset = melding.offset(),
