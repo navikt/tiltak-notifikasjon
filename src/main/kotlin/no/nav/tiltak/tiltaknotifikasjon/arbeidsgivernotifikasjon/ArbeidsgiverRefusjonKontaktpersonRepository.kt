@@ -9,6 +9,7 @@ import org.jooq.DSLContext
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.time.ZoneOffset
+import java.util.UUID
 
 @Component
 class ArbeidsgiverRefusjonKontaktpersonRepository(val dsl: DSLContext) {
@@ -48,6 +49,12 @@ class ArbeidsgiverRefusjonKontaktpersonRepository(val dsl: DSLContext) {
             .fetch()
             .map { mapToEntitet(it) }
     }
+    fun findByAvtaleId(avtaleId: UUID): RefusjonKontaktpersonEntitet? {
+        return dsl.selectFrom(ARBEIDSGIVER_REFUSJON_KONTAKTPERSON)
+            .where(ARBEIDSGIVER_REFUSJON_KONTAKTPERSON.AVTALE_ID.eq(avtaleId))
+            .fetchOne()
+            ?.let { mapToEntitet(it) }
+    }
 
     private fun mapToEntitet(record: ArbeidsgiverRefusjonKontaktpersonRecord) = RefusjonKontaktpersonEntitet(
         avtaleId = record.avtaleId,
@@ -73,4 +80,5 @@ class ArbeidsgiverRefusjonKontaktpersonRepository(val dsl: DSLContext) {
             .fetchOne()
             ?.id
     }
+
 }

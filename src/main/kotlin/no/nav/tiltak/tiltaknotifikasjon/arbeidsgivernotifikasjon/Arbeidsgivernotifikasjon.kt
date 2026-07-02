@@ -34,7 +34,7 @@ enum class ArbeidsgivernotifikasjonStatus {
 }
 
 enum class ArbeidsgivernotifikasjonType {
-    Beskjed, Oppgave, Sak, FerdigstillOppgave, SoftDeleteNotifikasjon, SoftDeleteSak, NySakStatus
+    Beskjed, Oppgave, Sak, FerdigstillOppgave, SoftDeleteNotifikasjon, SoftDeleteSak, NySakStatus, Ukjent
 }
 
 enum class Varslingsformål {
@@ -51,6 +51,10 @@ enum class Varslingsformål {
     OPPFØLGING_OG_TILRETTELEGGING_ENDRET,
     TILSKUDDSBEREGNING_ENDRET,
     KONTAKTINFORMASJON_ENDRET,
+    REFUSJON_KLAR,
+    REFUSJON_REVARSEL,
+    REFUSJON_FRIST_FORLENGET,
+    REFUSJON_KORRIGERT
 }
 
 fun Arbeidsgivernotifikasjon.sendtSms(): Boolean {

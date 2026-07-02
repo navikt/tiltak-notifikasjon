@@ -10,6 +10,8 @@ import no.nav.tiltak.tiltaknotifikasjon.utils.Cluster
 import java.time.Instant
 import java.time.LocalDateTime
 
+private const val REFUSJON_RESSURS_ID = "nav_tiltak_tiltaksrefusjon"
+const val REFUSJON_MERKELAPP = "Tiltaksrefusjon"
 
 fun nySak(avtaleHendelseMelding: AvtaleHendelseMelding): NySak {
     val variabler = NySak.Variables(
@@ -30,6 +32,61 @@ fun nySak(avtaleHendelseMelding: AvtaleHendelseMelding): NySak {
     )
     val nySak = NySak(variabler)
     return nySak
+}
+
+fun nySakRefusjoner(refusjonKontaktperson: RefusjonKontaktpersonEntitet, refusjonId: String): NySak {
+    val variabler = NySak.Variables(
+        grupperingsid = refusjonKontaktperson.grupperingsId(),
+        merkelapp = REFUSJON_MERKELAPP,
+        virksomhetsnummer = refusjonKontaktperson.bedriftNr,
+        mottakere = listOf(
+            MottakerInput(
+                altinnRessurs = AltinnRessursMottakerInput(
+                    ressursId = REFUSJON_RESSURS_ID,
+                )
+            )
+        ),
+        tittel = "Refusjoner for avtale om ${refusjonKontaktperson.tiltakstype.beskrivelse} ${refusjonKontaktperson.deltakerFulltNavn()}",
+        lenke = lagRefusjonLink(refusjonId),
+        initiellStatus = SaksStatus.MOTTATT,
+        tidspunkt = Instant.now().toString(),
+    )
+    val nySak = NySak(variabler)
+    return nySak
+}
+
+fun nyBeskjedRefusjoner(refusjonKontaktperson: RefusjonKontaktpersonEntitet, refusjonId: String, refusjonsnummer: String, måned: String): NyBeskjed {
+    val variabler = NyBeskjed.Variables(
+        NyBeskjedInput(
+            mottakere = listOf(
+                MottakerInput(
+                    altinnRessurs = AltinnRessursMottakerInput(
+                        ressursId = REFUSJON_RESSURS_ID,
+                    )
+                )
+            ), notifikasjon = NotifikasjonInput(
+                merkelapp = REFUSJON_MERKELAPP,
+                tekst = "Du kan nå søke om refusjon for $måned ($refusjonsnummer)",
+                lenke = lagRefusjonLink(refusjonId)
+            ), metadata = MetadataInput(
+                virksomhetsnummer = refusjonKontaktperson.bedriftNr,
+                eksternId = refusjonKontaktperson.eksternId(),
+                opprettetTidspunkt = Instant.now().toString(),
+                grupperingsid = refusjonKontaktperson.grupperingsId(),
+                hardDelete = null
+            ), eksterneVarsler = lagRefusjonEksterneVarsler(refusjonKontaktperson)
+        )
+    )
+    val nyBeskjed = NyBeskjed(variabler)
+    return nyBeskjed
+}
+
+fun nyHentSakQuery(grupperingsid: String, merkelapp: String): HentSakMedGrupperingsid {
+    val variables = HentSakMedGrupperingsid.Variables(
+        grupperingsid = grupperingsid,
+        merkelapp = merkelapp,
+    )
+    return HentSakMedGrupperingsid(variables)
 }
 
 fun nyOppgave(avtaleHendelseMelding: AvtaleHendelseMelding): NyOppgave {
@@ -166,6 +223,27 @@ fun nySoftDeleteNotifikasjonQuery(notifikasjonId: String): SoftDeleteNotifikasjo
     return softDeleteNotifikasjon
 }
 
+fun lagRefusjonEksterneVarsler(refusjonKontaktperson: RefusjonKontaktpersonEntitet): List<EksterntVarselInput> {
+    val varsler = mutableListOf<EksterntVarselInput>()
+    fun meldingTilArbeidsgiver(tlf: String): EksterntVarselInput {
+        return EksterntVarselInput(
+            sms = EksterntVarselSmsInput(
+                mottaker = SmsMottakerInput(kontaktinfo = SmsKontaktInfoInput(tlf = tlf)),
+                smsTekst = "Hei! Du har fått en ny beskjed om refusjon for tiltak. Logg inn på Min side - arbeidsgiver hos Nav for å se hva det gjelder. Vennlig hilsen Nav",
+                sendetidspunkt = SendetidspunktInput(Sendevindu.DAGTID_IKKE_SOENDAG)
+            )
+        )
+    }
+    if (refusjonKontaktperson.refusjonKontaktpersonTlf != null && erGyldigNorskMobilnr(refusjonKontaktperson.refusjonKontaktpersonTlf)) {
+        varsler.add(meldingTilArbeidsgiver(refusjonKontaktperson.refusjonKontaktpersonTlf))
+        if (refusjonKontaktperson.arbeidsgiverOnskerOgsaVarsling == true && erGyldigNorskMobilnr(refusjonKontaktperson.arbeidsgiverTlf)) {
+            varsler.add(meldingTilArbeidsgiver(refusjonKontaktperson.arbeidsgiverTlf))
+        }
+    } else if (erGyldigNorskMobilnr(refusjonKontaktperson.arbeidsgiverTlf)) {
+        varsler.add(meldingTilArbeidsgiver(refusjonKontaktperson.arbeidsgiverTlf))
+    }
+    return varsler
+}
 
 private fun lagLink(avtaleId: String): String {
     return when (Cluster.current) {
@@ -173,5 +251,11 @@ private fun lagLink(avtaleId: String): String {
         Cluster.DEV_GCP -> "https://tiltaksgjennomforing.ekstern.dev.nav.no/tiltaksgjennomforing/avtale/${avtaleId}?part=ARBEIDSGIVER"
         Cluster.LOKAL -> "https://tiltaksgjennomforing.ekstern.dev.nav.no/tiltaksgjennomforing/avtale/${avtaleId}?part=ARBEIDSGIVER"
     }
-
+}
+fun lagRefusjonLink(refusjonId: String): String {
+    return when (Cluster.current) {
+        Cluster.PROD_GCP -> "https://tiltak-refusjon.nav.no/refusjon/${refusjonId}"
+        Cluster.DEV_GCP -> "https://tiltak-refusjon.ekstern.dev.nav.no/refusjon/${refusjonId}"
+        Cluster.LOKAL -> "https://tiltak-refusjon.ekstern.dev.nav.no/refusjon/${refusjonId}"
+    }
 }

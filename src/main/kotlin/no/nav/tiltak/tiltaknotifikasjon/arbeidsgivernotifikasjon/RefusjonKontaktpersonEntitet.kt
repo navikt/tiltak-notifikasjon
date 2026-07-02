@@ -2,8 +2,9 @@ package no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon
 
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
 import no.nav.tiltak.tiltaknotifikasjon.avtale.Tiltakstype
+import no.nav.tiltak.tiltaknotifikasjon.utils.ulid
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 
 data class RefusjonKontaktpersonEntitet(
     val avtaleId: UUID,
@@ -20,3 +21,20 @@ data class RefusjonKontaktpersonEntitet(
     val deltakerFornavn: String?,
     val deltakerEtternavn: String?,
 )
+
+
+/** ID sammensatt av avtaleId og en random ulid (avtaleId_ulid) Skal være unik for hver notifikasjon hos fager.
+ * Vi bruker ikke denne til noe funksjonelt, den er til kun for å tilfredsstille krav i request mot fager, ved opprettelse av notifikasjoner.
+ * Vi slår opp på oppgaver via ID'en Fager returnerer */
+fun RefusjonKontaktpersonEntitet.eksternId(): String = "${avtaleId}_${ulid()}"
+
+/** grupperingsId for saker, beskjeder og oppgaver knyttet til refusjoner. Alle notifikasjoner med denne grupperingsIden vil knyttes sammen */
+fun RefusjonKontaktpersonEntitet.grupperingsId(): String = "${avtaleId}-refusjoner"
+
+fun RefusjonKontaktpersonEntitet.deltakerFulltNavn(): String {
+    if (deltakerFornavn != null && deltakerEtternavn != null) {
+        return "for $deltakerFornavn $deltakerEtternavn"
+    } else {
+        return ""
+    }
+}
