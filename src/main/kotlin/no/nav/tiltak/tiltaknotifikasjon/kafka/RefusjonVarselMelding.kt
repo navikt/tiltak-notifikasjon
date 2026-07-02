@@ -8,7 +8,7 @@ data class RefusjonVarselMelding(
     val avtaleId: UUID,
     val refusjonId: String,
     val tilskuddsperiodeId: UUID,
-    val refusjonVarselType: RefusjonVarselType,
+    val varselType: RefusjonVarselType,
     val fristForGodkjenning: LocalDate?,
     val avtaleNr: Int,
     val løpenummer: Int,
