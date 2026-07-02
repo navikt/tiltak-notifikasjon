@@ -40,7 +40,10 @@ class RefusjonVarselConsumer(
         try {
             if (!unleash.isEnabled("refusjon-klar-i-tiltak-notifikasjon")) return // Switch som gjør motsatt togling på dagens kode i tiltaksgjennomforing-api.
             val refusjonVarselMelding: RefusjonVarselMelding = mapper.readValue(melding.value())
-            if (refusjonVarselMelding.refusjonVarselType != RefusjonVarselType.KLAR) return
+            if (refusjonVarselMelding.refusjonVarselType != RefusjonVarselType.KLAR) {
+                log.info("AGR: Mottok melding med varseltype ${refusjonVarselMelding.refusjonVarselType} somn ikke behandles. refusjonId: ${refusjonVarselMelding.refusjonId}. offset: ${melding.offset()}")
+                return
+            }
             val refusjonKontaktpersonEntitet = arbeidsgiverRefusjonKontaktpersonRepository.findByAvtaleId(refusjonVarselMelding.avtaleId)
             if (refusjonKontaktpersonEntitet == null) {
                 log.warn("AGR: Fant ingen refusjonkontaktperson for avtaleId ${refusjonVarselMelding.avtaleId} Skipper melding med offset ${melding.offset()}")
