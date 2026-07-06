@@ -2,6 +2,7 @@ package no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.ninjasquad.springmockk.MockkBean
+import io.mockk.verify
 import no.nav.tiltak.tiltaknotifikasjon.*
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.NyStatusSak
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
@@ -352,5 +353,46 @@ class ArbeidsgiverNotifikasjonServiceTest {
 
     }
 
+    /**
+     * Verifiserer retry-logikken i [ArbeidsgiverNotifikasjonService.opprettNyBeskjed]: Wiremock-stubben for
+     * virksomhetsnummer "111111111" (se arbeidsgivernotifikasjon-graphql.json) simulerer at Fager avviser
+     * SMS-varselet fordi mobilnummeret er ugyldig/blokkert (NKOM). Beskjeden skal da opprettes på nytt uten
+     * SMS-varsel og lykkes, i stedet for å ende opp som FEILET_VED_SENDING.
+     */
+    @Test
+    fun `skal opprette beskjed uten sms når fager avviser mobilnummer som ugyldig eller blokkert`() {
+        val avtaleHendelseMelding: AvtaleHendelseMelding = jacksonMapper().readValue<AvtaleHendelseMelding>(jsonAvtaleForlengetMelding)
+            .copy(bedriftNr = "111111111")
+
+        arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding)
+
+        val beskjed = arbeidsgivernotifikasjonRepository.findAllbyAvtaleId(avtaleHendelseMelding.avtaleId.toString())
+            .first { it.type == ArbeidsgivernotifikasjonType.Beskjed }
+        assertThat(beskjed.status).isEqualTo(ArbeidsgivernotifikasjonStatus.BEHANDLET)
+        assertThat(beskjed.sendtTidspunkt).isNotNull()
+        // Payloaden som faktisk ble sendt til Fager skal ikke lenger inneholde SMS-varselet
+        assertThat(beskjed.arbeidsgivernotifikasjonJson).doesNotContain("smsTekst")
+
+        verify { tiltakNotifikasjonKvitteringProdusent.sendNotifikasjonKvittering(any(), true) }
+    }
+
+    /**
+     * Samme scenario som over, men for [ArbeidsgiverNotifikasjonService.opprettNyOppgave].
+     * HendelseType.ARBEIDSGIVERS_GODKJENNING_OPPHEVET_AV_VEILEDER er en av hendelsene som sender SMS på oppgaven.
+     */
+    @Test
+    fun `skal opprette oppgave uten sms når fager avviser mobilnummer som ugyldig eller blokkert`() {
+        val avtaleHendelseMelding: AvtaleHendelseMelding = jacksonMapper().readValue<AvtaleHendelseMelding>(jsonAvtaleForlengetMelding)
+            .copy(bedriftNr = "111111111", hendelseType = HendelseType.ARBEIDSGIVERS_GODKJENNING_OPPHEVET_AV_VEILEDER)
+
+        arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelseMelding)
+
+        val oppgave = arbeidsgivernotifikasjonRepository.findAllbyAvtaleId(avtaleHendelseMelding.avtaleId.toString())
+            .first { it.type == ArbeidsgivernotifikasjonType.Oppgave }
+        assertThat(oppgave.status).isEqualTo(ArbeidsgivernotifikasjonStatus.BEHANDLET)
+        assertThat(oppgave.sendtTidspunkt).isNotNull()
+
+        verify { tiltakNotifikasjonKvitteringProdusent.sendNotifikasjonKvittering(any(), true) }
+    }
 
 }

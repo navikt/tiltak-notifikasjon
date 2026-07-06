@@ -15,8 +15,8 @@ class TiltakNotifikasjonKvitteringProdusent(
 ) {
     var log: Logger = LoggerFactory.getLogger(javaClass)
 
-    fun sendNotifikasjonKvittering(arbeidsgivernotifikasjon: Arbeidsgivernotifikasjon) {
-        val tiltakNotifikasjonKvitteringDto = kvitteringFra(arbeidsgivernotifikasjon)
+    fun sendNotifikasjonKvittering(arbeidsgivernotifikasjon: Arbeidsgivernotifikasjon, smsUtelattPgaUgyldigMobilnummer: Boolean = false) {
+        val tiltakNotifikasjonKvitteringDto = kvitteringFra(arbeidsgivernotifikasjon, smsUtelattPgaUgyldigMobilnummer)
         sendNotifikasjonKvittering(tiltakNotifikasjonKvitteringDto)
     }
     fun sendNotifikasjonKvittering(brukernotifikasjon: Brukernotifikasjon) {
