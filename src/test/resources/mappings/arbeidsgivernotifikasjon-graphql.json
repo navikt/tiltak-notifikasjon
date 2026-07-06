@@ -115,6 +115,88 @@
       }
     },
     {
+      "priority": 1,
+      "request": {
+        "method": "POST",
+        "urlPattern": "/",
+        "bodyPatterns": [
+          {
+            "matchesJsonPath": "$..[?(@.operationName=='nyBeskjed')]",
+            "ignoreArrayOrder": true,
+            "ignoreExtraElements": true
+          },
+          {
+            "matchesJsonPath": "$..[?(@.virksomhetsnummer=='111111111')]",
+            "ignoreArrayOrder": true,
+            "ignoreExtraElements": true
+          },
+          {
+            "matchesJsonPath": "$..eksterneVarsler[0]",
+            "ignoreArrayOrder": true,
+            "ignoreExtraElements": true
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "errors": [
+            {
+              "message": "Exception while fetching data (/nyBeskjed) : Kontaktinfo.tlf: verdien er ikke et gyldig norsk mobilnummer. Nummerserien 4273xxxx er blokkert. (se: NKOM E164).",
+              "locations": [{"line": 2, "column": 5}],
+              "path": ["nyBeskjed"],
+              "extensions": {"classification": "DataFetchingException"}
+            }
+          ],
+          "data": null
+        }
+      }
+    },
+    {
+      "priority": 1,
+      "request": {
+        "method": "POST",
+        "urlPattern": "/",
+        "bodyPatterns": [
+          {
+            "matchesJsonPath": "$..[?(@.operationName=='nyOppgave')]",
+            "ignoreArrayOrder": true,
+            "ignoreExtraElements": true
+          },
+          {
+            "matchesJsonPath": "$..[?(@.virksomhetsnummer=='111111111')]",
+            "ignoreArrayOrder": true,
+            "ignoreExtraElements": true
+          },
+          {
+            "matchesJsonPath": "$..eksterneVarsler[0]",
+            "ignoreArrayOrder": true,
+            "ignoreExtraElements": true
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "errors": [
+            {
+              "message": "Exception while fetching data (/nyOppgave) : Kontaktinfo.tlf: verdien er ikke et gyldig norsk mobilnummer. Nummerserien 4273xxxx er blokkert. (se: NKOM E164).",
+              "locations": [{"line": 2, "column": 5}],
+              "path": ["nyOppgave"],
+              "extensions": {"classification": "DataFetchingException"}
+            }
+          ],
+          "data": null
+        }
+      }
+    },
+    {
       "priority": 3,
       "request": {
         "method": "POST",

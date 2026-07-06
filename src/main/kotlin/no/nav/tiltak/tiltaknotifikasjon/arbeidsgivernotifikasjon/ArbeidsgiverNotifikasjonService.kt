@@ -516,7 +516,18 @@ class ArbeidsgiverNotifikasjonService(
 
     fun opprettNyOppgave(nyOppgave: NyOppgave, notifikasjon: Arbeidsgivernotifikasjon) {
         runBlocking {
-            val response = notifikasjonGraphQlClient.execute(nyOppgave)
+            var response = notifikasjonGraphQlClient.execute(nyOppgave)
+            var smsUtelattPgaUgyldigMobilnummer = false
+
+            if (response.errors != null && erUgyldigMobilnummerFeil(response.errors!!) && nyOppgave.variables.nyOppgave.eksterneVarsler.isNotEmpty()) {
+                log.warn("AG: Fikk feilmelding om ugyldig/blokkert mobilnummer ved opprettelse av oppgave. Prøver på nytt uten SMS-varsel. avtaleId: ${notifikasjon.avtaleId}")
+                val nyOppgaveUtenSms = NyOppgave(nyOppgave.variables.copy(nyOppgave = nyOppgave.variables.nyOppgave.copy(eksterneVarsler = emptyList())))
+                response = notifikasjonGraphQlClient.execute(nyOppgaveUtenSms)
+                if (response.errors == null) {
+                    smsUtelattPgaUgyldigMobilnummer = true
+                    notifikasjon.arbeidsgivernotifikasjonJson = jacksonMapper().writeValueAsString(nyOppgaveUtenSms)
+                }
+            }
 
             if (response.errors != null) {
                 log.error("AG: GraphQl-kall for å opprette oppgave feilet: ${response.errors}")
@@ -532,7 +543,7 @@ class ArbeidsgiverNotifikasjonService(
                 notifikasjon.responseId = nyOppgaveResultat.id
                 notifikasjon.sendtTidspunkt = Instant.now()
 
-                tiltakNotifikasjonKvitteringProdusent.sendNotifikasjonKvittering(notifikasjon)
+                tiltakNotifikasjonKvitteringProdusent.sendNotifikasjonKvittering(notifikasjon, smsUtelattPgaUgyldigMobilnummer)
             } else {
                 //  UgyldigMerkelapp | UgyldigMottaker | DuplikatGrupperingsid | DuplikatGrupperingsidEtterDelete| UkjentProdusent | UkjentRolle
                 log.error("AG: opprett oppgave gikk ikke med resultatet: ${response.data?.nyOppgave}")
@@ -546,7 +557,18 @@ class ArbeidsgiverNotifikasjonService(
 
     fun opprettNyBeskjed(nyBeskjed: NyBeskjed, notifikasjon: Arbeidsgivernotifikasjon) {
         runBlocking {
-            val response = notifikasjonGraphQlClient.execute(nyBeskjed)
+            var response = notifikasjonGraphQlClient.execute(nyBeskjed)
+            var smsUtelattPgaUgyldigMobilnummer = false
+
+            if (response.errors != null && erUgyldigMobilnummerFeil(response.errors!!) && nyBeskjed.variables.nyBeskjed.eksterneVarsler.isNotEmpty()) {
+                log.warn("AG: Fikk feilmelding om ugyldig/blokkert mobilnummer ved opprettelse av beskjed. Prøver på nytt uten SMS-varsel. avtaleId: ${notifikasjon.avtaleId}")
+                val nyBeskjedUtenSms = NyBeskjed(nyBeskjed.variables.copy(nyBeskjed = nyBeskjed.variables.nyBeskjed.copy(eksterneVarsler = emptyList())))
+                response = notifikasjonGraphQlClient.execute(nyBeskjedUtenSms)
+                if (response.errors == null) {
+                    smsUtelattPgaUgyldigMobilnummer = true
+                    notifikasjon.arbeidsgivernotifikasjonJson = jacksonMapper().writeValueAsString(nyBeskjedUtenSms)
+                }
+            }
 
             if (response.errors != null) {
                 log.error("AG: GraphQl-kall for å opprette beskjed feilet: ${response.errors}")
@@ -562,7 +584,7 @@ class ArbeidsgiverNotifikasjonService(
                 notifikasjon.responseId = nyBeskjedResultat.id
                 notifikasjon.sendtTidspunkt = Instant.now()
 
-                tiltakNotifikasjonKvitteringProdusent.sendNotifikasjonKvittering(notifikasjon)
+                tiltakNotifikasjonKvitteringProdusent.sendNotifikasjonKvittering(notifikasjon, smsUtelattPgaUgyldigMobilnummer)
 
             } else {
                 // NyBeskjedVellykket | UgyldigMerkelapp | UgyldigMottaker | DuplikatGrupperingsid | DuplikatGrupperingsidEtterDelete| UkjentProdusent | UkjentRolle

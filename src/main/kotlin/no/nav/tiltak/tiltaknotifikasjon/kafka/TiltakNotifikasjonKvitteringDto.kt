@@ -31,7 +31,7 @@ enum class NotifikasjonsType {
     BRUKERNOTIFIKASJON, ARBEIDSGIVERNOTIFIKASJON
 }
 
-fun kvitteringFra(arbeidsgivernotifikasjon: Arbeidsgivernotifikasjon): TiltakNotifikasjonKvitteringDto {
+fun kvitteringFra(arbeidsgivernotifikasjon: Arbeidsgivernotifikasjon, smsUtelattPgaUgyldigMobilnummer: Boolean = false): TiltakNotifikasjonKvitteringDto {
     return TiltakNotifikasjonKvitteringDto(
         notifikasjonstype = NotifikasjonsType.ARBEIDSGIVERNOTIFIKASJON,
         payload = arbeidsgivernotifikasjon.arbeidsgivernotifikasjonJson!!,
@@ -39,8 +39,8 @@ fun kvitteringFra(arbeidsgivernotifikasjon: Arbeidsgivernotifikasjon): TiltakNot
         mottaker = arbeidsgivernotifikasjon.bedriftNr!!,
         avtaleId = UUID.fromString(arbeidsgivernotifikasjon.avtaleId),
         notifikasjonId = arbeidsgivernotifikasjon.id,
-        sendtSms = arbeidsgivernotifikasjon.sendtSms(),
-        mottakerTlf = arbeidsgivernotifikasjon.mottakerTlf()
+        sendtSms = arbeidsgivernotifikasjon.sendtSms() && !smsUtelattPgaUgyldigMobilnummer,
+        mottakerTlf = if (smsUtelattPgaUgyldigMobilnummer) null else arbeidsgivernotifikasjon.mottakerTlf()
     )
 }
 
