@@ -25,7 +25,7 @@ class AdminController(
     val arbeidsgiverNotifikasjonService: ArbeidsgiverNotifikasjonService,
     val arbeidsgiverRefusjonNotifikasjonRepository: ArbeidsgiverRefusjonNotifikasjonRepository,
     val arbeidsgiverRefusjonVarselConsumer: RefusjonVarselConsumer,
-    val seekingKafkaClient: KafkaConsumer<String, String>,
+    val seekingKafkaConsumer: KafkaConsumer<String, String>,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -80,10 +80,10 @@ class AdminController(
 
         // seekingKafkaClient er en egen KafkaConsumer med egen consumer group-id (se KafkaAdminConfig),
         // brukt manuelt via assign+seek, slik at oppslag her ikke påvirker offsettene til de vanlige @KafkaListener-consumerne.
-        val record: ConsumerRecord<String, String>? = synchronized(seekingKafkaClient) {
-            seekingKafkaClient.assign(listOf(partition))
-            seekingKafkaClient.seek(partition, offset)
-            val records = seekingKafkaClient.poll(Duration.ofSeconds(5))
+        val record: ConsumerRecord<String, String>? = synchronized(seekingKafkaConsumer) {
+            seekingKafkaConsumer.assign(listOf(partition))
+            seekingKafkaConsumer.seek(partition, offset)
+            val records = seekingKafkaConsumer.poll(Duration.ofSeconds(15))
             records.firstOrNull { it.offset() == offset }
         }
 
@@ -96,7 +96,9 @@ class AdminController(
             mapOf(
                 "key" to record.key(),
                 "offset" to offset,
-                "message" to record.value()))
+                "message" to record.value()
+            )
+        )
     }
 }
 

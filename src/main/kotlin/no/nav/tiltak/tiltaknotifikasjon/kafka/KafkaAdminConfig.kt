@@ -19,7 +19,7 @@ import org.springframework.context.annotation.Profile
 class KafkaAdminConfig {
 
     @Bean
-    fun seekingKafkaClient(kafkaProperties: KafkaProperties): KafkaConsumer<String, String> {
+    fun seekingKafkaConsumer(kafkaProperties: KafkaProperties): KafkaConsumer<String, String> {
         val props = kafkaProperties.buildConsumerProperties(null).toMutableMap()
         props[ConsumerConfig.GROUP_ID_CONFIG] = "tiltak-notifikasjon-admin-seek"
         props[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = false
