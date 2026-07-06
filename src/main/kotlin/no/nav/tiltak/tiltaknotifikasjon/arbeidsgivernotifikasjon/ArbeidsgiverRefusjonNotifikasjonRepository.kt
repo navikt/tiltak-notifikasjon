@@ -27,6 +27,12 @@ class ArbeidsgiverRefusjonNotifikasjonRepository(val dsl: DSLContext) {
             ?.let { mapToArbeidsgiverRefusjonNotifikasjon(it) }
     }
 
+    fun deleteById(id: String): Int {
+        return dsl.deleteFrom(ARBEIDSGIVER_REFUSJON_NOTIFIKASJON)
+            .where(ARBEIDSGIVER_REFUSJON_NOTIFIKASJON.ID.eq(id))
+            .execute()
+    }
+
     fun findAllByRefusjonId(refusjonId: String): List<ArbeidsgiverRefusjonNotifikasjon> {
         return dsl
             .selectFrom(ARBEIDSGIVER_REFUSJON_NOTIFIKASJON)
