@@ -525,7 +525,7 @@ class ArbeidsgiverNotifikasjonService(
                 response = notifikasjonGraphQlClient.execute(nyOppgaveUtenSms)
                 if (response.errors == null) {
                     smsUtelattPgaUgyldigMobilnummer = true
-                    notifikasjon.arbeidsgivernotifikasjonJson = jacksonMapper().writeValueAsString(nyOppgaveUtenSms.variables.nyOppgave)
+                    notifikasjon.arbeidsgivernotifikasjonJson = jacksonMapper().writeValueAsString(nyOppgaveUtenSms)
                 }
             }
 
@@ -566,7 +566,7 @@ class ArbeidsgiverNotifikasjonService(
                 response = notifikasjonGraphQlClient.execute(nyBeskjedUtenSms)
                 if (response.errors == null) {
                     smsUtelattPgaUgyldigMobilnummer = true
-                    notifikasjon.arbeidsgivernotifikasjonJson = jacksonMapper().writeValueAsString(nyBeskjedUtenSms.variables.nyBeskjed)
+                    notifikasjon.arbeidsgivernotifikasjonJson = jacksonMapper().writeValueAsString(nyBeskjedUtenSms)
                 }
             }
 
