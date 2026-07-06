@@ -6,8 +6,8 @@ query hentSakMedGrupperingsid(
         grupperingsid: $grupperingsid,
         merkelapp: $merkelapp
     ) {
+        __typename
         ... on HentetSak {
-            __typename
             sak {
                 id
                 grupperingsid
@@ -18,20 +18,16 @@ query hentSakMedGrupperingsid(
                 tilleggsinformasjon
                 merkelapp
                 sisteStatus
-                __typename
             }
         }
         ... on SakFinnesIkke {
             feilmelding
-            __typename
         }
         ... on UgyldigMerkelapp {
             feilmelding
-            __typename
         }
         ... on UkjentProdusent {
             feilmelding
-            __typename
         }
     }
 }
