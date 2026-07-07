@@ -44,6 +44,8 @@ spec:
         flags:
           - name: cloudsql.logical_decoding # flagget som må settes for bigquery greier
             value: "on" # flagget som må settes
+          - name: "cloudsql.enable_pgaudit"
+            value: "on"
           - name: "pgaudit.log"
             value: "write,ddl,role"
           - name: "pgaudit.log_parameter"
