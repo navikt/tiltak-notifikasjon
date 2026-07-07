@@ -117,7 +117,7 @@ class RefusjonVarselConsumer(
         val refusjonBeskjed = nyBeskjedRefusjoner(refusjonKontaktperson, refusjonId, refusjonsnummer, måned)
         val notifikasjon = ArbeidsgiverRefusjonNotifikasjon(
             ulid(),
-            arbeidsgivernotifikasjonJson = mapper.writeValueAsString(refusjonBeskjed),
+            arbeidsgivernotifikasjonJson = melding.value(),
             type = ArbeidsgivernotifikasjonType.Beskjed,
             status = ArbeidsgivernotifikasjonStatus.BEHANDLET,
             bedriftNr = refusjonKontaktperson.bedriftNr,
@@ -152,7 +152,7 @@ class RefusjonVarselConsumer(
         val refusjonSak = nySakRefusjoner(refusjonKontaktperson, refusjonId)
         val notifikasjon = ArbeidsgiverRefusjonNotifikasjon(
             ulid(),
-            arbeidsgivernotifikasjonJson = mapper.writeValueAsString(refusjonSak),
+            arbeidsgivernotifikasjonJson = melding.value(),
             type = ArbeidsgivernotifikasjonType.Sak,
             status = ArbeidsgivernotifikasjonStatus.SAK_MOTTATT,
             bedriftNr = refusjonKontaktperson.bedriftNr,
