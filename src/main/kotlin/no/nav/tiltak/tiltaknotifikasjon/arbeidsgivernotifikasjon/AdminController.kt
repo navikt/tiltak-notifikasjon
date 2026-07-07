@@ -8,10 +8,13 @@ import no.nav.tiltak.tiltaknotifikasjon.avtale.Tiltakstype
 import no.nav.tiltak.tiltaknotifikasjon.kafka.RefusjonVarselConsumer
 import no.nav.tiltak.tiltaknotifikasjon.kafka.Topics
 import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.common.TopicPartition
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import java.time.Duration
 
 
 @ProtectedWithClaims(issuer = "azure-access-token", claimMap = ["groups=fb516b74-0f2e-4b62-bad8-d70b82c3ae0b"])
@@ -21,7 +24,8 @@ import org.springframework.web.bind.annotation.*
 class AdminController(
     val arbeidsgiverNotifikasjonService: ArbeidsgiverNotifikasjonService,
     val arbeidsgiverRefusjonNotifikasjonRepository: ArbeidsgiverRefusjonNotifikasjonRepository,
-    val arbeidsgiverRefusjonVarselConsumer: RefusjonVarselConsumer
+    val arbeidsgiverRefusjonVarselConsumer: RefusjonVarselConsumer,
+    val seekingKafkaConsumer: KafkaConsumer<String, String>,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -68,10 +72,42 @@ class AdminController(
 
         return ResponseEntity.ok().body(mapOf("rekjort" to refusjonNotifikasjonRequest.id))
     }
+
+    @PostMapping("les-kafka-melding")
+    fun lesKafkaMelding(@RequestBody lesKafkaMeldingRequest: LesRefusjonKafkaMeldingRequest): ResponseEntity<Map<String, Any>> {
+        val offset = lesKafkaMeldingRequest.offsetNr
+        val partition = TopicPartition(Topics.TILTAK_VARSEL, 0)
+
+        // seekingKafkaClient er en egen KafkaConsumer med egen consumer group-id (se KafkaAdminConfig),
+        // brukt manuelt via assign+seek, slik at oppslag her ikke påvirker offsettene til de vanlige @KafkaListener-consumerne.
+        val record: ConsumerRecord<String, String>? = synchronized(seekingKafkaConsumer) {
+            seekingKafkaConsumer.assign(listOf(partition))
+            seekingKafkaConsumer.seek(partition, offset)
+            val records = seekingKafkaConsumer.poll(Duration.ofSeconds(15))
+            records.firstOrNull { it.offset() == offset }
+        }
+
+        if (record == null) {
+            log.warn("Fant ingen kafkamelding på topic ${Topics.TILTAK_VARSEL} offset $offset")
+            return ResponseEntity.notFound().build()
+        }
+
+        return ResponseEntity.ok().body(
+            mapOf(
+                "key" to record.key(),
+                "offset" to offset,
+                "message" to record.value()
+            )
+        )
+    }
 }
 
 data class MineSaker(val avtaleId: String, val tiltakstype: Tiltakstype)
 
 data class RefusjonNotifikasjonRequest(
     val id: String
+)
+
+data class LesRefusjonKafkaMeldingRequest(
+    val offsetNr: Long
 )
