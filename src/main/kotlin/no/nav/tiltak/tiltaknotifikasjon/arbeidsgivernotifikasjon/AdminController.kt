@@ -49,7 +49,7 @@ class AdminController(
     fun rekjorFeiletRefusjonsvarsel(@RequestBody refusjonNotifikasjonRequest: RefusjonNotifikasjonRequest): ResponseEntity<Map<String, Any>> {
         val rad = arbeidsgiverRefusjonNotifikasjonRepository.findById(refusjonNotifikasjonRequest.id)
             ?: return ResponseEntity.notFound().build()
-        if (rad.status != ArbeidsgivernotifikasjonStatus.FEILET_VED_BEHANDLING) {
+        if (rad.status != ArbeidsgivernotifikasjonStatus.FEILET_VED_BEHANDLING && rad.status != ArbeidsgivernotifikasjonStatus.FEILET_VED_SENDING) {
             return ResponseEntity.badRequest().body(
                 mapOf("feilmelding" to "Notifikasjon har ugyldig status: ${rad.status}")
             )
