@@ -97,6 +97,11 @@ class AdminController(
             )
         )
 
+        val antallSlettet = arbeidsgiverRefusjonNotifikasjonRepository.deleteById(rad.id)
+        if (antallSlettet != 1) {
+            log.warn("Uventet feil ved sletting av melding; forventet å slette en rad, men slettet $antallSlettet")
+        }
+
         return ResponseEntity.ok().body(mapOf("rekjort" to refusjonNotifikasjonRequest.id))
     }
 }
