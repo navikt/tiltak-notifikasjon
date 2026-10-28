@@ -20,6 +20,10 @@ import org.springframework.test.context.ActiveProfiles
 import org.testcontainers.junit.jupiter.Testcontainers
 import java.time.LocalDate
 import java.util.*
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
 @SpringBootTest
 @ActiveProfiles("test-containers", "wiremock")
@@ -30,11 +34,45 @@ class ArbeidsgiverNotifikasjonServiceTest {
     lateinit var arbeidsgiverNotifikasjonService: ArbeidsgiverNotifikasjonService
     @Autowired
     lateinit var arbeidsgivernotifikasjonRepository: ArbeidsgivernotifikasjonRepository
+    @Autowired
+    lateinit var avtaleHendelseLås: AvtaleHendelseLås
     @MockkBean(relaxed = true)
     lateinit var tiltakNotifikasjonKvitteringProdusent: TiltakNotifikasjonKvitteringProdusent
     @BeforeEach
     fun setup() {
         arbeidsgivernotifikasjonRepository.deleteAll()
+    }
+
+    @Test
+    fun `same agreement is processed under a shared database lock`() {
+        val executor = Executors.newFixedThreadPool(2)
+        val ready = CountDownLatch(2)
+        val start = CountDownLatch(1)
+        val active = AtomicInteger()
+        val maximumActive = AtomicInteger()
+
+        try {
+            val tasks = (1..2).map {
+                executor.submit {
+                    ready.countDown()
+                    check(start.await(5, TimeUnit.SECONDS))
+                    avtaleHendelseLås.medAvtaleLås("same-agreement") {
+                        val currentActive = active.incrementAndGet()
+                        maximumActive.updateAndGet { maxOf(it, currentActive) }
+                        Thread.sleep(100)
+                        active.decrementAndGet()
+                    }
+                }
+            }
+
+            assertTrue(ready.await(5, TimeUnit.SECONDS))
+            start.countDown()
+            tasks.forEach { it.get(10, TimeUnit.SECONDS) }
+
+            assertThat(maximumActive.get()).isEqualTo(1)
+        } finally {
+            executor.shutdownNow()
+        }
     }
 
 

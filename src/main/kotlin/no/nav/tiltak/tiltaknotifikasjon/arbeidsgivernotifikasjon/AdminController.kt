@@ -26,7 +26,8 @@ class AdminController(
     val arbeidsgiverHendelseConsumer: AvtaleHendelseConsumer,
     val arbeidsgiverNotifikasjonService: ArbeidsgiverNotifikasjonService,
     val arbeidsgiverRefusjonNotifikasjonRepository: ArbeidsgiverRefusjonNotifikasjonRepository,
-    val arbeidsgiverRefusjonVarselConsumer: RefusjonVarselConsumer
+    val arbeidsgiverRefusjonVarselConsumer: RefusjonVarselConsumer,
+    val avtaleHendelseLås: AvtaleHendelseLås
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -52,29 +53,31 @@ class AdminController(
             ?: return ResponseEntity.notFound().build()
 
         val melding: AvtaleHendelseMelding = jacksonMapper().readValue(feiletRad.avtaleMeldingJson)
-        val meldingerForAvtale =
-            arbeidsgiverNotifikasjonService.arbeidsgivernotifikasjonRepository.findAllbyAvtaleId(melding.avtaleId.toString())
-                .filterNot { it.status == ArbeidsgivernotifikasjonStatus.FEILET_VED_BEHANDLING }
-                .map {
-                    jacksonMapper().readValue<AvtaleHendelseMelding>(it.avtaleMeldingJson)
-                }
+        return avtaleHendelseLås.medAvtaleLås(melding.avtaleId.toString()) {
+            val meldingerForAvtale =
+                arbeidsgiverNotifikasjonService.arbeidsgivernotifikasjonRepository.findAllbyAvtaleId(melding.avtaleId.toString())
+                    .filterNot { it.status == ArbeidsgivernotifikasjonStatus.FEILET_VED_BEHANDLING }
+                    .map {
+                        jacksonMapper().readValue<AvtaleHendelseMelding>(it.avtaleMeldingJson)
+                    }
 
-        val alleredeBehandletMelding = meldingerForAvtale.any { it.sistEndret.equals(melding.sistEndret) }
-        if (alleredeBehandletMelding) {
-            return ResponseEntity.badRequest().body("Har allerede rebehandlet denne meldingen")
+            val alleredeBehandletMelding = meldingerForAvtale.any { it.sistEndret.equals(melding.sistEndret) }
+            if (alleredeBehandletMelding) {
+                return@medAvtaleLås ResponseEntity.badRequest().body("Har allerede rebehandlet denne meldingen")
+            }
+
+            val harNyereMelding = meldingerForAvtale.any { it.sistEndret.isAfter(melding.sistEndret) }
+
+            if (harNyereMelding) {
+                return@medAvtaleLås ResponseEntity.badRequest().body("Fant nyere melding for avtaleId: ${melding.avtaleId}")
+            }
+
+            if (!arbeidsgiverHendelseConsumer.skalArbeidsgivernotifikasjonBehandles(melding))
+                return@medAvtaleLås ResponseEntity.badRequest().body("Notifikasjon skal ikke behandles")
+            arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(melding)
+
+            ResponseEntity.ok().build()
         }
-
-        val harNyereMelding = meldingerForAvtale.any { it.sistEndret.isAfter(melding.sistEndret) }
-
-        if (harNyereMelding) {
-            return ResponseEntity.badRequest().body("Fant nyere melding for avtaleId: ${melding.avtaleId}")
-        }
-
-        if (!arbeidsgiverHendelseConsumer.skalArbeidsgivernotifikasjonBehandles(melding))
-            return ResponseEntity.badRequest().body("Notifikasjon skal ikke behandles")
-        arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(melding)
-
-        return ResponseEntity.ok().build()
     }
 
     @PostMapping("rekjor-feilet-refusjonsvarsel")
