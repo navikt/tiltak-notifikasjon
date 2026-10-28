@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.getunleash.Unleash
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.ArbeidsgiverNotifikasjonService
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.ArbeidsgiverRefusjonKontaktpersonRepository
+import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.AvtaleHendelseLås
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.Arbeidsgivernotifikasjon
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.ArbeidsgivernotifikasjonRepository
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.ArbeidsgivernotifikasjonStatus
@@ -38,7 +39,8 @@ class AvtaleHendelseConsumer(
     val arbeidsgivernotifikasjonRepository: ArbeidsgivernotifikasjonRepository,
     val persondataService: PersondataService,
     val unleash: Unleash,
-    private val arbeidsgiverRefusjonKontaktpersonRepository: ArbeidsgiverRefusjonKontaktpersonRepository
+    private val arbeidsgiverRefusjonKontaktpersonRepository: ArbeidsgiverRefusjonKontaktpersonRepository,
+    private val avtaleHendelseLås: AvtaleHendelseLås
 ) {
     private val mapper = jacksonMapper()
     private val log = LoggerFactory.getLogger(javaClass)
@@ -57,7 +59,9 @@ class AvtaleHendelseConsumer(
 
             lagreRefusjonKontaktperson(avtaleHendelsemelding, melding.offset())
             behandleBrukernotifikasjon(avtaleHendelsemelding, avtaleHendelseJson)
-            behandleArbeidsgivernotifikasjon(avtaleHendelsemelding, avtaleHendelseJson)
+            avtaleHendelseLås.medAvtaleLås(avtaleHendelsemelding.avtaleId.toString()) {
+                behandleArbeidsgivernotifikasjon(avtaleHendelsemelding, avtaleHendelseJson)
+            }
             val sluttTidspunkt = System.currentTimeMillis()
             log.atInfo()
                 .addKeyValue("behandlingstidMs", sluttTidspunkt - startTidspunkt)
