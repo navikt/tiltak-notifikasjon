@@ -97,7 +97,7 @@ class AvtaleHendelseConsumer(
 
     fun behandleArbeidsgivernotifikasjon(avtaleHendelse: AvtaleHendelseMelding, avtaleHendelseJson: String) {
         try {
-            if (!skalArbeidsgivernotifikasjonBehanldes(avtaleHendelse)) return
+            if (!skalArbeidsgivernotifikasjonBehandles(avtaleHendelse)) return
             arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(avtaleHendelse)
         } catch (e: Exception) {
             val arbeidsgivernotifikasjon = Arbeidsgivernotifikasjon(
@@ -146,7 +146,7 @@ class AvtaleHendelseConsumer(
         return erOpphavArenaOgErKlarforvisning(avtaleHendelse, Avtalerolle.DELTAKER)
     }
 
-    private fun skalArbeidsgivernotifikasjonBehanldes(avtaleHendelsemelding: AvtaleHendelseMelding): Boolean {
+    fun skalArbeidsgivernotifikasjonBehandles(avtaleHendelsemelding: AvtaleHendelseMelding): Boolean {
         // Arena-sjekk - ikke behandle meldinger på migrerte avtaler fra arena før de er tilgjengelige for arbeidsgiver.
         if (!erOpphavArenaOgErKlarforvisning(avtaleHendelsemelding, Avtalerolle.ARBEIDSGIVER)) return false
         // Diskresjonssjekk - Behandle kun kode 6/7 hvis det er statusendring eller annullert
