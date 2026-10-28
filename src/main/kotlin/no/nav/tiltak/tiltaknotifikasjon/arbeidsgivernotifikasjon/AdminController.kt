@@ -7,6 +7,7 @@ import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generat
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.minenotifikasjoner.NotifikasjonConnection
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.avtale.Tiltakstype
+import no.nav.tiltak.tiltaknotifikasjon.kafka.AvtaleHendelseConsumer
 import no.nav.tiltak.tiltaknotifikasjon.kafka.RefusjonVarselConsumer
 import no.nav.tiltak.tiltaknotifikasjon.kafka.Topics
 import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/internal/admin")
 class AdminController(
+    val arbeidsgiverHendelseConsumer: AvtaleHendelseConsumer,
     val arbeidsgiverNotifikasjonService: ArbeidsgiverNotifikasjonService,
     val arbeidsgiverRefusjonNotifikasjonRepository: ArbeidsgiverRefusjonNotifikasjonRepository,
     val arbeidsgiverRefusjonVarselConsumer: RefusjonVarselConsumer
@@ -68,6 +70,8 @@ class AdminController(
             return ResponseEntity.badRequest().body("Fant nyere melding for avtaleId: ${melding.avtaleId}")
         }
 
+        if (!arbeidsgiverHendelseConsumer.skalArbeidsgivernotifikasjonBehandles(melding))
+            return ResponseEntity.badRequest().body("Notifikasjon skal ikke behandles")
         arbeidsgiverNotifikasjonService.behandleAvtaleHendelseMelding(melding)
 
         return ResponseEntity.ok().build()
