@@ -50,18 +50,19 @@ class AdminController(
             ?: return ResponseEntity.notFound().build()
 
         val melding: AvtaleHendelseMelding = jacksonMapper().readValue(feiletRad.avtaleMeldingJson)
-        val tidligereMeldinger =
+        val meldingerForAvtale =
             arbeidsgiverNotifikasjonService.arbeidsgivernotifikasjonRepository.findAllbyAvtaleId(melding.avtaleId.toString())
+                .filterNot { it.status == ArbeidsgivernotifikasjonStatus.FEILET_VED_BEHANDLING }
                 .map {
                     jacksonMapper().readValue<AvtaleHendelseMelding>(it.avtaleMeldingJson)
                 }
 
-        val alleredeBehandletMelding = tidligereMeldinger.any { it.sistEndret.equals(melding.sistEndret) }
+        val alleredeBehandletMelding = meldingerForAvtale.any { it.sistEndret.equals(melding.sistEndret) }
         if (alleredeBehandletMelding) {
             return ResponseEntity.badRequest().body("Har allerede rebehandlet denne meldingen")
         }
 
-        val harNyereMelding = tidligereMeldinger.any { it.sistEndret.isAfter(melding.sistEndret) }
+        val harNyereMelding = meldingerForAvtale.any { it.sistEndret.isAfter(melding.sistEndret) }
 
         if (harNyereMelding) {
             return ResponseEntity.badRequest().body("Fant nyere melding for avtaleId: ${melding.avtaleId}")
@@ -91,11 +92,6 @@ class AdminController(
                 rad.arbeidsgivernotifikasjonJson
             )
         )
-
-        val antallSlettet = arbeidsgiverRefusjonNotifikasjonRepository.deleteById(rad.id)
-        if (antallSlettet != 1) {
-            log.warn("Uventet feil ved sletting av melding; forventet å slette en rad, men slettet $antallSlettet")
-        }
 
         return ResponseEntity.ok().body(mapOf("rekjort" to refusjonNotifikasjonRequest.id))
     }
