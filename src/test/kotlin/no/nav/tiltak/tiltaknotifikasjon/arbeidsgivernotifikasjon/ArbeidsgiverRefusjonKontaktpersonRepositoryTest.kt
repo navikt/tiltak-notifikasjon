@@ -1,6 +1,6 @@
 package no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon
 
-import com.ninjasquad.springmockk.MockkBean
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
 import no.nav.tiltak.tiltaknotifikasjon.avtale.Tiltakstype
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.tables.ArbeidsgiverRefusjonKontaktperson.Companion.ARBEIDSGIVER_REFUSJON_KONTAKTPERSON
@@ -22,10 +22,10 @@ import java.util.UUID
 @Testcontainers
 class ArbeidsgiverRefusjonKontaktpersonRepositoryTest {
 
-    @MockkBean(relaxed = true)
+    @MockitoBean
     lateinit var minSideProdusent: MinSideProdusent
 
-    @MockkBean(relaxed = true)
+    @MockitoBean
     lateinit var tiltakNotifikasjonKvitteringProdusent: TiltakNotifikasjonKvitteringProdusent
 
     @Autowired

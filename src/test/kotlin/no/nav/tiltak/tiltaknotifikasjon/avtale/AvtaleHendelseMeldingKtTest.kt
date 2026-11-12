@@ -1,6 +1,6 @@
 package no.nav.tiltak.tiltaknotifikasjon.avtale
 
-import com.fasterxml.jackson.module.kotlin.readValue
+import tools.jackson.module.kotlin.readValue
 import no.nav.tiltak.tiltaknotifikasjon.jsonAvtaleOpprettetMelding
 import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapper
 import org.junit.jupiter.api.Assertions.*

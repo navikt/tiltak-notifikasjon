@@ -1,6 +1,6 @@
 package no.nav.tiltak.tiltaknotifikasjon.kafka
 
-import com.fasterxml.jackson.module.kotlin.readValue
+import tools.jackson.module.kotlin.readValue
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.APP_NAVN
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.BrukernotifikasjonRepository
 import no.nav.tiltak.tiltaknotifikasjon.utils.jacksonMapperSomIkkeBryrSegOmEnumCase

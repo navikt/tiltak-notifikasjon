@@ -115,7 +115,7 @@ fun nyOppgave(avtaleHendelseMelding: AvtaleHendelseMelding): NyOppgave {
                             kontaktinfo = SmsKontaktInfoInput(tlf = avtaleHendelseMelding.arbeidsgiverTlf!!)
                         ),
                         smsTekst = "Hei! Du har fått en ny oppgave om tiltak. Logg inn på Min side - arbeidsgiver hos NAV for å se hva det gjelder. Vennlig hilsen NAV",
-                        sendetidspunkt = SendetidspunktInput(Sendevindu.DAGTID_IKKE_SOENDAG)
+                        sendetidspunkt = SendetidspunktInput(sendevindu = Sendevindu.DAGTID_IKKE_SOENDAG)
                     )
                 )
             ) else emptyList()
@@ -156,7 +156,7 @@ fun nyBeskjed(avtaleHendelseMelding: AvtaleHendelseMelding): NyBeskjed {
                             kontaktinfo = SmsKontaktInfoInput(tlf = avtaleHendelseMelding.arbeidsgiverTlf!!)
                         ),
                         smsTekst = "Hei! Du har fått en ny beskjed om tiltak. Logg inn på Min side - arbeidsgiver hos NAV for å se hva det gjelder. Vennlig hilsen NAV",
-                        sendetidspunkt = SendetidspunktInput(Sendevindu.DAGTID_IKKE_SOENDAG)
+                        sendetidspunkt = SendetidspunktInput(sendevindu = Sendevindu.DAGTID_IKKE_SOENDAG)
                     )
                 )
             ) else emptyList()
@@ -230,7 +230,7 @@ fun lagRefusjonEksterneVarsler(refusjonKontaktperson: RefusjonKontaktpersonEntit
             sms = EksterntVarselSmsInput(
                 mottaker = SmsMottakerInput(kontaktinfo = SmsKontaktInfoInput(tlf = tlf)),
                 smsTekst = "Hei! Du har fått en ny beskjed om refusjon for tiltak. Logg inn på Min side - arbeidsgiver hos Nav for å se hva det gjelder. Vennlig hilsen Nav",
-                sendetidspunkt = SendetidspunktInput(Sendevindu.DAGTID_IKKE_SOENDAG)
+                sendetidspunkt = SendetidspunktInput(sendevindu = Sendevindu.DAGTID_IKKE_SOENDAG)
             )
         )
     }
