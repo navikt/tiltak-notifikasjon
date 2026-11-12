@@ -1,7 +1,7 @@
 package no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner
 
-import com.fasterxml.jackson.module.kotlin.readValue
-import com.ninjasquad.springmockk.MockkBean
+import tools.jackson.module.kotlin.readValue
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.jsonGodkjentAvArbeidsgiverMelding
 import no.nav.tiltak.tiltaknotifikasjon.kafka.MinSideProdusent
@@ -24,7 +24,7 @@ class BrukernotifikasjonKtTest{
     lateinit var brukernotifikasjonService: BrukernotifikasjonService
     @Autowired
     lateinit var brukernotifikasjonRepository: BrukernotifikasjonRepository
-    @MockkBean(relaxed = true)
+    @MockitoBean
     lateinit var minSideProdusent: MinSideProdusent
 
     @BeforeEach

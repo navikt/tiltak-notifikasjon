@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.13</version>
+		<version>4.1.1</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>no.nav.tiltak</groupId>
@@ -15,10 +15,9 @@
 	<description>Håndtering av notifikasjoner for tiltak håndtert av team tiltak</description>
 	<properties>
 		<java.version>21</java.version>
-		<kotlin.version>2.1.0</kotlin.version>
-		<jooq.version>3.18.6</jooq.version>
-		<postgresql.version>42.6.1</postgresql.version>
-		<graphql-kotlin.version>7.0.2</graphql-kotlin.version>
+		<kotlin.version>2.3.21</kotlin.version>
+		<graphql-kotlin.version>11.0.0</graphql-kotlin.version>
+		<token-support.version>6.0.12</token-support.version>
 	</properties>
 	<repositories>
 		<!-- Legger til central eksplisitt for prioritet over github package registry -->
@@ -48,7 +47,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-aop</artifactId>
+			<artifactId>spring-boot-starter-aspectj</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -60,25 +59,24 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
+			<artifactId>spring-boot-starter-webmvc</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.fasterxml.jackson.module</groupId>
+			<groupId>tools.jackson.module</groupId>
 			<artifactId>jackson-module-kotlin</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.flywaydb</groupId>
-			<artifactId>flyway-core</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-flyway</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-database-postgresql</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.jooq</groupId>
-			<artifactId>jooq</artifactId>
-			<version>${jooq.version}</version>
-		</dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jooq</artifactId>
+			</dependency>
 		<dependency>
 			<groupId>org.jetbrains.kotlin</groupId>
 			<artifactId>kotlin-reflect</artifactId>
@@ -88,8 +86,8 @@
 			<artifactId>kotlin-stdlib</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.kafka</groupId>
-			<artifactId>spring-kafka</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-kafka</artifactId>
 		</dependency>
 
 		<dependency>
@@ -101,8 +99,7 @@
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
-			<version>${postgresql.version}</version>
-		</dependency>
+			</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -110,8 +107,13 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.graphql</groupId>
-			<artifactId>spring-graphql-test</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-graphql-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-webmvc-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -121,18 +123,18 @@
 		</dependency>
 		<dependency>
 			<groupId>org.testcontainers</groupId>
-			<artifactId>postgresql</artifactId>
+			<artifactId>testcontainers-postgresql</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.testcontainers</groupId>
-			<artifactId>junit-jupiter</artifactId>
+			<artifactId>testcontainers-junit-jupiter</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.ninja-squad</groupId>
-			<artifactId>springmockk</artifactId>
-			<version>4.0.2</version>
+			<groupId>org.mockito.kotlin</groupId>
+			<artifactId>mockito-kotlin</artifactId>
+			<version>6.4.0</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -145,18 +147,18 @@
 		<dependency>
 			<groupId>com.expediagroup</groupId>
 			<artifactId>graphql-kotlin-spring-client</artifactId>
-			<version>7.0.2</version>
+			<version>${graphql-kotlin.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>no.nav.security</groupId>
 			<artifactId>token-client-spring</artifactId>
-			<version>4.1.5</version>
+			<version>${token-support.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>no.nav.security</groupId>
 			<artifactId>token-validation-spring</artifactId>
-			<version>4.1.5</version>
+			<version>${token-support.version}</version>
 		</dependency>
 
 		<dependency>
@@ -198,7 +200,9 @@
 			<plugin>
 				<groupId>org.jetbrains.kotlin</groupId>
 				<artifactId>kotlin-maven-plugin</artifactId>
+				<version>${kotlin.version}</version>
 				<configuration>
+					<jvmTarget>${java.version}</jvmTarget>
 					<args>
 						<arg>-Xjsr305=strict</arg>
 					</args>
@@ -280,11 +284,10 @@
 					<execution>
 						<id>generate-graphql-client</id>
 						<goals>
-							<goal>introspect-schema</goal>
 							<goal>generate-client</goal>
 						</goals>
 						<configuration>
-							<endpoint>https://notifikasjon-fake-produsent-api.ekstern.dev.nav.no</endpoint>
+							<schemaFile>${project.basedir}/src/main/graphql/produsent-schema.graphql</schemaFile>
 							<packageName>no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated</packageName>
 							<allowDeprecatedFields>true</allowDeprecatedFields>
 						</configuration>
