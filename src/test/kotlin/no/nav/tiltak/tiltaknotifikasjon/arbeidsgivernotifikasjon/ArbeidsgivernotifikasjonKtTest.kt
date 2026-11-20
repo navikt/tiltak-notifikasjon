@@ -1,7 +1,7 @@
 package no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon
 
-import com.fasterxml.jackson.module.kotlin.readValue
-import com.ninjasquad.springmockk.MockkBean
+import tools.jackson.module.kotlin.readValue
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.deleteAll
 import no.nav.tiltak.tiltaknotifikasjon.jsonAvtaleForkortetMelding
@@ -27,7 +27,7 @@ class ArbeidsgivernotifikasjonKtTest {
     lateinit var arbeidsgiverNotifikasjonService: ArbeidsgiverNotifikasjonService
     @Autowired
     lateinit var arbeidsgivernotifikasjonRepository: ArbeidsgivernotifikasjonRepository
-    @MockkBean(relaxed = true)
+    @MockitoBean
     lateinit var tiltakNotifikasjonKvitteringProdusent: TiltakNotifikasjonKvitteringProdusent
     @BeforeEach
     fun setup() {

@@ -1,6 +1,6 @@
 package no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner
 
-import com.ninjasquad.springmockk.MockkBean
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
 import no.nav.tiltak.tiltaknotifikasjon.kafka.MinSideProdusent
 import no.nav.tiltak.tiltaknotifikasjon.utils.ulid
@@ -18,7 +18,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
 @Testcontainers
 class BrukernotifikasjonRepositoryTest {
 
-    @MockkBean(relaxed = true)
+    @MockitoBean
     lateinit var minSideProdusent: MinSideProdusent
 
     @Autowired

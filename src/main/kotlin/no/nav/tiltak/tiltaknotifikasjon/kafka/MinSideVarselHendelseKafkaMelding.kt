@@ -1,11 +1,6 @@
 package no.nav.tiltak.tiltaknotifikasjon.kafka
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.databind.DeserializationContext
-import com.fasterxml.jackson.databind.JsonDeserializer
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import no.nav.tms.varsel.action.EksternKanal
 
 data class MinSideVarselHendelseKafkaMelding(

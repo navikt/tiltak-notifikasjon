@@ -1,6 +1,6 @@
 package no.nav.tiltak.tiltaknotifikasjon
 
-import com.ninjasquad.springmockk.MockkBean
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.ArbeidsgivernotifikasjonRepository
 import no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner.tables.Arbeidsgivernotifikasjon.Companion.ARBEIDSGIVERNOTIFIKASJON
 import no.nav.tiltak.tiltaknotifikasjon.kafka.MinSideProdusent
@@ -16,7 +16,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
 @Testcontainers
 class TiltakNotifikasjonApplicationTests {
 
-	@MockkBean(relaxed = true)
+	@MockitoBean
 	lateinit var minSideProdusent: MinSideProdusent
 
 	@Test

@@ -1,12 +1,12 @@
 package no.nav.tiltak.tiltaknotifikasjon.utils
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.MapperFeature
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonMapperBuilder
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import tools.jackson.databind.DeserializationFeature
+import tools.jackson.databind.MapperFeature
+import tools.jackson.databind.cfg.DateTimeFeature
+import tools.jackson.databind.cfg.EnumFeature
+import tools.jackson.databind.introspect.DefaultAccessorNamingStrategy
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.jacksonMapperBuilder
 import de.huxhorn.sulky.ulid.ULID
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleOpphav
@@ -18,10 +18,13 @@ import java.time.format.DateTimeFormatter
 private val ulidGenerator = ULID()
 fun ulid(): String = ulidGenerator.nextULID()
 
-fun jacksonMapper(): ObjectMapper = jacksonObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-    .registerModule(JavaTimeModule())
-    .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-    .configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL, true)
+fun jacksonMapper(): JsonMapper = jacksonMapperBuilder()
+    .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    .configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, false)
+    .configure(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+    .configure(EnumFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL, true)
+    .accessorNaming(DefaultAccessorNamingStrategy.Provider().withFirstCharAcceptance(true, true)) // Uten dette droppes properties som starter med æ/ø/å stille
+    .build()
 
 fun norskDatoFormat(dato: LocalDate) = dato.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
 
@@ -31,11 +34,13 @@ fun norskDatoFormat(dato: LocalDate) = dato.format(DateTimeFormatter.ofPattern("
  * Deserialisering av JSON uten å bry seg om casing på enum-verdier.
  * Eksempelvis får vi noen enums i lowercased form fra MinSide. Da kan lage enums i kotlin med uppercase navn, og fortsatt deserialisere JSON.
  */
-fun jacksonMapperSomIkkeBryrSegOmEnumCase(): ObjectMapper = jacksonMapperBuilder()
+fun jacksonMapperSomIkkeBryrSegOmEnumCase(): JsonMapper = jacksonMapperBuilder()
     .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    .configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, false)
     .configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS, true)
-    .configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL, true)
-    .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+    .configure(EnumFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL, true)
+    .configure(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+    .accessorNaming(DefaultAccessorNamingStrategy.Provider().withFirstCharAcceptance(true, true)) // Uten dette droppes properties som starter med æ/ø/å stille
     .build()
 
 fun erOpphavArenaOgErKlarforvisning(avtaleHendelseMelding: AvtaleHendelseMelding, rolle: Avtalerolle): Boolean {

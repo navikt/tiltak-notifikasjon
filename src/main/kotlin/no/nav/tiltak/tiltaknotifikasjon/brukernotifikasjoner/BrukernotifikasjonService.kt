@@ -1,6 +1,6 @@
 package no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner
 
-import com.fasterxml.jackson.module.kotlin.readValue
+import tools.jackson.module.kotlin.readValue
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.avtale.HendelseType
 import no.nav.tiltak.tiltaknotifikasjon.kafka.MinSideProdusent

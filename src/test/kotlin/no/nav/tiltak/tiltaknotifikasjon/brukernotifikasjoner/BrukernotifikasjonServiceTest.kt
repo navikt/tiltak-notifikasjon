@@ -1,7 +1,7 @@
 package no.nav.tiltak.tiltaknotifikasjon.brukernotifikasjoner
 
-import com.fasterxml.jackson.module.kotlin.readValue
-import com.ninjasquad.springmockk.MockkBean
+import tools.jackson.module.kotlin.readValue
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import no.nav.tiltak.tiltaknotifikasjon.*
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
 import no.nav.tiltak.tiltaknotifikasjon.kafka.MinSideProdusent
@@ -20,7 +20,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
 @Testcontainers
 class BrukernotifikasjonServiceTest {
 
-    @MockkBean(relaxed = true)
+    @MockitoBean
     lateinit var minSideProdusent: MinSideProdusent
 
     @Autowired

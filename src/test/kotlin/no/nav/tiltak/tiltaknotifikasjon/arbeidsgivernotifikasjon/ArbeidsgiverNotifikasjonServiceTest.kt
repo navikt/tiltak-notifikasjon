@@ -1,8 +1,10 @@
 package no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon
 
-import com.fasterxml.jackson.module.kotlin.readValue
-import com.ninjasquad.springmockk.MockkBean
-import io.mockk.verify
+import tools.jackson.module.kotlin.readValue
+import org.springframework.test.context.bean.override.mockito.MockitoBean
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.verify
 import no.nav.tiltak.tiltaknotifikasjon.*
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.graphql.generated.NyStatusSak
 import no.nav.tiltak.tiltaknotifikasjon.avtale.AvtaleHendelseMelding
@@ -30,7 +32,7 @@ class ArbeidsgiverNotifikasjonServiceTest {
     lateinit var arbeidsgiverNotifikasjonService: ArbeidsgiverNotifikasjonService
     @Autowired
     lateinit var arbeidsgivernotifikasjonRepository: ArbeidsgivernotifikasjonRepository
-    @MockkBean(relaxed = true)
+    @MockitoBean
     lateinit var tiltakNotifikasjonKvitteringProdusent: TiltakNotifikasjonKvitteringProdusent
     @BeforeEach
     fun setup() {
@@ -373,7 +375,7 @@ class ArbeidsgiverNotifikasjonServiceTest {
         // Payloaden som faktisk ble sendt til Fager skal ikke lenger inneholde SMS-varselet
         assertThat(beskjed.arbeidsgivernotifikasjonJson).doesNotContain("smsTekst")
 
-        verify { tiltakNotifikasjonKvitteringProdusent.sendNotifikasjonKvittering(any(), true) }
+        verify(tiltakNotifikasjonKvitteringProdusent).sendNotifikasjonKvittering(any(), eq(true))
     }
 
     /**
@@ -392,7 +394,7 @@ class ArbeidsgiverNotifikasjonServiceTest {
         assertThat(oppgave.status).isEqualTo(ArbeidsgivernotifikasjonStatus.BEHANDLET)
         assertThat(oppgave.sendtTidspunkt).isNotNull()
 
-        verify { tiltakNotifikasjonKvitteringProdusent.sendNotifikasjonKvittering(any(), true) }
+        verify(tiltakNotifikasjonKvitteringProdusent).sendNotifikasjonKvittering(any(), eq(true))
     }
 
 }

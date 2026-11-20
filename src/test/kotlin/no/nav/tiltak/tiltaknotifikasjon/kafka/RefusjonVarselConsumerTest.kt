@@ -1,9 +1,10 @@
 package no.nav.tiltak.tiltaknotifikasjon.kafka
 
-import com.ninjasquad.springmockk.MockkBean
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import io.getunleash.Unleash
-import io.mockk.every
-import io.mockk.mockk
+import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.ArbeidsgiverRefusjonKontaktpersonRepository
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.ArbeidsgiverRefusjonNotifikasjonRepository
 import no.nav.tiltak.tiltaknotifikasjon.arbeidsgivernotifikasjon.ArbeidsgivernotifikasjonProperties
@@ -53,10 +54,10 @@ class RefusjonVarselConsumerTest {
 
     // Ikke brukt direkte i disse testene, men nødvendig for at Spring skal kunne gjenbruke samme cachede
     // ApplicationContext (og dermed samme wiremock-instans/port) som de andre testene i "wiremock"-profilen.
-    @MockkBean(relaxed = true)
+    @MockitoBean
     lateinit var tiltakNotifikasjonKvitteringProdusent: TiltakNotifikasjonKvitteringProdusent
 
-    private val unleash = mockk<Unleash>()
+    private val unleash = mock<Unleash>()
     private lateinit var consumer: RefusjonVarselConsumer
 
     /** Fast avtaleId som matcher wiremock-stubben for "sak finnes fra før" (se arbeidsgivernotifikasjon-graphql.json) */
@@ -64,7 +65,7 @@ class RefusjonVarselConsumerTest {
 
     @BeforeEach
     fun setup() {
-        every { unleash.isEnabled(any()) } returns true
+        whenever(unleash.isEnabled(any<String>())).thenReturn(true)
         consumer = RefusjonVarselConsumer(
             kontaktpersonRepository,
             notifikasjonRepository,
@@ -117,7 +118,7 @@ class RefusjonVarselConsumerTest {
 
     @Test
     fun `skal hoppe over konsumering når feature-toggle er avslått`() {
-        every { unleash.isEnabled(any()) } returns false
+        whenever(unleash.isEnabled(any<String>())).thenReturn(false)
         val avtaleId = UUID.randomUUID()
 
         consumer.konsumer(consumerRecord(melding(avtaleId = avtaleId)))
@@ -221,7 +222,7 @@ class RefusjonVarselConsumerTest {
     @Test
     fun `skal lagre feilet notifikasjon med tomt kafka-key når key mangler`() {
         val record = consumerRecord(melding(), offset = 321L, key = null)
-        every { unleash.isEnabled(any()) } throws RuntimeException("Unleash er nede")
+        whenever(unleash.isEnabled(any<String>())).thenThrow(RuntimeException("Unleash er nede"))
 
         consumer.konsumer(record)
 
