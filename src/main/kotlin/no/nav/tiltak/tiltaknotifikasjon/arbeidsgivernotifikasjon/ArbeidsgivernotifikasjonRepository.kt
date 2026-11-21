@@ -20,6 +20,14 @@ class ArbeidsgivernotifikasjonRepository(val dsl: DSLContext) {
             .execute()
     }
 
+    fun findById(id: String): Arbeidsgivernotifikasjon? {
+        return dsl.select()
+            .from(ARBEIDSGIVERNOTIFIKASJON)
+            .where(ARBEIDSGIVERNOTIFIKASJON.ID.eq(id))
+            .fetchOneInto(ArbeidsgivernotifikasjonRecord::class.java)
+            ?.map { mapToArbeidsgivernotifikasjon(it as ArbeidsgivernotifikasjonRecord) }
+    }
+
     /** responseId: ID'en til selve notifikasjonen som blir oprrettet av min-side-arbeidsgiver når nySak/nyOppgave/nyBeskjed går gjennom, da returneres denne id'en og lagres i 'response_id'
      * Det kan være flere entiteter med samme responseId i basen, fordi: Når vi lager f.eks. en nysak får denne en ID, og når vi kaller softDeleteNotifikasjon på den saken så får vi tilbake den samme ID'en, altså IDen som ble slettet */
     fun findAllByResponseId(id: String): List<Arbeidsgivernotifikasjon> {
