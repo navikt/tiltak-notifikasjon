@@ -28,7 +28,7 @@ jobs:
       - name: Bygg og test med Maven
         run: mvn package -B -Dsurefire.useFile=false
       - name: Push docker image to GAR
-        uses: nais/docker-build-push@v0
+        uses: nais/docker-build-push@v1
         id: docker-build-push
         with:
           team: team-tiltak
