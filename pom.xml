@@ -15,9 +15,9 @@
 	<description>Håndtering av notifikasjoner for tiltak håndtert av team tiltak</description>
 	<properties>
 		<java.version>21</java.version>
-		<kotlin.version>2.1.0</kotlin.version>
-		<jooq.version>3.18.6</jooq.version>
-		<postgresql.version>42.6.1</postgresql.version>
+		<kotlin.version>2.4.21</kotlin.version>
+		<jooq.version>3.21.9</jooq.version>
+		<postgresql.version>42.7.14</postgresql.version>
 		<graphql-kotlin.version>7.0.2</graphql-kotlin.version>
 	</properties>
 	<repositories>
@@ -40,7 +40,7 @@
 		<dependency>
 			<groupId>de.huxhorn.sulky</groupId>
 			<artifactId>de.huxhorn.sulky.ulid</artifactId>
-			<version>8.2.0</version>
+			<version>8.3.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -139,7 +139,7 @@
 		<dependency>
 			<groupId>io.getunleash</groupId>
 			<artifactId>unleash-client-java</artifactId>
-			<version>12.1.1</version>
+			<version>12.3.2</version>
 		</dependency>
 
 		<dependency>
@@ -167,7 +167,7 @@
 		<dependency>
 			<groupId>org.wiremock</groupId>
 			<artifactId>wiremock-standalone</artifactId>
-			<version>3.7.0</version>
+			<version>3.13.2</version>
 			<scope>test</scope>
 		</dependency>
 
